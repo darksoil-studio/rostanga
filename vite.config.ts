@@ -3,6 +3,7 @@ import { internalIpV4 } from "internal-ip";
 
 // @ts-expect-error process is a nodejs global
 const mobile = !!/android|ios/.exec(process.env.TAURI_PLATFORM);
+const port = 1420;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -13,12 +14,12 @@ export default defineConfig(async () => ({
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
     host: mobile ? "0.0.0.0" : false,
-    port: 1420,
+    port,
     hmr: mobile
       ? {
           protocol: "ws",
           host: await internalIpV4(),
-          port: 1421,
+          port,
         }
       : undefined,
     strictPort: true,

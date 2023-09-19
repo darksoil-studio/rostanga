@@ -1,5 +1,5 @@
 [package]
-name = "rostanga-test"
+name = "rostangatest"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -18,10 +18,15 @@ tauri-build = { version = "2.0.0-alpha", features = [] }
 
 [dependencies]
 tauri = { version = "2.0.0-alpha", features = [] }
-tauri-plugin-window = "2.0.0-alpha"
-tauri-plugin-shell = "2.0.0-alpha"
+tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
+
+holochain_types = "0.2.2-beta-rc.2"
+
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-cli = "2.0.0-alpha"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

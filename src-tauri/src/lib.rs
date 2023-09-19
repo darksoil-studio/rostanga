@@ -1,15 +1,63 @@
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+use std::collections::HashMap;
+use std::path::PathBuf;
+
+use holochain_types::web_app::WebAppBundle;
+use serde_json::Value;
+use tauri::{WindowBuilder, WindowUrl};
+#[cfg(desktop)]
+use tauri_plugin_cli::CliExt;
+use tauri_plugin_holochain::HolochainExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let mut initial_apps: HashMap<String, WebAppBundle> = HashMap::new();
+
+    initial_apps.insert(
+        String::from("gather"),
+        WebAppBundle::decode(include_bytes!("../../gather.webhapp")).unwrap(),
+    );
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_window::init())
-        .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .setup(|app| {
+            let mut subfolder = PathBuf::from("holochain");
+
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_cli::init())?;
+            #[cfg(desktop)]
+            if let Some(m) = app
+                .cli()
+                .matches()
+                .expect("Can't get matches")
+                .args
+                .get("profile")
+            {
+                if let Value::String(s) = m.value.clone() {
+                    subfolder = PathBuf::from(s);
+                }
+            }
+
+            let config = tauri_plugin_holochain::TauriPluginHolochainConfig {
+                initial_apps,
+                subfolder,
+            };
+            // WindowBuilder::new(
+            //     app.handle(),
+            //     String::from("main"),
+            //     WindowUrl::App(PathBuf::from("index.html")),
+            // )
+            // .build()?;
+
+            // WindowBuilder::new(
+            //     app.handle(),
+            //     String::from("main2"),
+            //     WindowUrl::App(PathBuf::from("index.html")),
+            // )
+            // .build()?;
+
+            app.handle().plugin(tauri_plugin_holochain::init(config))?;
+            app.open_app(String::from("gather")).unwrap();
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

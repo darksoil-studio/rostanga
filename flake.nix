@@ -2,24 +2,25 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    versions.url  = "github:holochain/holochain?dir=versions/0_2";
+    nixpkgs.follows = "holochain/nixpkgs";
 
-    holochain-flake.url = "github:holochain/holochain";
-    holochain-flake.inputs.versions.follows = "versions";
+    versions.url = "github:holochain/holochain?dir=versions/0_2";
+
+    holochain = {
+      url = "github:holochain/holochain";
+      inputs.versions.follows = "versions";
+    };
 
     rust-overlay.url = "github:oxalica/rust-overlay";
-
-    nixpkgs.follows = "holochain-flake/nixpkgs";
-    flake-parts.follows = "holochain-flake/flake-parts";
   };
 
   outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
+    inputs.holochain.inputs.flake-parts.lib.mkFlake
       {
         inherit inputs;
       }
       {
-        systems = builtins.attrNames inputs.holochain-flake.devShells;
+        systems = builtins.attrNames inputs.holochain.devShells;
         perSystem =
           { inputs'
           , config
@@ -77,7 +78,7 @@
               ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
               NDK_HOME = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
 
-              inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
+              inputsFrom = [ inputs'.holochain.devShells.holonix ];
               packages = (with pkgs; [
                 nodejs-18_x
                 # more packages go here
@@ -146,9 +147,11 @@
                 export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
                 export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
+                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis;x86_64" --force
+
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME
-                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis;x86_64" --force
+
                 export RUSTFLAGS+=" -C link-arg=$(gcc -print-libgcc-file-name)"
               '';
             };

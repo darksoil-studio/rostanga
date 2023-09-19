@@ -7,14 +7,14 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "rostanga-test",
+    "productName": "rostangatest",
     "version": "0.0.0"
   },
   "tauri": {
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "studio.darksoil.rostangatest",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -24,21 +24,27 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [
+        {
+          "domain": "gather.localhost",
+          "windows": ["gather"],
+          "plugins": ["holochain"]
+        }
+      ]
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "rostanga-test",
-        "width": 800,
-        "height": 600
-      }
-    ]
+    "windows": []
   },
   "plugins": {
-    "shell": {
-      "open": true
+    "cli": {
+      "args": [
+        {
+          "short": "p",
+          "name": "profile",
+          "takesValue": true,
+          "multiple": false
+        }
+      ]
     }
   }
 }

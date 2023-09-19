@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["dirs-rs", "tauri-plugin-holochain", "src-tauri"]
+
+# default to small, optimized release binaries
+[profile.release]
+panic = "abort"
+codegen-units = 1
+incremental = false
+opt-level = "s"
+
+[patch.crates-io]
+dirs = { path = "./dirs-rs" }
