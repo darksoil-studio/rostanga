@@ -5,21 +5,23 @@
   "type": "module",
   "scripts": {
     "start": "npm run tauri dev -- --release",
-    "start:android": "npm run tauri android dev",
+    "start:android": "npm run tauri android dev --no-watch",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@holochain/client": "^0.16.2",
+    "@msgpack/msgpack": "^3.0.0-beta2",
     "@tauri-apps/api": "^2.0.0-alpha.4",
-    "@tauri-apps/plugin-window": "^2.0.0-alpha.0",
-    "@tauri-apps/plugin-shell": "^2.0.0-alpha.0"
+    "@tauri-apps/plugin-shell": "^2.0.0-alpha.0",
+    "@tauri-apps/plugin-window": "^2.0.0-alpha.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0-alpha.9",
     "internal-ip": "^7.0.0",
-    "vite": "^4.4.4",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vite": "^4.4.4"
   }
 }

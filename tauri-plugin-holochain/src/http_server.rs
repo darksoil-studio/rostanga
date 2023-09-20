@@ -61,6 +61,22 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                         let lowercase_app_id = split_host.get(0).unwrap();
 
                         let file_name = request.uri().path();
+                        let state = app_handle.state::<PluginState>();
+                        println!("filename{}", file_name);
+
+                        if file_name == "/__HC_ENVIRONMENT__.json" {
+                            let response = format!(
+                                r#"{{ "APP_INTERFACE_PORT": {}, "ADMIN_INTERFACE_PORT": {}, "INSTALLED_APP_ID": "{}" }}"#,
+                                state.app_port, state.admin_port, lowercase_app_id
+                            );
+                            println!("sending {}", response);
+
+                            return Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", String::from("application/json"))
+                                .body(response.as_bytes().to_vec().into())
+                                .unwrap());
+                        }
 
                         // let fs = ;
                         // let mutex = app_handle.state::<Mutex<ConductorHandle>>();
@@ -68,7 +84,7 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                         // let mut admin_ws = get_admin_ws(&conductor).await?;
 
                         let r: Result<Response<Body>> = match read_asset(
-                            &app_handle.state::<PluginState>().filesystem,
+                            &state.filesystem,
                             &lowercase_app_id,
                             file_name.to_string(),
                         )

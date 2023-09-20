@@ -50,26 +50,27 @@ impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
         );
 
         let launcher_env_command = format!(
-            r#"window.__HC_LAUNCHER_ENV__ = {{
-    "APP_INTERFACE_PORT": {},
-    "ADMIN_INTERFACE_PORT": {},
-    "INSTALLED_APP_ID": "{}"
-  }};"#,
-            state.app_port, state.admin_port, app_id
+            r#"window.__HC_LAUNCHER_ENV__ = {{ "APP_INTERFACE_PORT": {}, "ADMIN_INTERFACE_PORT": {}, "INSTALLED_APP_ID": "{}", "HTTP_SERVER_PORT": {} }};"#,
+            state.app_port, state.admin_port, app_id, state.http_server_port
         );
 
         WindowBuilder::new(
             self,
             app_id.clone(),
-            WindowUrl::External(
-                url::Url::parse(
-                    format!("http://{}.localhost:{}", app_id, state.http_server_port,).as_str(),
-                )
-                .expect("Cannot parse app_id"),
-            ),
+            WindowUrl::App(PathBuf::from("index.html")),
+            // WindowUrl::External(
+            //     url::Url::parse(
+            //         format!("http://{}.localhost:{}", app_id, state.http_server_port,).as_str(),
+            //     )
+            //     .expect("Cannot parse app_id"),
+            // ),
         )
+        // .initialization_script("console.error('hey');")
         .initialization_script(launcher_env_command.as_str())
+        // .initialization_script("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")
         .build()?;
+        // window.eval(launcher_env_command.as_str())?;
+        // window.eval("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")?;
 
         println!("Opened app {}", app_id);
         Ok(())
