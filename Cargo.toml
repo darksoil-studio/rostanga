@@ -7,7 +7,9 @@ members = ["dirs-rs", "tauri-plugin-holochain", "src-tauri"]
 panic = "abort"
 codegen-units = 1
 incremental = false
-opt-level = "s"
+opt-level = "z"
+lto = true
 
 [patch.crates-io]
 dirs = { path = "./dirs-rs" }
+tx5-core = { git = "https://github.com/holochain/tx5", branch = "main" }
