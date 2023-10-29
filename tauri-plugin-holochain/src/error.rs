@@ -31,9 +31,6 @@ pub enum Error {
     TauriError(#[from] tauri::Error),
 
     #[error(transparent)]
-    TauriPathError(#[from] tauri::path::Error),
-
-    #[error(transparent)]
     ZipError(#[from] ZipError),
 
     #[error("ConductorApiError: `{0:?}`")]

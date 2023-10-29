@@ -15,13 +15,14 @@ export default defineConfig(async () => ({
   server: {
     host: mobile ? "0.0.0.0" : false,
     port,
-    hmr: mobile
-      ? {
-          protocol: "ws",
-          host: await internalIpV4(),
-          port,
-        }
-      : undefined,
+    hmr: undefined,
+    //    mobile
+    // ? {
+    //     protocol: "ws",
+    //     host: await internalIpV4(),
+    //     port,
+    //   }
+    // :     undefined,
     strictPort: true,
   },
   // 3. to make use of `TAURI_DEBUG` and other env variables

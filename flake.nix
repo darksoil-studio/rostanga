@@ -12,6 +12,24 @@
     };
 
     rust-overlay.url = "github:oxalica/rust-overlay";
+    android-nixpkgs = {
+      # url = "github:tadfisher/android-nixpkgs";
+
+      # The main branch follows the "canary" channel of the Android SDK
+      # repository. Use another android-nixpkgs branch to explicitly
+      # track an SDK release channel.
+      #
+      url = "github:tadfisher/android-nixpkgs/stable";
+      # url = "github:tadfisher/android-nixpkgs/beta";
+      # url = "github:tadfisher/android-nixpkgs/preview";
+      # url = "github:tadfisher/android-nixpkgs/canary";
+
+      # If you have nixpkgs as an input, this will replace the "nixpkgs" input
+      # for the "android" flake.
+      #
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs = inputs:
@@ -56,34 +74,24 @@
                 allowUnfree = true;
               };
             };
+            android-sdk = inputs.android-nixpkgs.sdk.${system} (sdkPkgs: with sdkPkgs; [
+              cmdline-tools-latest
+              build-tools-30-0-3
+              platform-tools
+              ndk-bundle
+              platforms-android-33
+              emulator
+              system-images-android-33-google-apis-playstore-x86-64
+            ]);
 
-            buildToolsVersion = "30.0.3";
-            ndkVersion = "25.2.9519653";
-            androidComposition = androidPkgs.androidenv.composeAndroidPackages {
-              buildToolsVersions = [ buildToolsVersion ];
-              platformVersions = [ "33" ];
-              abiVersions = [ "x86_64" ];
-              includeEmulator = true;
-              includeNDK = true;
-              ndkVersions = [ ndkVersion ];
-              includeSystemImages = true;
-              systemImageTypes = [ "google_apis" ];
-              useGoogleAPIs = true;
-            };
-            androidSdk = androidComposition.androidsdk;
           in {
             devShells.default = pkgs.mkShell {
-              ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
-              ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
-              ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
-              NDK_HOME = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
 
               inputsFrom = [ inputs'.holochain.devShells.holonix ];
               packages = (with pkgs; [
                 nodejs-18_x
                 # more packages go here
                 cargo-nextest
-                upx
               ])
               ++ ([
                 rust
@@ -94,9 +102,13 @@
                 openssl
                 # this is required for glib-networking
                 glib
+                android-sdk
+                gradle
                 jdk17
               ])
-              ++ [ androidSdk ]
+              ++ (with androidPkgs; [
+                android-studio
+              ])
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
                   webkitgtk_4_1.dev
@@ -144,10 +156,11 @@
               ;
 
               shellHook = ''
+                export NDK_HOME=$ANDROID_SDK_ROOT/ndk-bundle
                 export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
                 export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
-                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis;x86_64" --force
+                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis_playstore;x86_64" --force
 
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME

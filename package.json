@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run tauri dev -- --no-dev-server --release --no-watch",
-    "start:android": "npm run tauri android dev -- --no-dev-server --release --no-watch",
-    "dev": "",
+    "start": "npm run tauri dev -- --release --no-watch",
+    "start:android": "npm run tauri android dev -- --release --no-watch",
+    "android:emulator": "emulator -avd Pixel -gpu off",
+    "dev": "vite",
     "build": "tsc && vite build",
     "prepare": "npm run build",
     "preview": "vite preview",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0-alpha.9",
+    "concurrently": "^8.2.1",
     "internal-ip": "^7.0.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.4"
