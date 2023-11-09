@@ -1,0 +1,56 @@
+name: "release"
+on:
+  tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-10.15, ubuntu-18.04, windows-2019]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 10.13
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Support longpaths
+        run: git config --system core.longpaths true
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v2
+
+      - name: Extend space
+        if: matrix.platform != 'windows-2019'
+        uses: ./.github/actions/extend-space
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          toolchain: stable
+      - name: install Go stable
+        uses: actions/setup-go@v4
+        with:
+          go-version: "stable"
+
+      - name: Install and prepare
+        run: |
+          npm install
+
+      - name: build the app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: src-tauri # specifying to prevent action from looking for artifacts in crates/hc_launch/src-tauri
+          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+          releaseName: "Rostanga Test v__VERSION__"
+          releaseBody: "See assets below to download and install this version."
+          releaseDraft: true
+          prerelease: true

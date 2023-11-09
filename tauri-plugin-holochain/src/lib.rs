@@ -86,7 +86,8 @@ pub struct TauriPluginHolochainConfig {
 pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
     Builder::new("holochain")
         .invoke_handler(tauri::generate_handler![
-            commands::sign_zome_call::sign_zome_call
+            commands::sign_zome_call::sign_zome_call,
+            commands::get_locales::get_locales
         ])
         .setup(move |app: &AppHandle<R>, api| {
             let fs = FileSystem::new(app, &config.subfolder)?;

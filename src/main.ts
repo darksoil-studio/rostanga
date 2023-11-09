@@ -6,7 +6,7 @@ import {
   randomNonce,
 } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
-import { invoke } from "@tauri-apps/api/tauri";
+import { primitives } from "@tauri-apps/api";
 
 window.addEventListener("message", async (message) => {
   const appId = message.origin.split("://")[1].split("?")[0].split(".")[0];
@@ -15,15 +15,21 @@ window.addEventListener("message", async (message) => {
   message.ports[0].postMessage({ type: "success", result: response });
 });
 
-export type Request = {
-  type: "sign-zome-call";
-  zomeCall: CallZomeRequest;
-};
+export type Request =
+  | {
+      type: "sign-zome-call";
+      zomeCall: CallZomeRequest;
+    }
+  | {
+      type: "get-locales";
+    };
 
 async function handleRequest(_appId: string, request: Request) {
   switch (request.type) {
     case "sign-zome-call":
       return signZomeCallTauri(request.zomeCall);
+    case "get-locales":
+      return primitives.invoke("plugin:holochain|get_locales", {});
   }
 }
 
@@ -71,10 +77,10 @@ export const signZomeCallTauri = async (request: CallZomeRequest) => {
     expires_at: getNonceExpiration(),
   };
 
-  const signedZomeCallTauri: CallZomeRequestSignedTauri = await invoke(
-    "plugin:holochain|sign_zome_call",
-    { zomeCallUnsigned }
-  );
+  const signedZomeCallTauri: CallZomeRequestSignedTauri =
+    await primitives.invoke("plugin:holochain|sign_zome_call", {
+      zomeCallUnsigned,
+    });
 
   const signedZomeCall: CallZomeRequestSigned = {
     provenance: Uint8Array.from(signedZomeCallTauri.provenance),

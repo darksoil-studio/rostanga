@@ -12,4 +12,13 @@ lto = true
 
 [patch.crates-io]
 dirs = { path = "./dirs-rs" }
-tx5-core = { git = "https://github.com/holochain/tx5", branch = "main" }
+
+tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
+tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
+tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
+tx5-go-pion-sys = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion-sys" }
+tx5-go-pion = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion" }
+tx5-signal = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-signal" }
+tx5-signal-srv = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-signal-srv" }
+tx5-demo = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-demo" }
+tx5-go-pion-turn = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion-turn" }

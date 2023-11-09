@@ -6,7 +6,7 @@ use holochain::{
     },
 };
 use holochain_keystore::MetaLairClient;
-use tauri::{command, AppHandle, Runtime, State, Window};
+use tauri::{command, AppHandle, Runtime, State};
 
 #[command]
 pub(crate) async fn sign_zome_call<R: Runtime>(

@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run tauri dev -- --release --no-watch",
-    "start:android": "npm run tauri android dev -- --release --no-watch",
+    "start": "npm run tauri dev -- --release --no-watch --no-dev-server-wait",
+    "start:android": "npm run tauri android dev -- --no-dev-server-wait --release --no-watch",
     "android:emulator": "emulator -avd Pixel -gpu off",
     "dev": "vite",
     "build": "tsc && vite build",
@@ -16,12 +16,11 @@
   "dependencies": {
     "@holochain/client": "^0.16.2",
     "@msgpack/msgpack": "^3.0.0-beta2",
-    "@tauri-apps/api": "^2.0.0-alpha.4",
-    "@tauri-apps/plugin-shell": "^2.0.0-alpha.0",
-    "@tauri-apps/plugin-window": "^2.0.0-alpha.0"
+    "@tauri-apps/api": "^2.0.0-alpha.11",
+    "@tauri-apps/plugin-shell": "^2.0.0-alpha.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0-alpha.9",
+    "@tauri-apps/cli": "^2.0.0-alpha.17",
     "concurrently": "^8.2.1",
     "internal-ip": "^7.0.0",
     "typescript": "^5.0.2",

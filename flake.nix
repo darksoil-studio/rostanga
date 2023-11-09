@@ -53,7 +53,7 @@
             rustPkgs = import pkgs.path {
               inherit system overlays;
             };
-            rust = rustPkgs.rust-bin.stable.latest.default.override {
+            rust = rustPkgs.rust-bin.stable."1.71.1".default.override {
               extensions = [ "rust-src" ];
               targets = [ 
                 "armv7-linux-androideabi"
@@ -92,6 +92,7 @@
                 nodejs-18_x
                 # more packages go here
                 cargo-nextest
+                sccache
               ])
               ++ ([
                 rust
@@ -161,9 +162,6 @@
                 export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
                 echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis_playstore;x86_64" --force
-
-                unset CARGO_TARGET_DIR
-                unset CARGO_HOME
 
                 export RUSTFLAGS+=" -C link-arg=$(gcc -print-libgcc-file-name)"
               '';

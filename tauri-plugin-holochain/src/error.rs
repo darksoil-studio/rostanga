@@ -3,6 +3,7 @@ use holochain_client::ConductorApiError;
 use serde::{ser::Serializer, Serialize};
 use mr_bundle::error::MrBundleError;
 use zip::result::ZipError;
+use app_dirs2::AppDirsError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -26,6 +27,9 @@ pub enum Error {
 
     #[error(transparent)]
     MrBundleError(#[from] MrBundleError),
+
+    #[error(transparent)]
+    AppDirsError(#[from] AppDirsError),
 
     #[error(transparent)]
     TauriError(#[from] tauri::Error),
