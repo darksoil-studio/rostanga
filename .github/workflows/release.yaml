@@ -16,6 +16,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Support longpaths
+        if: matrix.platform != 'ubuntu-20.04'
         run: git config --system core.longpaths true
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -23,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Extend space
-        if: matrix.platform != 'windows-2019'
+        if: matrix.platform == 'ubuntu-20.04'
         uses: ./.github/actions/extend-space
 
       - name: setup node
