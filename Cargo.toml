@@ -12,6 +12,7 @@ lto = true
 
 [patch.crates-io]
 # dirs = { path = "./dirs-rs" }
+
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
