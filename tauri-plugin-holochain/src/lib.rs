@@ -1,17 +1,22 @@
+use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration};
+
 use commands::install_web_app::install_web_app;
 use filesystem::FileSystem;
-use holochain::conductor::ConductorHandle;
-use holochain_client::AdminWebsocket;
-use holochain_keystore::MetaLairClient;
-use holochain_types::web_app::WebAppBundle;
+use http_server::{pong_iframe, read_asset};
+use hyper::StatusCode;
 use launch::launch;
+use serde::{Deserialize, Serialize};
 use tauri::{
+    http::response,
     plugin::{Builder, TauriPlugin},
     scope::ipc::RemoteDomainAccessScope,
     AppHandle, Manager, Runtime, WindowBuilder, WindowUrl,
 };
 
-use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration};
+use holochain::conductor::ConductorHandle;
+use holochain_client::AdminWebsocket;
+use holochain_keystore::MetaLairClient;
+use holochain_types::web_app::WebAppBundle;
 
 #[cfg(desktop)]
 mod desktop;
@@ -27,9 +32,9 @@ mod launch;
 
 pub use error::{Error, Result};
 
-struct PluginState {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct HolochainRuntimeInfo {
     http_server_port: u16,
-    filesystem: FileSystem,
     app_port: u16,
     admin_port: u16,
 }
@@ -42,17 +47,13 @@ pub trait HolochainExt<R: Runtime> {
 impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
     fn open_app(&self, app_id: String) -> Result<()> {
         println!("Opening app {}", app_id);
-        let state = self.state::<PluginState>();
         self.ipc_scope().configure_remote_access(
             RemoteDomainAccessScope::new(format!("{}.localhost", app_id))
                 .add_window(app_id.clone())
                 .add_plugins(["holochain"]),
         );
 
-        let launcher_env_command = format!(
-            r#"window.__HC_LAUNCHER_ENV__ = {{ "APP_INTERFACE_PORT": {}, "ADMIN_INTERFACE_PORT": {}, "INSTALLED_APP_ID": "{}", "HTTP_SERVER_PORT": {} }};"#,
-            state.app_port, state.admin_port, app_id, state.http_server_port
-        );
+        let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
         WindowBuilder::new(
             self,
@@ -66,7 +67,7 @@ impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
             // ),
         )
         // .initialization_script("console.error('hey');")
-        .initialization_script(launcher_env_command.as_str())
+        .initialization_script(app_id_env_command.as_str())
         // .initialization_script("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")
         .build()?;
         // window.eval(launcher_env_command.as_str())?;
@@ -87,8 +88,82 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
     Builder::new("holochain")
         .invoke_handler(tauri::generate_handler![
             commands::sign_zome_call::sign_zome_call,
-            commands::get_locales::get_locales
+            commands::get_locales::get_locales,
+            commands::get_runtime_info::get_runtime_info
         ])
+        .register_uri_scheme_protocol("happ", |app_handle, request| {
+            if request.uri().to_string().starts_with("happ://ping") {
+                return response::Builder::new()
+                    .status(StatusCode::ACCEPTED)
+                    .header("Content-Type", "text/html;charset=utf-8")
+                    .body(pong_iframe().as_bytes().to_vec())
+                    .unwrap();
+            }
+            // prepare our response
+            tauri::async_runtime::block_on(async move {
+                let fs = app_handle.state::<FileSystem>();
+                // let mutex = app_handle.state::<Mutex<AdminWebsocket>>();
+                // let mut admin_ws = mutex.lock().await;
+
+                let uri_without_protocol = request
+                    .uri()
+                    .to_string()
+                    .split("://")
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>()
+                    .get(1)
+                    .unwrap()
+                    .clone();
+                let uri_without_querystring: String = uri_without_protocol
+                    .split("?")
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>()
+                    .get(0)
+                    .unwrap()
+                    .clone();
+                let uri_components: Vec<String> = uri_without_querystring
+                    .split("/")
+                    .map(|s| s.to_string())
+                    .collect();
+                let lowercase_app_id = uri_components.get(0).unwrap();
+                let mut asset_file = PathBuf::new();
+                for i in 1..uri_components.len() {
+                    asset_file = asset_file.join(uri_components[i].clone());
+                }
+
+                let r = match read_asset(
+                    &fs,
+                    lowercase_app_id,
+                    asset_file.as_os_str().to_str().unwrap().to_string(),
+                )
+                .await
+                {
+                    Ok(Some((asset, mime_type))) => {
+                        println!("Got asset for app with id: {}", lowercase_app_id);
+                        let mut response = response::Builder::new().status(StatusCode::ACCEPTED);
+                        if let Some(mime_type) = mime_type {
+                            response = response
+                                .header("Content-Type", format!("{};charset=utf-8", mime_type))
+                        } else {
+                            response = response.header("Content-Type", "charset=utf-8")
+                        }
+
+                        return response.body(asset).unwrap();
+                    }
+                    Ok(None) => response::Builder::new()
+                        .status(StatusCode::NOT_FOUND)
+                        .body(vec![])
+                        .unwrap(),
+                    Err(e) => response::Builder::new()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(format!("{:?}", e).as_bytes().to_vec())
+                        .unwrap(),
+                };
+
+                // admin_ws.close();
+                r
+            })
+        })
         .setup(move |app: &AppHandle<R>, api| {
             let fs = FileSystem::new(app, &config.subfolder)?;
             let admin_port = portpicker::pick_unused_port().expect("No ports free");
@@ -142,12 +217,13 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
             // manage state so it is accessible by the commands
             app.manage(lair_client);
 
-            app.manage(PluginState {
+            app.manage(HolochainRuntimeInfo {
                 http_server_port,
                 app_port,
                 admin_port,
-                filesystem: fs,
             });
+
+            app.manage(fs);
 
             Ok(())
         })

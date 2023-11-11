@@ -2,7 +2,7 @@ use holochain::{conductor::{Conductor, ConductorHandle, state::AppInterfaceId}, 
 use serde::de::DeserializeOwned;
 use tauri::{plugin::PluginApi, AppHandle, Runtime};
 
-use crate::{filesystem::FileSystem, PluginState};
+use crate::{filesystem::FileSystem, HolochainRuntimeInfo};
 
 pub async fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
