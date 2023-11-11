@@ -23,10 +23,6 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v2
 
-      - name: Extend space
-        if: matrix.platform == 'ubuntu-20.04'
-        uses: ./.github/actions/extend-space
-
       - name: setup node
         uses: actions/setup-node@v1
         with:
