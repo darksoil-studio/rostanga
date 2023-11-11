@@ -6,8 +6,8 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "rostangatest",
-    "version": "0.0.0"
+    "productName": "gather",
+    "version": "0.0.4"
   },
   "tauri": {
     "bundle": {
