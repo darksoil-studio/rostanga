@@ -8,7 +8,7 @@ use tauri::{AppHandle, Manager, Runtime};
 use crate::{
     error::{Error, Result},
     filesystem::FileSystem,
-    PluginState,
+    HolochainRuntimeInfo,
 };
 
 pub fn pong_iframe() -> String {
@@ -61,53 +61,28 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                         let lowercase_app_id = split_host.get(0).unwrap();
 
                         let file_name = request.uri().path();
-                        let state = app_handle.state::<PluginState>();
-                        println!("filename{}", file_name);
+                        let fs = app_handle.state::<FileSystem>();
 
-                        if file_name == "/__HC_ENVIRONMENT__.json" {
-                            let response = format!(
-                                r#"{{ "APP_INTERFACE_PORT": {}, "ADMIN_INTERFACE_PORT": {}, "INSTALLED_APP_ID": "{}" }}"#,
-                                state.app_port, state.admin_port, lowercase_app_id
-                            );
-                            println!("sending {}", response);
+                        let r: Result<Response<Body>> =
+                            match read_asset(&fs, &lowercase_app_id, file_name.to_string()).await {
+                                Ok(Some((asset, mime_type))) => {
+                                    let mut response_builder = Response::builder().status(202);
+                                    if let Some(mime_type) = mime_type {
+                                        response_builder =
+                                            response_builder.header("content-type", mime_type);
+                                    }
 
-                            return Ok(Response::builder()
-                                .status(200)
-                                .header("content-type", String::from("application/json"))
-                                .body(response.as_bytes().to_vec().into())
-                                .unwrap());
-                        }
-
-                        // let fs = ;
-                        // let mutex = app_handle.state::<Mutex<ConductorHandle>>();
-                        // let conductor = mutex.lock().await;
-                        // let mut admin_ws = get_admin_ws(&conductor).await?;
-
-                        let r: Result<Response<Body>> = match read_asset(
-                            &state.filesystem,
-                            &lowercase_app_id,
-                            file_name.to_string(),
-                        )
-                        .await
-                        {
-                            Ok(Some((asset, mime_type))) => {
-                                let mut response_builder = Response::builder().status(202);
-                                if let Some(mime_type) = mime_type {
-                                    response_builder =
-                                        response_builder.header("content-type", mime_type);
+                                    Ok(response_builder.body(asset.into()).unwrap())
                                 }
-
-                                Ok(response_builder.body(asset.into()).unwrap())
-                            }
-                            Ok(None) => Ok(Response::builder()
-                                .status(404)
-                                .body(vec![].into())
-                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?),
-                            Err(e) => Ok(Response::builder()
-                                .status(500)
-                                .body(format!("{:?}", e).into())
-                                .unwrap()),
-                        };
+                                Ok(None) => Ok(Response::builder()
+                                    .status(404)
+                                    .body(vec![].into())
+                                    .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?),
+                                Err(e) => Ok(Response::builder()
+                                    .status(500)
+                                    .body(format!("{:?}", e).into())
+                                    .unwrap()),
+                            };
                         // admin_ws.close();
                         r
                     }
