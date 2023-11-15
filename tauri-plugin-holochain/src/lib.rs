@@ -66,6 +66,7 @@ impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
             //     .expect("Cannot parse app_id"),
             // ),
         )
+        .min_inner_size(1000, 800)
         // .initialization_script("console.error('hey');")
         .initialization_script(app_id_env_command.as_str())
         // .initialization_script("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")
