@@ -2422,6 +2422,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "gather"
+version = "0.0.0"
+dependencies = [
+ "holochain_types",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-cli",
+ "tauri-plugin-holochain",
+]
+
+[[package]]
 name = "gcc"
 version = "0.3.55"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6874,19 +6887,6 @@ dependencies = [
  "rmp",
  "serde",
  "serde_bytes",
-]
-
-[[package]]
-name = "rostangatest"
-version = "0.0.0"
-dependencies = [
- "holochain_types",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-cli",
- "tauri-plugin-holochain",
 ]
 
 [[package]]
