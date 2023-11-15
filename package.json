@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "prepare": "curl -L --output gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.4/gather.webhapp"
+    "prepare": "curl -L --output gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.5/gather.webhapp"
   },
   "dependencies": {
     "@holochain/client": "^0.16.2",
