@@ -17,7 +17,7 @@ pub struct FileSystem {
 /// 0.2.2 becomes 0.2.x
 /// 0.0.5 becomes 0.0.5
 /// 0.2.3-alpha.2 remains 0.2.3-alpha.2 --> pre-releases always get their own storage location since we have to assume breaking changes
-pub fn breaking_app_version(app_handle: &AppHandle) -> String {
+pub fn breaking_app_version<R: Runtime>(app_handle: &AppHandle<R>) -> String {
     let app_version = app_handle.package_info().version.clone();
 
     if app_version.pre.is_empty() == false {
@@ -39,15 +39,16 @@ impl FileSystem {
         subfolder: &PathBuf,
     ) -> crate::Result<FileSystem> {
         let version_folder = breaking_app_version(app_handle);
+
         let app_data_dir = app_handle
             .path()
             .app_data_dir()?
-            .join(version_folder)
+            .join(&version_folder)
             .join(subfolder);
         let app_config_dir = app_handle
             .path()
             .app_config_dir()?
-            .join(version_folder)
+            .join(&version_folder)
             .join(subfolder);
 
         fs::create_dir_all(app_data_dir.join("webhapps"))?;
