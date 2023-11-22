@@ -10,14 +10,45 @@ pub struct FileSystem {
     pub app_data_dir: PathBuf,
     pub app_config_dir: PathBuf,
 }
+/// Returns a string considering the relevant part of the version regarding breaking changes
+/// Examples:
+/// 3.2.0 becomes 3.x.x
+/// 0.2.2 becomes 0.2.x
+/// 0.0.5 becomes 0.0.5
+/// 0.2.3-alpha.2 remains 0.2.3-alpha.2 --> pre-releases always get their own storage location since we have to assume breaking changes
+pub fn breaking_app_version<R: Runtime>(app_handle: &AppHandle<R>) -> String {
+    let app_version = app_handle.package_info().version.clone();
+
+    if app_version.pre.is_empty() == false {
+        return app_version.to_string();
+    }
+
+    match app_version.major {
+        0 => match app_version.minor {
+            0 => format!("0.0.{}", app_version.patch),
+            _ => format!("0.{}.x", app_version.minor),
+        },
+        _ => format!("{}.x.x", app_version.major),
+    }
+}
 
 impl FileSystem {
     pub fn new<R: Runtime>(
         app_handle: &AppHandle<R>,
         subfolder: &PathBuf,
     ) -> crate::Result<FileSystem> {
-        let app_data_dir = app_handle.path().app_data_dir()?.join(subfolder);
-        let app_config_dir = app_handle.path().app_config_dir()?.join(subfolder);
+        let version_folder = breaking_app_version(app_handle);
+
+        let app_data_dir = app_handle
+            .path()
+            .app_data_dir()?
+            .join(&version_folder)
+            .join(subfolder);
+        let app_config_dir = app_handle
+            .path()
+            .app_config_dir()?
+            .join(&version_folder)
+            .join(subfolder);
 
         fs::create_dir_all(app_data_dir.join("webhapps"))?;
         fs::create_dir_all(app_data_dir.join("icons"))?;

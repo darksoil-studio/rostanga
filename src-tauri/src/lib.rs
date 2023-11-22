@@ -7,6 +7,7 @@ use tauri::{WindowBuilder, WindowUrl};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_holochain::HolochainExt;
+use tauri_plugin_log::{LogTarget};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -17,7 +18,11 @@ pub fn run() {
         WebAppBundle::decode(include_bytes!("../../gather.webhapp")).unwrap(),
     );
 
-    tauri::Builder::default()
+    tauri::Builder::default().plugin(tauri_plugin_log::Builder::default().targets([
+            LogTarget::LogDir,
+            LogTarget::Stdout,
+            LogTarget::Webview,
+        ])
         .setup(|app| {
             let mut subfolder = PathBuf::from("holochain");
 

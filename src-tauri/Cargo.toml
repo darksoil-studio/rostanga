@@ -19,6 +19,7 @@ tauri-build = { version = "2.0.0-alpha", features = [] }
 [dependencies]
 tauri = { version = "2.0.0-alpha", features = [] }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
+tauri-plugin-log = "2.0.0-alpha"
 
 holochain_types = "0.2.3-rc.0"
 
