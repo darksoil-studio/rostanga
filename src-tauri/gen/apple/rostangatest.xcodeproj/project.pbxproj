@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,28 +13,32 @@
 		45D61FF7D70E531DC945F8E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C873BB3245E3BA0E4C96D11E /* Assets.xcassets */; };
 		7204EE2AF5741A3003C3DA3E /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 2B9F8869507C15BCF525CD2C /* assets */; };
 		8A7B36EC5ED3D2F6C2F03B4E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 628A3B4F918B115A7BD3D196 /* Security.framework */; };
-		9EAFB9F324B5AD0C0BF2E49D /* librostanga_test_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BE08B62DA8C290CA6FBF5C1D /* librostanga_test_lib.a */; };
 		9F3DFB254BBBE6595DEE99FC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72212B3E9D0E613E52EC6431 /* WebKit.framework */; };
 		A81DC7408C40DD6C0E844C64 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34D7C80F005BBE8D4C30EC0A /* UIKit.framework */; };
 		AC61CF27066515F12E231291 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4BBFCEC6167E3A7843F8B42 /* Metal.framework */; };
+		BD76F8A72B189B9A00CF0EF0 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BD76F8A62B189B7C00CF0EF0 /* libresolv.tbd */; };
+		BD76F8A92B189BAB00CF0EF0 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BD76F8A82B189BA200CF0EF0 /* libresolv.9.tbd */; };
+		C38084B9A40FCDA50A531D7C /* librostangatest_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F5781CB9822543DE090D16D /* librostangatest_lib.a */; };
 		E73FC1150CF3E3657DD7C21D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0FCC53EBA92006E05434C06 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		06C1C1FD7226DF7F84E6AE5A /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		06C1C1FD7226DF7F84E6AE5A /* main.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.rs; sourceTree = "<group>"; };
 		0A48949BC4F5BE0FBA2FABF9 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		0C2F82E0F5FDB1F5F3B181C4 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
-		25D1F006F3EE6DA91620A098 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
-		276455A8928383BDBEC9CE0D /* rostangatest_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = rostangatest_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25D1F006F3EE6DA91620A098 /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
+		276455A8928383BDBEC9CE0D /* rostangatest_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = rostangatest_iOS.app; path = rostangatest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B9F8869507C15BCF525CD2C /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		34D7C80F005BBE8D4C30EC0A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4E011F9592FAABEA21F8D830 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		4F5781CB9822543DE090D16D /* librostangatest_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = librostangatest_lib.a; sourceTree = "<group>"; };
 		628A3B4F918B115A7BD3D196 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		72212B3E9D0E613E52EC6431 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		9945E7F720EAA85E1662612E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A5300702D313F269F26D558C /* rostangatest_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = rostangatest_iOS.entitlements; sourceTree = "<group>"; };
 		ABADB755711D9B33FAB0D6E2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		BE08B62DA8C290CA6FBF5C1D /* librostanga_test_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = librostanga_test_lib.a; sourceTree = "<group>"; };
+		BD76F8A62B189B7C00CF0EF0 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		BD76F8A82B189BA200CF0EF0 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		C4BBFCEC6167E3A7843F8B42 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		C873BB3245E3BA0E4C96D11E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D0FCC53EBA92006E05434C06 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -45,11 +49,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EAFB9F324B5AD0C0BF2E49D /* librostanga_test_lib.a in Frameworks */,
+				C38084B9A40FCDA50A531D7C /* librostangatest_lib.a in Frameworks */,
 				165142FCA5FD5F0E68667EBC /* CoreGraphics.framework in Frameworks */,
+				BD76F8A92B189BAB00CF0EF0 /* libresolv.9.tbd in Frameworks */,
 				AC61CF27066515F12E231291 /* Metal.framework in Frameworks */,
 				1948ABE729CFE168998435B2 /* MetalKit.framework in Frameworks */,
 				E73FC1150CF3E3657DD7C21D /* QuartzCore.framework in Frameworks */,
+				BD76F8A72B189B9A00CF0EF0 /* libresolv.tbd in Frameworks */,
 				8A7B36EC5ED3D2F6C2F03B4E /* Security.framework in Frameworks */,
 				A81DC7408C40DD6C0E844C64 /* UIKit.framework in Frameworks */,
 				9F3DFB254BBBE6595DEE99FC /* WebKit.framework in Frameworks */,
@@ -103,8 +109,10 @@
 		A753BB14D5568ABBD543C911 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BD76F8A82B189BA200CF0EF0 /* libresolv.9.tbd */,
+				BD76F8A62B189B7C00CF0EF0 /* libresolv.tbd */,
 				ABADB755711D9B33FAB0D6E2 /* CoreGraphics.framework */,
-				BE08B62DA8C290CA6FBF5C1D /* librostanga_test_lib.a */,
+				4F5781CB9822543DE090D16D /* librostangatest_lib.a */,
 				C4BBFCEC6167E3A7843F8B42 /* Metal.framework */,
 				0A48949BC4F5BE0FBA2FABF9 /* MetalKit.framework */,
 				D0FCC53EBA92006E05434C06 /* QuartzCore.framework */,
@@ -226,8 +234,8 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/librostanga_test_lib.a",
-				"$(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/librostanga_test_lib.a",
+				"$(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/librostangatest_lib.a",
+				"$(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/librostangatest_lib.a",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -271,9 +279,27 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = studio.darksoil.rostangatest;
 				PRODUCT_NAME = rostangatest;
 				SDKROOT = iphoneos;
@@ -362,9 +388,27 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = studio.darksoil.rostangatest;
 				PRODUCT_NAME = rostangatest;
 				SDKROOT = iphoneos;

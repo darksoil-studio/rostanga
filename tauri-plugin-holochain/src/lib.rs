@@ -64,7 +64,7 @@ impl<R: Runtime> HolochainPlugin<R> {
             //     .expect("Cannot parse app_id"),
             // ),
         )
-        .min_inner_size(1000.0, 800.0)
+      //  .min_inner_size(1000.0, 800.0)
         // .initialization_script("console.error('hey');")
         .initialization_script(app_id_env_command.as_str())
         // .initialization_script("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")
@@ -215,9 +215,11 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
                         panic!("Could not connect to holochain");
                     }
                 };
+                println!("HYI7");
 
                 install_initial_apps_if_necessary(&mut admin_ws, &filesystem, config.initial_apps)
                     .await?;
+                println!("HYI8");
 
                 let r: crate::Result<(MetaLairClient, AdminWebsocket)> =
                     Ok((lair_client, admin_ws));

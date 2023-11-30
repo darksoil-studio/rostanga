@@ -5,13 +5,10 @@ use tauri::{
 };
 use holochain::{conductor::{Conductor, ConductorHandle, state::AppInterfaceId}, prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{BufWrite, BufRead}};
 
-use crate::{config, filesystem::FileSystem, PluginState};
+use crate::{config, filesystem::FileSystem};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "studio.darksoil.tauripluginholochain";
-
-#[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_holochain);
 
 // initializes the Kotlin or Swift plugin classes
 #[cfg(target_os = "android")]
@@ -37,7 +34,7 @@ pub async fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
 ) -> crate::Result<()> {
-    let handle = api.register_ios_plugin(init_plugin_holochain)?;
+  //  let handle = api.register_ios_plugin(init_plugin_holochain)?;
 
     Ok(())
 }
