@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.follows = "holochain/nixpkgs";
 
-    versions.url = "github:holochain/holochain?dir=versions/0_2";
+    versions.url = "github:holochain/holochain?dir=versions/weekly";
 
     holochain = {
       url = "github:holochain/holochain";
@@ -65,24 +65,9 @@
                 "x86_64-unknown-linux-musl"
                 "x86_64-apple-darwin"
                 "aarch64-linux-android"
+                "aarch64-apple-ios"
               ];
             };
-            androidPkgs = import pkgs.path {
-              inherit system;
-              config = {
-                android_sdk.accept_license = true;
-                allowUnfree = true;
-              };
-            };
-            android-sdk = inputs.android-nixpkgs.sdk.${system} (sdkPkgs: with sdkPkgs; [
-              cmdline-tools-latest
-              build-tools-30-0-3
-              platform-tools
-              ndk-bundle
-              platforms-android-33
-              emulator
-              system-images-android-33-google-apis-playstore-x86-64
-            ]);
 
           in {
             devShells.default = pkgs.mkShell {
@@ -92,7 +77,6 @@
                 nodejs-18_x
                 # more packages go here
                 cargo-nextest
-                sccache
               ])
               ++ ([
                 rust
@@ -103,12 +87,8 @@
                 openssl
                 # this is required for glib-networking
                 glib
-                android-sdk
                 gradle
                 jdk17
-              ])
-              ++ (with androidPkgs; [
-                android-studio
               ])
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
@@ -161,7 +141,6 @@
                 export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
                 export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
-                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis_playstore;x86_64" --force
 
                 export RUSTFLAGS+=" -C link-arg=$(gcc -print-libgcc-file-name)"
               '';
