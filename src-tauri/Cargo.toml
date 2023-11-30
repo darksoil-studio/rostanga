@@ -20,6 +20,9 @@ tauri-build = { version = "2.0.0-alpha", features = [] }
 tauri = { version = "2.0.0-alpha", features = [] }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-log = "2.0.0-alpha"
+tauri-plugin-notification = "2.0.0-alpha"
+
+hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/gather", branch = "main" }
 
 holochain_types = "0.2.3-rc.0"
 

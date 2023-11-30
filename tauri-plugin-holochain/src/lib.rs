@@ -39,24 +39,22 @@ pub struct HolochainRuntimeInfo {
     admin_port: u16,
 }
 
-// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.
-pub trait HolochainExt<R: Runtime> {
-    fn open_app(&self, app_id: String) -> Result<()>;
+/// Access to the push-notifications APIs.
+pub struct HolochainPlugin<R: Runtime> {
+    pub app_handle: AppHandle<R>,
+    pub filesystem: FileSystem,
+    pub runtime_info: HolochainRuntimeInfo,
+    pub lair_client: MetaLairClient,
 }
 
-impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
-    fn open_app(&self, app_id: String) -> Result<()> {
+impl<R: Runtime> HolochainPlugin<R> {
+    pub fn open_app(&self, app_id: String) -> Result<()> {
         println!("Opening app {}", app_id);
-        self.ipc_scope().configure_remote_access(
-            RemoteDomainAccessScope::new(format!("{}.localhost", app_id))
-                .add_window(app_id.clone())
-                .add_plugins(["holochain"]),
-        );
 
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
         WindowBuilder::new(
-            self,
+            &self.app_handle,
             app_id.clone(),
             WindowUrl::App(PathBuf::from("index.html")),
             // WindowUrl::External(
@@ -76,6 +74,17 @@ impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
 
         println!("Opened app {}", app_id);
         Ok(())
+    }
+}
+
+// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.
+pub trait HolochainExt<R: Runtime> {
+    fn holochain(&self) -> &HolochainPlugin<R>;
+}
+
+impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
+    fn holochain(&self) -> &HolochainPlugin<R> {
+        self.state::<HolochainPlugin<R>>().inner()
     }
 }
 
@@ -166,7 +175,7 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
             })
         })
         .setup(move |app: &AppHandle<R>, api| {
-            let fs = FileSystem::new(app, &config.subfolder)?;
+            let filesystem = FileSystem::new(app, &config.subfolder)?;
             let admin_port = portpicker::pick_unused_port().expect("No ports free");
             let app_port = portpicker::pick_unused_port().expect("No ports free");
             let http_server_port = portpicker::pick_unused_port().expect("No ports free");
@@ -182,7 +191,8 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
                     None
                 };
 
-                let lair_client = launch(&fs, admin_port, app_port, gossip_arc_clamping).await?;
+                let lair_client =
+                    launch(&filesystem, admin_port, app_port, gossip_arc_clamping).await?;
 
                 let mut retry_count = 0;
                 let mut admin_ws = loop {
@@ -206,7 +216,8 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
                     }
                 };
 
-                install_initial_apps_if_necessary(&mut admin_ws, &fs, config.initial_apps).await?;
+                install_initial_apps_if_necessary(&mut admin_ws, &filesystem, config.initial_apps)
+                    .await?;
 
                 let r: crate::Result<(MetaLairClient, AdminWebsocket)> =
                     Ok((lair_client, admin_ws));
@@ -216,15 +227,16 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
             http_server::start_http_server(app.clone(), http_server_port);
 
             // manage state so it is accessible by the commands
-            app.manage(lair_client);
-
-            app.manage(HolochainRuntimeInfo {
-                http_server_port,
-                app_port,
-                admin_port,
+            app.manage(HolochainPlugin::<R> {
+                app_handle: app.clone(),
+                lair_client,
+                runtime_info: HolochainRuntimeInfo {
+                    http_server_port,
+                    app_port,
+                    admin_port,
+                },
+                filesystem,
             });
-
-            app.manage(fs);
 
             Ok(())
         })
