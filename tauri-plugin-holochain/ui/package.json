@@ -1,0 +1,22 @@
+{
+  "name": "tauri-plugin-holochain-window",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@holochain/client": "^0.16.2",
+    "@msgpack/msgpack": "^3.0.0-beta2",
+    "@tauri-apps/api": "^2.0.0-alpha.12"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0-alpha.18",
+    "concurrently": "^8.2.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.4",
+    "vite-plugin-singlefile": "^0.13.5"
+  }
+}

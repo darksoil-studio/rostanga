@@ -8,17 +8,20 @@ use holochain::{
 use holochain_keystore::MetaLairClient;
 use tauri::{command, AppHandle, Runtime, State};
 
+use crate::HolochainExt;
+
 #[command]
 pub(crate) async fn sign_zome_call<R: Runtime>(
-    _app: AppHandle<R>,
-    lair_client: State<'_, MetaLairClient>,
+    app_handle: AppHandle<R>,
     zome_call_unsigned: ZomeCallUnsignedTauri,
 ) -> crate::Result<ZomeCall> {
     let zome_call_unsigned_converted: ZomeCallUnsigned = zome_call_unsigned.into();
 
-    let signed_zome_call =
-        sign_zome_call_with_client(zome_call_unsigned_converted, &lair_client.lair_client())
-            .await?;
+    let signed_zome_call = sign_zome_call_with_client(
+        zome_call_unsigned_converted,
+        &app_handle.holochain().lair_client.lair_client(),
+    )
+    .await?;
 
     Ok(signed_zome_call)
 }

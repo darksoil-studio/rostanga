@@ -24,14 +24,7 @@
       ]
     },
     "security": {
-      "csp": null,
-      "dangerousRemoteDomainIpcAccess": [
-        {
-          "domain": "gather.localhost",
-          "windows": ["gather"],
-          "plugins": ["holochain"]
-        }
-      ]
+      "csp": null
     },
     "windows": []
   },

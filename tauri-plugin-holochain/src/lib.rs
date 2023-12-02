@@ -53,24 +53,26 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
-        WindowBuilder::new(
+        let window = WindowBuilder::new(
             &self.app_handle,
             app_id.clone(),
-            WindowUrl::App(PathBuf::from("index.html")),
-            // WindowUrl::External(
-            //     url::Url::parse(
-            //         format!("http://{}.localhost:{}", app_id, state.http_server_port,).as_str(),
-            //     )
-            //     .expect("Cannot parse app_id"),
-            // ),
+            // WindowUrl::App(PathBuf::from("index.html")),
+            WindowUrl::External(
+                url::Url::parse(
+                    format!("http://localhost:{}", self.runtime_info.http_server_port).as_str(),
+                )
+                .expect("Cannot parse localhost url"),
+            ),
         )
         .min_inner_size(1000.0, 800.0)
-        // .initialization_script("console.error('hey');")
         .initialization_script(app_id_env_command.as_str())
-        // .initialization_script("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")
         .build()?;
-        // window.eval(launcher_env_command.as_str())?;
-        // window.eval("console.error(JSON.stringify(window.__HC_LAUNCHER_ENV__))")?;
+
+        self.app_handle.ipc_scope().configure_remote_access(
+            RemoteDomainAccessScope::new("localhost")
+                .add_window(window.label())
+                .add_plugin("holochain"),
+        );
 
         println!("Opened app {}", app_id);
         Ok(())
@@ -111,7 +113,6 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
             }
             // prepare our response
             tauri::async_runtime::block_on(async move {
-                let fs = app_handle.state::<FileSystem>();
                 // let mutex = app_handle.state::<Mutex<AdminWebsocket>>();
                 // let mut admin_ws = mutex.lock().await;
 
@@ -142,7 +143,7 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
                 }
 
                 let r = match read_asset(
-                    &fs,
+                    &app_handle.holochain().filesystem,
                     lowercase_app_id,
                     asset_file.as_os_str().to_str().unwrap().to_string(),
                 )

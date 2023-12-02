@@ -8,11 +8,15 @@ use tauri::{AppHandle, Manager, Runtime};
 use crate::{
     error::{Error, Result},
     filesystem::FileSystem,
-    HolochainRuntimeInfo,
+    HolochainExt, HolochainRuntimeInfo,
 };
 
 pub fn pong_iframe() -> String {
     format!("<html><head></head><body><script>window.onload = () => window.parent.postMessage('pong', '*') </script></body></html>")
+}
+
+pub fn window_html() -> String {
+    include_str!("../ui/dist/index.html").into()
 }
 
 pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u16) -> () {
@@ -55,34 +59,46 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                                 .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?);
                             return r;
                         }
+                        if host.starts_with("localhost") {
+                            let r: Result<Response<Body>> = Ok(Response::builder()
+                                .status(202)
+                                .header("content-type", "text/html")
+                                .body(window_html().into())
+                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?);
+                            return r;
+                        }
 
                         let split_host: Vec<String> =
                             host.split(".").into_iter().map(|s| s.to_string()).collect();
                         let lowercase_app_id = split_host.get(0).unwrap();
 
                         let file_name = request.uri().path();
-                        let fs = app_handle.state::<FileSystem>();
 
-                        let r: Result<Response<Body>> =
-                            match read_asset(&fs, &lowercase_app_id, file_name.to_string()).await {
-                                Ok(Some((asset, mime_type))) => {
-                                    let mut response_builder = Response::builder().status(202);
-                                    if let Some(mime_type) = mime_type {
-                                        response_builder =
-                                            response_builder.header("content-type", mime_type);
-                                    }
-
-                                    Ok(response_builder.body(asset.into()).unwrap())
+                        let r: Result<Response<Body>> = match read_asset(
+                            &app_handle.holochain().filesystem,
+                            &lowercase_app_id,
+                            file_name.to_string(),
+                        )
+                        .await
+                        {
+                            Ok(Some((asset, mime_type))) => {
+                                let mut response_builder = Response::builder().status(202);
+                                if let Some(mime_type) = mime_type {
+                                    response_builder =
+                                        response_builder.header("content-type", mime_type);
                                 }
-                                Ok(None) => Ok(Response::builder()
-                                    .status(404)
-                                    .body(vec![].into())
-                                    .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?),
-                                Err(e) => Ok(Response::builder()
-                                    .status(500)
-                                    .body(format!("{:?}", e).into())
-                                    .unwrap()),
-                            };
+
+                                Ok(response_builder.body(asset.into()).unwrap())
+                            }
+                            Ok(None) => Ok(Response::builder()
+                                .status(404)
+                                .body(vec![].into())
+                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?),
+                            Err(e) => Ok(Response::builder()
+                                .status(500)
+                                .body(format!("{:?}", e).into())
+                                .unwrap()),
+                        };
                         // admin_ws.close();
                         r
                     }
