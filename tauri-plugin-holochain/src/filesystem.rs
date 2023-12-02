@@ -50,13 +50,17 @@ impl FileSystem {
             .join(&version_folder)
             .join(subfolder);
 
-        fs::create_dir_all(app_data_dir.join("webhapps"))?;
-        fs::create_dir_all(app_data_dir.join("icons"))?;
+        let fs =    FileSystem {
+                app_data_dir,
+                app_config_dir,
+            };
 
-        Ok(FileSystem {
-            app_data_dir,
-            app_config_dir,
-        })
+            fs::create_dir_all(fs.webapp_store().path)?;
+            fs::create_dir_all(fs.icon_store().path)?;
+            fs::create_dir_all(fs.ui_store().path)?;
+            fs::create_dir_all(fs.keystore_path())?;
+
+        Ok(fs)
     }
 
     pub fn keystore_path(&self) -> PathBuf {

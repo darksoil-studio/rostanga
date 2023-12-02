@@ -8262,6 +8262,7 @@ dependencies = [
  "holochain_keystore",
  "holochain_types",
  "hyper",
+ "lair_keystore",
  "mime_guess",
  "mr_bundle",
  "portpicker",

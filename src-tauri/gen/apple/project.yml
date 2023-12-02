@@ -72,7 +72,7 @@ targets:
         EXCLUDED_ARCHS[sdk=iphoneos*]: arm64-sim x86_64
       groups: [app]
     dependencies:
-      - framework: librostanga_test_lib.a
+      - framework: librostangatest_lib.a
         embed: false
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
@@ -86,5 +86,5 @@ targets:
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
-          - $(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/librostanga_test_lib.a
-          - $(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/librostanga_test_lib.a
+          - $(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/librostangatest_lib.a
+          - $(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/librostangatest_lib.a

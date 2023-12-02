@@ -3,5 +3,5 @@
 
 fn main() {
     #[cfg(desktop)]
-    rostanga_test_lib::run();
+    rostangatest_lib::run();
 }

@@ -53,7 +53,7 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
-        let window = WindowBuilder::new(
+        let window_builder = WindowBuilder::new(
             &self.app_handle,
             app_id.clone(),
             // WindowUrl::App(PathBuf::from("index.html")),
@@ -64,9 +64,12 @@ impl<R: Runtime> HolochainPlugin<R> {
                 .expect("Cannot parse localhost url"),
             ),
         )
-        .min_inner_size(1000.0, 800.0)
-        .initialization_script(app_id_env_command.as_str())
-        .build()?;
+        .initialization_script(app_id_env_command.as_str());
+
+        if cfg!(desktop) {
+            window_builder.min_inner_size(1000.0, 800.0);
+        }
+        let window = window_builder.build()?;
 
         self.app_handle.ipc_scope().configure_remote_access(
             RemoteDomainAccessScope::new("localhost")
@@ -216,9 +219,11 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
                         panic!("Could not connect to holochain");
                     }
                 };
+                println!("HYI7");
 
                 install_initial_apps_if_necessary(&mut admin_ws, &filesystem, config.initial_apps)
                     .await?;
+                println!("HYI8");
 
                 let r: crate::Result<(MetaLairClient, AdminWebsocket)> =
                     Ok((lair_client, admin_ws));
