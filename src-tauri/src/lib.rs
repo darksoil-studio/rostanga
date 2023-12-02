@@ -19,7 +19,7 @@ pub fn run() {
     );
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::default().build())
+        .plugin(tauri_plugin_log::Builder::default().level(log::LevelFilter::Info).build())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let mut subfolder = PathBuf::from("holochain");
@@ -47,8 +47,8 @@ pub fn run() {
             app.handle().plugin(tauri_plugin_holochain::init(config))?;
             app.holochain().open_app(String::from("gather")).unwrap();
 
-            #[cfg(mobile)]
-            setup_notifications(app.handle())?;
+            //#[cfg(mobile)]
+            //setup_notifications(app.handle())?;
 
             Ok(())
         })

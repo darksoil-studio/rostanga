@@ -21,10 +21,11 @@ tauri = { version = "2.0.0-alpha", features = [] }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-log = "2.0.0-alpha"
 tauri-plugin-notification = "2.0.0-alpha"
+log = "0.4"
 
-hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/gather", branch = "main" }
+#hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/gather", branch = "main" }
 
-holochain_types = { version = "=0.2.3", features = ["sqlite-encrypted"] }
+holochain_types = { version = "=0.3.0-beta-dev.23", features = ["sqlite-encrypted"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
