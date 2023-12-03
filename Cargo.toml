@@ -12,8 +12,38 @@ lto = true
 
 [patch.crates-io]
 # dirs = { path = "./dirs-rs" }
+holochain_wasmer_common = { git = "https://github.com/guillemcordoba/holochain-wasmer", branch = "wasmer-4.2.4" }
+holochain_wasmer_host = { git = "https://github.com/guillemcordoba/holochain-wasmer", branch = "wasmer-4.2.4" }
 
-# tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
+kitsune_p2p_bootstrap = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_dht = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_dht_arc = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_fetch = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_mdns = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_proxy = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_transport_quic = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+kitsune_p2p_types = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_p2p = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+fixt = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+hdk = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+hdk_derive = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+hdi = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_integrity_types = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_zome_types = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_types = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_cascade = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_keystore = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_sqlite = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_state = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_trace = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_websocket = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
+holochain_util = { git = "https://github.com/guillemcordoba/holochain", branch = "wasmer4.2.4" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
 # tx5-go-pion-sys = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion-sys" }

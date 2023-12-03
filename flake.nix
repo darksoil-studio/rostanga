@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.follows = "holochain/nixpkgs";
 
-    versions.url = "github:holochain/holochain?dir=versions/0_2_rc";
+    versions.url = "github:holochain/holochain?dir=versions/0_2";
 
     holochain = {
       url = "github:holochain/holochain";
@@ -94,21 +94,21 @@
                 cargo-nextest
                 sccache
               ])
-              ++ ([
-                rust
-              ])
+              # ++ ([
+              #   rust
+              # ])
               ;
               
               buildInputs = (with pkgs; [
                 openssl
                 # this is required for glib-networking
                 glib
-                android-sdk
+                # android-sdk
                 gradle
                 jdk17
               ])
               ++ (with androidPkgs; [
-                android-studio
+                # android-studio
               ])
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
