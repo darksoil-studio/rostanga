@@ -10,10 +10,10 @@
   "dependencies": {
     "@holochain/client": "^0.16.2",
     "@msgpack/msgpack": "^3.0.0-beta2",
-    "@tauri-apps/api": "^2.0.0-alpha.12"
+    "@tauri-apps/api": "^2.0.0-alpha.13"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0-alpha.18",
+    "@tauri-apps/cli": "^2.0.0-alpha.20",
     "concurrently": "^8.2.1",
     "typescript": "^5.0.2",
     "vite": "^4.4.4",

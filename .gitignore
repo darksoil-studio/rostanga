@@ -2,6 +2,7 @@
 logs
 *.log
 *.webhapp
+*.happ
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

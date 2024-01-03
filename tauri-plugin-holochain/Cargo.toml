@@ -14,12 +14,20 @@ tauri = { version = "2.0.0-alpha", features = [
   "native-tls-vendored",
 ] }
 
-holochain = { version = "=0.2.3", default-features = false, features = ["sqlite-encrypted", "tx5"] }
-holochain_types = { version="=0.2.3", default-features=false, features = ["sqlite-encrypted"] }
-holochain_client = "=0.4.5"
+holochain = { version = "=0.2.4", default-features = false, features = [
+  "sqlite-encrypted",
+  "tx5",
+] }
+holochain_types = { version = "=0.2.4", default-features = false, features = [
+  "sqlite-encrypted",
+] }
+holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "main" }
 lair_keystore = "0.3.0"
-holochain_keystore = { version="=0.2.3", default-features=false, features = ["sqlite-encrypted"] }
-mr_bundle = "=0.2.3"
+holochain_keystore = { version = "=0.2.4", default-features = false, features = [
+  "sqlite-encrypted",
+] }
+mr_bundle = "=0.2.4"
+holochain_conductor_api = "=0.2.4"
 
 sys-locale = "0.3"
 app_dirs2 = "2.5.5"

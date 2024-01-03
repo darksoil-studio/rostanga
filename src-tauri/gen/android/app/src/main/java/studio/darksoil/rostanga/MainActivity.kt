@@ -1,3 +1,3 @@
-package studio.darksoil.rostangatest
+package studio.darksoil.rostanga
 
 class MainActivity : TauriActivity()

@@ -1,6 +1,7 @@
-use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration};
+use std::{collections::HashMap, path::PathBuf, time::Duration};
 
-use commands::install_web_app::install_web_app;
+use app_dirs2::AppDataType;
+use commands::install_web_app::{self, install_web_app};
 use filesystem::FileSystem;
 use http_server::{pong_iframe, read_asset};
 use hyper::StatusCode;
@@ -13,8 +14,8 @@ use tauri::{
     AppHandle, Manager, Runtime, WindowBuilder, WindowUrl,
 };
 
-use holochain::conductor::ConductorHandle;
-use holochain_client::AdminWebsocket;
+use holochain::prelude::{AppBundle, MembraneProof, NetworkSeed, RoleName};
+use holochain_client::{AdminWebsocket, AppAgentWebsocket, AppWebsocket};
 use holochain_keystore::MetaLairClient;
 use holochain_types::web_app::WebAppBundle;
 
@@ -31,6 +32,8 @@ mod http_server;
 mod launch;
 
 pub use error::{Error, Result};
+
+use crate::commands::install_web_app::install_app;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HolochainRuntimeInfo {
@@ -81,6 +84,73 @@ impl<R: Runtime> HolochainPlugin<R> {
         println!("Opened app {}", app_id);
         Ok(())
     }
+
+    pub async fn admin_websocket(&self) -> crate::Result<AdminWebsocket> {
+        let admin_ws =
+            AdminWebsocket::connect(format!("ws://localhost:{}", self.runtime_info.admin_port))
+                .await
+                .map_err(|err| crate::Error::WebsocketConnectionError(format!("{err:?}")))?;
+        Ok(admin_ws)
+    }
+
+    pub async fn app_websocket(&self) -> crate::Result<AppWebsocket> {
+        let app_ws =
+            AppWebsocket::connect(format!("ws://localhost:{}", self.runtime_info.app_port))
+                .await
+                .map_err(|err| crate::Error::WebsocketConnectionError(format!("{err:?}")))?;
+        Ok(app_ws)
+    }
+
+    pub async fn app_agent_websocket(&self, app_id: String) -> crate::Result<AppAgentWebsocket> {
+        let lair_client = self.lair_client.lair_client();
+
+        let app_ws = AppAgentWebsocket::connect(
+            format!("ws://localhost:{}", self.runtime_info.app_port),
+            app_id,
+            lair_client,
+        )
+        .await
+        .map_err(|err| crate::Error::WebsocketConnectionError(format!("{err:?}")))?;
+
+        Ok(app_ws)
+    }
+
+    pub async fn install_web_app(
+        &self,
+        app_id: String,
+        web_app_bundle: WebAppBundle,
+        membrane_proofs: HashMap<RoleName, MembraneProof>,
+        network_seed: Option<NetworkSeed>,
+    ) -> crate::Result<()> {
+        let mut admin_ws = self.admin_websocket().await?;
+        install_web_app(
+            &mut admin_ws,
+            &self.filesystem,
+            app_id,
+            web_app_bundle,
+            membrane_proofs,
+            network_seed,
+        )
+        .await
+    }
+
+    pub async fn install_app(
+        &self,
+        app_id: String,
+        app_bundle: AppBundle,
+        membrane_proofs: HashMap<RoleName, MembraneProof>,
+        network_seed: Option<NetworkSeed>,
+    ) -> crate::Result<()> {
+        let mut admin_ws = self.admin_websocket().await?;
+        install_app(
+            &mut admin_ws,
+            app_id,
+            app_bundle,
+            membrane_proofs,
+            network_seed,
+        )
+        .await
+    }
 }
 
 // Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.
@@ -94,13 +164,8 @@ impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
     }
 }
 
-pub struct TauriPluginHolochainConfig {
-    pub initial_apps: HashMap<String, WebAppBundle>,
-    pub subfolder: PathBuf,
-}
-
 /// Initializes the plugin.
-pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
     Builder::new("holochain")
         .invoke_handler(tauri::generate_handler![
             commands::sign_zome_call::sign_zome_call,
@@ -180,49 +245,32 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
             })
         })
         .setup(move |app: &AppHandle<R>, api| {
-            let filesystem = FileSystem::new(app, &config.subfolder)?;
+            let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
+            let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
+
+            let filesystem = FileSystem::new(app_data_dir, app_config_dir)?;
             let admin_port = portpicker::pick_unused_port().expect("No ports free");
             let app_port = portpicker::pick_unused_port().expect("No ports free");
             let http_server_port = portpicker::pick_unused_port().expect("No ports free");
+
             let (lair_client, admin_ws) = tauri::async_runtime::block_on(async {
                 #[cfg(mobile)]
                 mobile::init(app, api).await?;
                 #[cfg(desktop)]
                 desktop::init(app, api).await?;
 
-                let gossip_arc_clamping = if cfg!(mobile) {
-                    Some(String::from("empty"))
-                } else {
-                    None
-                };
-
-                let lair_client =
-                    launch(&filesystem, admin_port, app_port, gossip_arc_clamping).await?;
+                let lair_client = launch(&filesystem, admin_port, app_port).await?;
 
                 let mut retry_count = 0;
-                let mut admin_ws = loop {
-                    if let Ok(ws) =
-                        AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
-                            .await
-                            .map_err(|err| {
-                                crate::Error::AdminWebsocketError(format!(
-                                    "Could not connect to the admin interface: {}",
-                                    err
-                                ))
-                            })
-                    {
-                        break ws;
-                    }
-                    async_std::task::sleep(Duration::from_secs(1)).await;
-
-                    retry_count += 1;
-                    if retry_count == 80 {
-                        panic!("Could not connect to holochain");
-                    }
-                };
-
-                install_initial_apps_if_necessary(&mut admin_ws, &filesystem, config.initial_apps)
-                    .await?;
+                let mut admin_ws =
+                    AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
+                        .await
+                        .map_err(|err| {
+                            crate::Error::AdminWebsocketError(format!(
+                                "Could not connect to the admin interface: {}",
+                                err
+                            ))
+                        })?;
 
                 let r: crate::Result<(MetaLairClient, AdminWebsocket)> =
                     Ok((lair_client, admin_ws));
@@ -248,21 +296,30 @@ pub fn init<R: Runtime>(config: TauriPluginHolochainConfig) -> TauriPlugin<R> {
         .build()
 }
 
-async fn install_initial_apps_if_necessary(
-    admin_ws: &mut AdminWebsocket,
-    fs: &FileSystem,
-    initial_apps: HashMap<String, WebAppBundle>,
-) -> crate::Result<()> {
-    let apps = admin_ws
-        .list_apps(None)
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
+pub async fn launch_in_background(admin_port: u16, app_port: u16) -> Result<MetaLairClient> {
+    let app_data_dir = app_dirs2::app_root(
+        AppDataType::UserData,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir")
+    .join("holochain");
+    let app_config_dir = app_dirs2::app_root(
+        AppDataType::UserConfig,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir")
+    .join("holochain");
 
-    if apps.len() == 0 {
-        println!("Installing apps");
-        for (app_id, app_bundle) in initial_apps {
-            install_web_app(admin_ws, fs, app_bundle, app_id, HashMap::new(), None).await?;
-        }
-    }
-    Ok(())
+    let fs = FileSystem {
+        app_data_dir,
+        app_config_dir,
+    };
+
+    launch(&fs, admin_port, app_port).await
 }

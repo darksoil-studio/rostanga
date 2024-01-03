@@ -1,5 +1,5 @@
 {
-  "name": "rostanga-test",
+  "name": "rostanga",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,15 +12,17 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "prepare": "curl -L --output gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.4/gather.webhapp"
+    "prepare": "npm run prepare:gather && npm run prepare:notifications",
+    "prepare:notifications": "curl -L --output workdir/notifications_provider_fcm.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_provider_fcm.happ && curl -L --output workdir/notifications_fcm_recipient.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_fcm_recipient.happ",
+    "prepare:gather": "curl -L --output workdir/gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.4/gather.webhapp"
   },
   "dependencies": {
     "@holochain/client": "^0.16.2",
     "@msgpack/msgpack": "^3.0.0-beta2",
-    "@tauri-apps/api": "^2.0.0-alpha.12"
+    "@tauri-apps/api": "^2.0.0-alpha.13"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0-alpha.18",
+    "@tauri-apps/cli": "^2.0.0-alpha.20",
     "concurrently": "^8.2.1",
     "internal-ip": "^7.0.0",
     "typescript": "^5.0.2",

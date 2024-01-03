@@ -6,7 +6,7 @@ import {
   randomNonce,
 } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
-import { primitives } from "@tauri-apps/api";
+import { core } from "@tauri-apps/api";
 
 // Here we are trying to cover all platforms in different ways
 // Windows doesn't support requests of type happ://APPID
@@ -105,7 +105,7 @@ export interface RuntimeInfo {
 
 const appId = (window as any).__APP_ID__;
 
-primitives
+core
   .invoke<RuntimeInfo>("plugin:holochain|get_runtime_info", {})
   .then((runtimeInfo: RuntimeInfo) => {
     getIframeProtocol(runtimeInfo.http_server_port).then((protocol) => {
@@ -145,7 +145,7 @@ async function handleRequest(
     case "sign-zome-call":
       return signZomeCallTauri(request.zomeCall);
     case "get-locales":
-      return primitives.invoke("plugin:holochain|get_locales", {});
+      return core.invoke("plugin:holochain|get_locales", {});
   }
 }
 
@@ -195,10 +195,12 @@ export const signZomeCallTauri = async (request: CallZomeRequest) => {
     expires_at: getNonceExpiration(),
   };
 
-  const signedZomeCallTauri: CallZomeRequestSignedTauri =
-    await primitives.invoke("plugin:holochain|sign_zome_call", {
+  const signedZomeCallTauri: CallZomeRequestSignedTauri = await core.invoke(
+    "plugin:holochain|sign_zome_call",
+    {
       zomeCallUnsigned,
-    });
+    }
+  );
 
   const signedZomeCall: CallZomeRequestSigned = {
     provenance: Uint8Array.from(signedZomeCallTauri.provenance),

@@ -1,6 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["dirs-rs", "tauri-plugin-holochain", "src-tauri"]
+members = [
+  "tauri-plugin-holochain",
+  "tauri-plugin-holochain-notification",
+  "src-tauri",
+]
 
 # default to small, optimized release binaries
 [profile.release]
@@ -11,6 +15,9 @@ opt-level = "z"
 lto = true
 
 [patch.crates-io]
+swift-rs = { git = "https://github.com/guillemcordoba/swift-rs", branch = "main" }
+tao = { git = "https://github.com/guillemcordoba/tao", branch = "dev" }
+
 # dirs = { path = "./dirs-rs" }
 
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }

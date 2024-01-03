@@ -1,13 +1,20 @@
-use std::{io::Write, sync::Arc};
+use std::{sync::Arc, time::Duration};
 
 use holochain::{
     conductor::{state::AppInterfaceId, Conductor},
-    prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::{lair_keystore_api::{
-        dependencies::{sodoken::{BufRead, BufWrite, self}, one_err},
-        prelude::{LairServerConfig, LairServerConfigInner},
-    }, tokio::{self, io::AsyncWriteExt}},
+    prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::{
+        lair_keystore_api::{
+            dependencies::{
+                one_err,
+                sodoken::{self, BufRead, BufWrite},
+            },
+            prelude::{LairServerConfig, LairServerConfigInner},
+        },
+        tokio::{self, io::AsyncWriteExt},
+    },
 };
-use holochain_keystore::{ MetaLairClient, lair_keystore::spawn_lair_keystore, LairResult};
+use holochain_client::AdminWebsocket;
+use holochain_keystore::{lair_keystore::spawn_lair_keystore, LairResult, MetaLairClient};
 use lair_keystore::server::StandaloneServer;
 
 use crate::filesystem::FileSystem;
@@ -29,11 +36,18 @@ pub fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<BufRead> {
     }
 }
 
+fn override_gossip_arc_clamping() -> Option<String> {
+    if cfg!(mobile) {
+        Some(String::from("empty"))
+    } else {
+        None
+    }
+}
+
 pub async fn launch(
     fs: &FileSystem,
     admin_port: u16,
     app_port: u16,
-    override_gossip_arc_clamping: Option<String>,
 ) -> crate::Result<MetaLairClient> {
     let passphrase = vec_to_locked(vec![]).expect("Can't build passphrase");
     let fs = fs.clone();
@@ -51,7 +65,7 @@ pub async fn launch(
             &fs,
             admin_port,
             connection_url.into(),
-            override_gossip_arc_clamping,
+            override_gossip_arc_clamping(),
         );
 
         let conductor = Conductor::builder()
@@ -69,7 +83,35 @@ pub async fn launch(
             .expect("Can't add app interface");
     });
 
+    wait_until_admin_ws_is_available(admin_port).await?;
+
     Ok(lair_client)
+}
+
+pub async fn wait_until_admin_ws_is_available(admin_port: u16) -> crate::Result<()> {
+    let mut retry_count = 0;
+    let _admin_ws = loop {
+        if let Ok(ws) = AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
+            .await
+            .map_err(|err| {
+                crate::Error::AdminWebsocketError(format!(
+                    "Could not connect to the admin interface: {}",
+                    err
+                ))
+            })
+        {
+            break ws;
+        }
+        async_std::task::sleep(Duration::from_millis(200)).await;
+
+        retry_count += 1;
+        if retry_count == 200 {
+            return Err(crate::Error::AdminWebsocketError(
+                "Can't connect to holochain".to_string(),
+            ));
+        }
+    };
+    Ok(())
 }
 
 fn read_config(config_path: &std::path::Path) -> crate::Result<LairServerConfig> {
@@ -78,7 +120,8 @@ fn read_config(config_path: &std::path::Path) -> crate::Result<LairServerConfig>
     let config =
         LairServerConfigInner::from_bytes(&bytes).map_err(|err| crate::Error::LairError(err))?;
 
-    if let Err(e) = std::fs::read(config.clone().pid_file) { // Workaround xcode different containers
+    if let Err(e) = std::fs::read(config.clone().pid_file) {
+        // Workaround xcode different containers
         std::fs::remove_dir_all(config_path.parent().unwrap())?;
         std::fs::create_dir_all(config_path.parent().unwrap())?;
         return Err(e)?;

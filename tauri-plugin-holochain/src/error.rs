@@ -48,6 +48,9 @@ pub enum Error {
 
     #[error("Admin websocket error: {0}")]
     AdminWebsocketError(String),
+
+    #[error("Error connecting websocket: {0}")]
+    WebsocketConnectionError(String),
 }
 
 impl Serialize for Error {

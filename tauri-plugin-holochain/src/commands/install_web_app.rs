@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use holochain::prelude::{AppBundleSource, MembraneProof, NetworkSeed, RoleName};
+use holochain::prelude::{AppBundle, AppBundleSource, MembraneProof, NetworkSeed, RoleName};
 use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::web_app::WebAppBundle;
 
@@ -9,8 +9,30 @@ use crate::{filesystem::FileSystem, Result};
 pub async fn install_web_app(
     admin_ws: &mut AdminWebsocket,
     fs: &FileSystem,
-    bundle: WebAppBundle,
     app_id: String,
+    bundle: WebAppBundle,
+    membrane_proofs: HashMap<RoleName, MembraneProof>,
+    network_seed: Option<NetworkSeed>,
+) -> Result<()> {
+    install_app(
+        admin_ws,
+        app_id.clone(),
+        bundle.happ_bundle().await?,
+        membrane_proofs,
+        network_seed,
+    )
+    .await?;
+
+    fs.ui_store().extract_and_store_ui(&app_id, &bundle).await?;
+    println!("Installed app {}", app_id);
+
+    Ok(())
+}
+
+pub async fn install_app(
+    admin_ws: &mut AdminWebsocket,
+    app_id: String,
+    bundle: AppBundle,
     membrane_proofs: HashMap<RoleName, MembraneProof>,
     network_seed: Option<NetworkSeed>,
 ) -> Result<()> {
@@ -25,7 +47,7 @@ pub async fn install_web_app(
             agent_key,
             membrane_proofs,
             network_seed,
-            source: AppBundleSource::Bundle(bundle.happ_bundle().await?),
+            source: AppBundleSource::Bundle(bundle),
             installed_app_id: Some(app_id.clone()),
         })
         .await
@@ -35,7 +57,6 @@ pub async fn install_web_app(
         .await
         .map_err(|err| crate::Error::ConductorApiError(err))?;
 
-    fs.ui_store().extract_and_store_ui(&app_id, &bundle).await?;
     println!("Installed app {}", app_id);
 
     Ok(())
