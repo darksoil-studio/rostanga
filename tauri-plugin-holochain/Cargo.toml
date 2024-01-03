@@ -29,6 +29,8 @@ holochain_keystore = { version = "=0.2.4", default-features = false, features = 
 mr_bundle = "=0.2.4"
 holochain_conductor_api = "=0.2.4"
 
+hrl = { git = "https://github.com/holochain-open-dev/common", branch = "main" }
+
 sys-locale = "0.3"
 app_dirs2 = "2.5.5"
 async-std = "1.12"

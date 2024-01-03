@@ -51,6 +51,9 @@ pub enum Error {
 
     #[error("Error connecting websocket: {0}")]
     WebsocketConnectionError(String),
+
+    #[error("Error opening app: {0}")]
+    OpenAppError(String),
 }
 
 impl Serialize for Error {

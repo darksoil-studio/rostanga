@@ -183,7 +183,7 @@ pub fn init<R: Runtime>(
                         .expect("Failed to connect to holochain");
 
                     app_agent_websocket.on_signal(move |signal| {
-let Signal::App {  signal , ..} = signal else {
+                        let Signal::App {  signal , ..} = signal else {
                             return ();
                         };
 
@@ -193,8 +193,8 @@ let Signal::App {  signal , ..} = signal else {
                         };
 
                         let fcm_project_id = fcm_project_id.clone();
-                tauri::async_runtime::block_on(async move {
-                        let service_account_key = into(notify_agent_signal.service_account_key);
+                        tauri::async_runtime::block_on(async move {
+                            let service_account_key = into(notify_agent_signal.service_account_key);
 
                             let body = HrlBody::
                                 try_from(notify_agent_signal.notification).expect("Could not deserialize ");
@@ -207,14 +207,12 @@ let Signal::App {  signal , ..} = signal else {
                                 notify_agent_signal.token, 
                                 String::from(""),  str_body)
                                 .await.expect("Failed to send push notification")
-
-                    });
-
-                }).await.expect("Failed to set up on signal");
+                        });
+                    }).await.expect("Failed to set up on signal");
                 });
             }
 
-            #[cfg(mobile)]
+            // #[cfg(mobile)]
             {
                 let h = app.app_handle().clone();
 
@@ -228,6 +226,18 @@ let Signal::App {  signal , ..} = signal else {
                             "Notification action performed: {:?}",
                             notification_action_performed_payload
                         );
+
+                        let notification_data = notification_action_performed_payload.notification;
+
+                        let extras = notification_data.extras;
+
+                        if let Some(serde_json::Value::String(hrl)) = extras.get("hrl") {
+                            if let Ok(hrl) = Hrl::try_from(hrl) {
+                                
+                                h.holochain().open_hrl(hrl).expect("Could not open Hrl");
+                            }
+                            
+                        }
                     }
                 });
             }
@@ -241,20 +251,13 @@ let Signal::App {  signal , ..} = signal else {
                         tauri::async_runtime::block_on(async move {
                             log!("new-fcm-token {:?}", token);
 
-                            let lair_client = h.holochain().lair_client.lair_client();
-
-                            let app_ws = AppAgentWebsocket::connect(
-                                format!("ws://localhost:{}", h.holochain().runtime_info.app_port),
-                                notifications_recipient_app_id,
-                                lair_client,
-                            )
-                            .await
-                            .expect("Could not connect to holochain");
+                            let app_agent_ws = h.holochain()
+                                .app_agent_websocket(notifications_recipient_id);
 
                             let payload =
                                 ExternIO::encode(token).expect("Could not encode FCM token");
 
-                            app_ws
+                            app_agent_ws
                                 .call_zome_fn(
                                     RoleName::from("notifications"),
                                     ZomeName::from("notifications_provider_fcm_recipient"),

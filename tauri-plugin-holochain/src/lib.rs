@@ -1,8 +1,10 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use app_dirs2::AppDataType;
-use commands::install_web_app::{self, install_web_app};
+use commands::install_web_app::install_web_app;
 use filesystem::FileSystem;
+use holochain_conductor_api::CellInfo;
+use hrl::Hrl;
 use http_server::{pong_iframe, read_asset};
 use hyper::StatusCode;
 use launch::launch;
@@ -11,10 +13,13 @@ use tauri::{
     http::response,
     plugin::{Builder, TauriPlugin},
     scope::ipc::RemoteDomainAccessScope,
-    AppHandle, Manager, Runtime, WindowBuilder, WindowUrl,
+    AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl,
 };
 
-use holochain::prelude::{AppBundle, MembraneProof, NetworkSeed, RoleName};
+use holochain::prelude::{
+    holochain_serial, AnyDhtHash, AppBundle, DnaHash, MembraneProof, NetworkSeed, RoleName,
+    SerializedBytes,
+};
 use holochain_client::{AdminWebsocket, AppAgentWebsocket, AppWebsocket};
 use holochain_keystore::MetaLairClient;
 use holochain_types::web_app::WebAppBundle;
@@ -51,18 +56,19 @@ pub struct HolochainPlugin<R: Runtime> {
 }
 
 impl<R: Runtime> HolochainPlugin<R> {
-    pub fn open_app(&self, app_id: String) -> Result<()> {
-        println!("Opening app {}", app_id);
-
+    fn build_window(&self, app_id: String, query_args: Option<String>) -> Result<Window<R>> {
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
         let mut window_builder = WindowBuilder::new(
             &self.app_handle,
             app_id.clone(),
-            // WindowUrl::App(PathBuf::from("index.html")),
             WindowUrl::External(
                 url::Url::parse(
-                    format!("http://localhost:{}", self.runtime_info.http_server_port).as_str(),
+                    format!(
+                        "http://localhost:{}?{query_args:?}",
+                        self.runtime_info.http_server_port
+                    )
+                    .as_str(),
                 )
                 .expect("Cannot parse localhost url"),
             ),
@@ -81,7 +87,57 @@ impl<R: Runtime> HolochainPlugin<R> {
                 .add_plugin("holochain"),
         );
 
+        Ok(window)
+    }
+
+    pub fn open_app(&self, app_id: String) -> crate::Result<()> {
+        println!("Opening app {}", app_id);
+
+        let _window = self.build_window(app_id.clone(), None)?;
+
         println!("Opened app {}", app_id);
+        Ok(())
+    }
+
+    pub async fn open_hrl(&self, hrl: Hrl) -> crate::Result<()> {
+        println!("Opening hrl {:?}", hrl);
+
+        let mut admin_ws = self.admin_websocket().await?;
+
+        let apps = admin_ws.list_apps(None).await.expect("Failed to list apps");
+
+        let dna_hash = &hrl.dna_hash;
+
+        let app_info = apps
+            .into_iter()
+            .find_map(|app_info| {
+                app_info.cell_info.values().find_map(|cells| {
+                    cells.iter().find_map(|cell_info| match cell_info {
+                        CellInfo::Provisioned(cell) => match cell.cell_id.dna_hash().eq(dna_hash) {
+                            true => Some(app_info.clone()),
+                            false => None,
+                        },
+                        CellInfo::Cloned(cell) => match cell.cell_id.dna_hash().eq(dna_hash) {
+                            true => Some(app_info.clone()),
+                            false => None,
+                        },
+                        _ => None,
+                    })
+                })
+            })
+            .ok_or(crate::Error::OpenAppError(format!(
+                "Could not find any app for this hrl: {hrl:?}"
+            )))?;
+
+        let query_args = format!("hrl={hrl:?}");
+
+        let _window =
+            self.build_window(app_info.installed_app_id.clone(), Some(query_args.clone()))?;
+
+        println!(
+            "Opened app {} with query_args {query_args}",
+            app_info.installed_app_id
+        );
         Ok(())
     }
 

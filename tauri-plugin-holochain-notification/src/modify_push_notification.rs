@@ -13,14 +13,12 @@ use tauri_plugin_holochain::{launch_in_background, HolochainExt};
 
 use tauri_plugin_notification::*;
 
-use crate::HrlBody;
-
 #[tauri_plugin_notification::modify_push_notification]
 pub fn modify_push_notification(mut notification: NotificationData) -> NotificationData {
     tauri::async_runtime::block_on(async move {
         let body = notification.body.expect("EMPTY NOTIFICATION BODY");
 
-        let hrl_body: HrlBody =
+        let hrl_body: Hrl =
             serde_json::from_str(body.as_str()).expect("Malformed notification body");
 
         let admin_port = portpicker::pick_unused_port().expect("No ports free");
@@ -99,6 +97,15 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         let mut notification = NotificationData::default();
 
         notification.title = Some(pending_notification.title);
+        notification.body = Some(pending_notification.body);
+
+        let mut map: HashMap<String, serde_json::Value> = HashMap::new();
+        map.set(
+            String::from("hrl"),
+            serde_json::Value::String(pending_notification.hrl_to_navigate_to_on_click.hrl.into()),
+        );
+
+        notification.extra = map;
         //  {
 
         //     title,
