@@ -9800,7 +9800,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
- "tx5-core",
+ "tx5-core 0.0.5-alpha (registry+https://github.com/rust-lang/crates.io-index)",
  "tx5-go-pion",
  "tx5-signal",
  "url 2.5.0",
@@ -9811,6 +9811,23 @@ name = "tx5-core"
 version = "0.0.5-alpha"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83d75f1bd2a341413a006ca67060b117ad2a88c16510cdcb8a95ac7f71fb2d49"
+dependencies = [
+ "base64 0.13.1",
+ "dirs",
+ "once_cell",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "sha2 0.10.8",
+ "tempfile",
+ "tracing",
+ "url 2.5.0",
+]
+
+[[package]]
+name = "tx5-core"
+version = "0.0.5-alpha"
+source = "git+https://github.com/holochain/tx5?rev=6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae#6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae"
 dependencies = [
  "base64 0.13.1",
  "dirs",
@@ -9841,8 +9858,7 @@ dependencies = [
 [[package]]
 name = "tx5-go-pion-sys"
 version = "0.0.5-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf5d2ffe9dfcb9c458bd761927120df70ae7f00bc96c5c7515912947ac48dec9"
+source = "git+https://github.com/holochain/tx5?rev=6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae#6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae"
 dependencies = [
  "Inflector",
  "base64 0.13.1",
@@ -9853,7 +9869,7 @@ dependencies = [
  "ouroboros",
  "sha2 0.10.8",
  "tracing",
- "tx5-core",
+ "tx5-core 0.0.5-alpha (git+https://github.com/holochain/tx5?rev=6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae)",
  "zip",
 ]
 
@@ -9871,7 +9887,7 @@ dependencies = [
  "sha2 0.10.8",
  "tokio",
  "tracing",
- "tx5-core",
+ "tx5-core 0.0.5-alpha (registry+https://github.com/rust-lang/crates.io-index)",
  "zip",
 ]
 
@@ -9899,7 +9915,7 @@ dependencies = [
  "tokio-rustls 0.23.4",
  "tokio-tungstenite 0.18.0",
  "tracing",
- "tx5-core",
+ "tx5-core 0.0.5-alpha (registry+https://github.com/rust-lang/crates.io-index)",
  "url 2.5.0",
  "webpki-roots 0.23.1",
 ]
@@ -9921,7 +9937,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "tx5-core",
+ "tx5-core 0.0.5-alpha (registry+https://github.com/rust-lang/crates.io-index)",
  "warp",
 ]
 

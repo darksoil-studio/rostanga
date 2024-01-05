@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B7E24B186E912F9AB8624470"
-               BuildableName = "rostangatest.app"
-               BlueprintName = "rostangatest_iOS"
-               ReferencedContainer = "container:rostangatest.xcodeproj">
+               BlueprintIdentifier = "8A4A9241D19BF33E9AF46CFD"
+               BuildableName = "rostanga.app"
+               BlueprintName = "rostanga_iOS"
+               ReferencedContainer = "container:rostanga.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -30,10 +30,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B7E24B186E912F9AB8624470"
-            BuildableName = "rostangatest.app"
-            BlueprintName = "rostangatest_iOS"
-            ReferencedContainer = "container:rostangatest.xcodeproj">
+            BlueprintIdentifier = "8A4A9241D19BF33E9AF46CFD"
+            BuildableName = "rostanga.app"
+            BlueprintName = "rostanga_iOS"
+            ReferencedContainer = "container:rostanga.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <EnvironmentVariables>
@@ -65,10 +65,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B7E24B186E912F9AB8624470"
-            BuildableName = "rostangatest.app"
-            BlueprintName = "rostangatest_iOS"
-            ReferencedContainer = "container:rostangatest.xcodeproj">
+            BlueprintIdentifier = "8A4A9241D19BF33E9AF46CFD"
+            BuildableName = "rostanga.app"
+            BlueprintName = "rostanga_iOS"
+            ReferencedContainer = "container:rostanga.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -94,10 +94,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B7E24B186E912F9AB8624470"
-            BuildableName = "rostangatest.app"
-            BlueprintName = "rostangatest_iOS"
-            ReferencedContainer = "container:rostangatest.xcodeproj">
+            BlueprintIdentifier = "8A4A9241D19BF33E9AF46CFD"
+            BuildableName = "rostanga.app"
+            BlueprintName = "rostanga_iOS"
+            ReferencedContainer = "container:rostanga.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
