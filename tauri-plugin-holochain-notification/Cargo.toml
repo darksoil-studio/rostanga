@@ -14,20 +14,25 @@ tauri = { version = "2.0.0-alpha.18" }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
 
-holochain_types = { version = "=0.2.4", features = ["sqlite-encrypted"] }
-holochain_state = { version = "=0.2.4", features = ["sqlite-encrypted"] }
-holochain_conductor_api = { version = "=0.2.4" }
-holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "main" }
+holochain_types = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", features = [
+  "sqlite-encrypted",
+] }
+holochain_state = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", features = [
+  "sqlite-encrypted",
+] }
+holochain_conductor_api = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29" }
+holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
 
+hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
 
-hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "main" }
-hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-studio/notifications", branch = "main" }
+hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }
+hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }
 
 yup-oauth2 = "8"
 fcm_v1 = "0.3.0"
 
 portpicker = "0.1"
-serde = "1.0"
+serde = "1.0.193"
 serde_json = "1.0"
 thiserror = "1.0"
 

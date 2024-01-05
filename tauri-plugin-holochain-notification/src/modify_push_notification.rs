@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use hc_zome_trait_pending_notifications::{GetNotificationInput, Notification};
 use holochain_client::{sign_zome_call_with_client, AdminWebsocket, AppWebsocket};
 use holochain_conductor_api::CellInfo;
@@ -9,6 +11,7 @@ use holochain_types::{
     },
     web_app::WebAppBundle,
 };
+use hrl::Hrl;
 use tauri_plugin_holochain::{launch_in_background, HolochainExt};
 
 use tauri_plugin_notification::*;
@@ -60,7 +63,7 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
             .expect("No app with this dna hash");
 
         let input = GetNotificationInput {
-            notification_hash: AnyDhtHash::from(hrl_body.dht_hash),
+            notification_hash: AnyDhtHash::from(hrl_body.resource_hash),
             locale: String::from("sv"),
         };
         let (nonce, expires_at) = fresh_nonce(Timestamp::now()).expect("Could not create nonce");
@@ -100,7 +103,7 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         notification.body = Some(pending_notification.body);
 
         let mut map: HashMap<String, serde_json::Value> = HashMap::new();
-        map.set(
+        map.insert(
             String::from("hrl"),
             serde_json::Value::String(pending_notification.hrl_to_navigate_to_on_click.hrl.into()),
         );

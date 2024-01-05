@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830170300293",
+    "project_id": "rostanga-ce319",
+    "storage_bucket": "rostanga-ce319.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830170300293:android:58195fe081f8ad51c78eec",
+        "android_client_info": {
+          "package_name": "studio.darksoil.rostanga"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnsJx-t7LP3RFk__kN8aPQSfLXkFVpGoI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

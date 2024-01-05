@@ -7,6 +7,8 @@ use fcm_v1::{
     message::{Message, Notification},
     Client,
 };
+
+use hrl::Hrl;
 use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
 use holochain_client::AppInfo;
 use holochain_types::{
@@ -196,8 +198,8 @@ pub fn init<R: Runtime>(
                         tauri::async_runtime::block_on(async move {
                             let service_account_key = into(notify_agent_signal.service_account_key);
 
-                            let body = HrlBody::
-                                try_from(notify_agent_signal.notification).expect("Could not deserialize ");
+                            let body = Hrl::try_from(notify_agent_signal.notification)
+                                    .expect("Could not deserialize hrl");
 
                             let str_body = serde_json::to_string(&body).expect("Could not serialize body");
 
@@ -212,7 +214,7 @@ pub fn init<R: Runtime>(
                 });
             }
 
-            // #[cfg(mobile)]
+            #[cfg(mobile)]
             {
                 let h = app.app_handle().clone();
 
@@ -233,10 +235,8 @@ pub fn init<R: Runtime>(
 
                         if let Some(serde_json::Value::String(hrl)) = extras.get("hrl") {
                             if let Ok(hrl) = Hrl::try_from(hrl) {
-                                
                                 h.holochain().open_hrl(hrl).expect("Could not open Hrl");
                             }
-                            
                         }
                     }
                 });
