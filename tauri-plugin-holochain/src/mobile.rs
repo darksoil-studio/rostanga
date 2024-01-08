@@ -3,7 +3,6 @@ use tauri::{
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
-use holochain::{conductor::{Conductor, ConductorHandle, state::AppInterfaceId}, prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{BufWrite, BufRead}};
 
 use crate::{config, filesystem::FileSystem};
 
@@ -16,7 +15,7 @@ pub async fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
 ) -> crate::Result<()> {
-    let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ExamplePlugin")?;
+    // let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ExamplePlugin")?;
     let dir = app_dirs2::app_root(
         app_dirs2::AppDataType::UserCache,
         &app_dirs2::AppInfo {
@@ -34,7 +33,7 @@ pub async fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
 ) -> crate::Result<()> {
-  //  let handle = api.register_ios_plugin(init_plugin_holochain)?;
+    //  let handle = api.register_ios_plugin(init_plugin_holochain)?;
 
     Ok(())
 }

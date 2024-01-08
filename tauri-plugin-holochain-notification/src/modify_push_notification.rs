@@ -12,9 +12,12 @@ use holochain_types::{
     web_app::WebAppBundle,
 };
 use hrl::Hrl;
-use tauri_plugin_holochain::launch;
 
+use tauri_plugin_holochain::launch;
 use tauri_plugin_notification::*;
+
+use jni::objects::JClass;
+use jni::JNIEnv;
 
 #[tauri_plugin_notification::modify_push_notification]
 pub fn modify_push_notification(mut notification: NotificationData) -> NotificationData {

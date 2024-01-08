@@ -1,16 +1,15 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration};
 
 use fcm_v1::{
-    android::{AndroidConfig, AndroidNotification},
+    android::{AndroidConfig, },
     apns::ApnsConfig,
     auth::Authenticator,
-    message::{Message, Notification},
+    message::{Message, },
     Client,
 };
 
 use hrl::Hrl;
 use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
-use holochain_client::AppInfo;
 use holochain_types::{
     prelude::{AppBundle, ExternIO, FunctionName, RoleName, ZomeName},
     signal::Signal,
@@ -20,14 +19,16 @@ use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
 };
+
+#[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 
 pub use models::*;
 
-#[cfg(desktop)]
-mod desktop;
-#[cfg(mobile)]
-mod mobile;
+// #[cfg(desktop)]
+// mod desktop;
+// #[cfg(mobile)]
+// mod mobile;
 
 mod commands;
 mod error;
@@ -36,24 +37,24 @@ mod modify_push_notification;
 
 pub use error::{Error, Result};
 
-#[cfg(desktop)]
-use desktop::HolochainNotification;
-#[cfg(mobile)]
-use mobile::HolochainNotification;
+// #[cfg(desktop)]
+// use desktop::HolochainNotification;
+// #[cfg(mobile)]
+// use mobile::HolochainNotification;
 use tauri_plugin_holochain::HolochainExt;
 use yup_oauth2::ServiceAccountKey;
 
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
-pub trait HolochainNotificationExt<R: Runtime> {
-    fn holochain_notification(&self) -> &HolochainNotification<R>;
-}
+// pub trait HolochainNotificationExt<R: Runtime> {
+//     fn holochain_notification(&self) -> &HolochainNotification<R>;
+// }
 
-impl<R: Runtime, T: Manager<R>> crate::HolochainNotificationExt<R> for T {
-    fn holochain_notification(&self) -> &HolochainNotification<R> {
-        self.state::<HolochainNotification<R>>().inner()
-    }
-}
+// impl<R: Runtime, T: Manager<R>> crate::HolochainNotificationExt<R> for T {
+//     fn holochain_notification(&self) -> &HolochainNotification<R> {
+//         self.state::<HolochainNotification<R>>().inner()
+//     }
+// }
 
 async fn install_app_if_not_present<R: Runtime>(
     app_handle: &AppHandle<R>,
@@ -91,7 +92,7 @@ async fn install_initial_apps<R: Runtime>(
             .await?;
     }
 
-    #[cfg(mobile)]
+    // #[cfg(mobile)]
     {
         let recipient_app_bundle = AppBundle::decode(include_bytes!(
             "../../workdir/notifications_fcm_recipient.happ"
@@ -116,12 +117,12 @@ pub fn init<R: Runtime>(
 ) -> TauriPlugin<R> {
     Builder::new("holochain-notification")
         // .invoke_handler(tauri::generate_handler![commands::execute])
-        .setup(|app, api| {
-            #[cfg(mobile)]
-            let holochain_notification = mobile::init(app, api)?;
-            #[cfg(desktop)]
-            let holochain_notification = desktop::init(app, api)?;
-            app.manage(holochain_notification);
+        .setup(move |app, api| {
+            // #[cfg(mobile)]
+            // let holochain_notification = mobile::init(app, api)?;
+            // #[cfg(desktop)]
+            // let holochain_notification = desktop::init(app, api)?;
+            // app.manage(holochain_notification);
 
             let recipient_app_id = notifications_provider_recipient_app_id.clone();
             let provider_app_id = notifications_provider_app_id.clone();
@@ -131,6 +132,8 @@ pub fn init<R: Runtime>(
                     recipient_app_id).await
             })?;
 
+            let recipient_app_id = notifications_provider_recipient_app_id.clone();
+            
             #[cfg(desktop)]
             {
                 let args = app.cli().matches().expect("Can't get matches").args;
@@ -199,14 +202,16 @@ pub fn init<R: Runtime>(
                             let body = Hrl::try_from(notify_agent_signal.notification)
                                     .expect("Could not deserialize hrl");
 
-                            let str_body = serde_json::to_string(&body).expect("Could not serialize body");
+                            let str_body = serde_json::to_string(&body)
+                                .expect("Could not serialize body");
 
                             send_push_notification(
                                 fcm_project_id, 
                                 service_account_key, 
                                 notify_agent_signal.token, 
-                                String::from(""),  str_body)
-                                .await.expect("Failed to send push notification")
+                                String::from(""),  
+                                str_body
+                            ).await.expect("Failed to send push notification")
                         });
                     }).await.expect("Failed to set up on signal");
                 });
@@ -222,20 +227,23 @@ pub fn init<R: Runtime>(
                             tauri_plugin_notification::NotificationActionPerformedPayload,
                         >(event.payload())
                     {
-                        log!(
-                            "Notification action performed: {:?}",
-                            notification_action_performed_payload
-                        );
+                        let h = h.clone();
+                        tauri::async_runtime::block_on(async move {
+                            log::info!(
+                                "Notification action performed: {:?}",
+                                notification_action_performed_payload
+                            );
 
-                        let notification_data = notification_action_performed_payload.notification;
+                            let notification_data = notification_action_performed_payload.notification;
 
-                        let extras = notification_data.extras;
+                            let extra = notification_data.extra;
 
-                        if let Some(serde_json::Value::String(hrl)) = extras.get("hrl") {
-                            if let Ok(hrl) = Hrl::try_from(hrl) {
-                                h.holochain().open_hrl(hrl).expect("Could not open Hrl");
+                            if let Some(serde_json::Value::String(hrl)) = extra.get("hrl") {
+                                if let Ok(hrl) = Hrl::try_from(hrl.clone()) {
+                                    h.holochain().open_hrl(hrl).await.expect("Could not open Hrl");
+                                }
                             }
-                        }
+                        });
                     }
                 });
             }
@@ -245,18 +253,22 @@ pub fn init<R: Runtime>(
                 let h = app.app_handle().clone();
 
                 app.listen_global("new-fcm-token", move |event| {
+                    let recipient_app_id = recipient_app_id.clone();
+                    let h = h.clone();
                     if let Ok(token) = serde_json::from_str::<String>(event.payload()) {
                         tauri::async_runtime::block_on(async move {
-                            log!("new-fcm-token {:?}", token);
+                            log::info!("new-fcm-token {:?}", token);
 
-                            let app_agent_ws = h.holochain()
-                                .app_agent_websocket(notifications_recipient_id);
+                            let mut app_agent_ws = h.holochain()
+                                .app_agent_websocket(recipient_app_id)
+                                .await
+                                .expect("Failed to connect to holochain");
 
                             let payload =
                                 ExternIO::encode(token).expect("Could not encode FCM token");
 
                             app_agent_ws
-                                .call_zome_fn(
+                                .call_zome(
                                     RoleName::from("notifications"),
                                     ZomeName::from("notifications_provider_fcm_recipient"),
                                     FunctionName::from("register_new_fcm_token"),
@@ -300,7 +312,12 @@ async fn send_push_notification(
         .await
         .expect("Failed to read service account");
 
-    let client = Client::new(auth, fcm_project_id, false, Duration::from_secs(2));
+    let client = Client::new(
+        auth, 
+        fcm_project_id, 
+        false, 
+        Duration::from_secs(2)
+    );
 
     let mut message = Message::default();
 
