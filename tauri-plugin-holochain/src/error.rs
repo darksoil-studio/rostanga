@@ -1,9 +1,10 @@
-use holochain::{prelude::{SerializedBytesError, kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::one_err::OneErr}, conductor::error::ConductorError};
-use holochain_client::ConductorApiError;
-use serde::{ser::Serializer, Serialize};
-use mr_bundle::error::MrBundleError;
-use zip::result::ZipError;
 use app_dirs2::AppDirsError;
+use holochain::{conductor::error::ConductorError, prelude::SerializedBytesError};
+use holochain_client::ConductorApiError;
+use mr_bundle::error::MrBundleError;
+use one_err::OneErr;
+use serde::{ser::Serializer, Serialize};
+use zip::result::ZipError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -35,6 +36,9 @@ pub enum Error {
     TauriError(#[from] tauri::Error),
 
     #[error(transparent)]
+    UrlParseError(#[from] url::ParseError),
+
+    #[error(transparent)]
     ZipError(#[from] ZipError),
 
     #[error("ConductorApiError: `{0:?}`")]
@@ -45,6 +49,9 @@ pub enum Error {
 
     #[error("Filesystem error: {0}")]
     FilesystemError(String),
+
+    #[error("Sign zome call error: {0}")]
+    SignZomeCallError(String),
 
     #[error("Admin websocket error: {0}")]
     AdminWebsocketError(String),

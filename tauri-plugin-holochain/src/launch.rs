@@ -1,21 +1,22 @@
-use std::{sync::Arc, time::Duration};
-
-use holochain::{
-    conductor::{state::AppInterfaceId, Conductor},
-    prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::{
-        lair_keystore_api::{
-            dependencies::{
-                one_err,
-                sodoken::{self, BufRead, BufWrite},
-            },
-            prelude::{LairServerConfig, LairServerConfigInner},
-        },
-        tokio::{self, io::AsyncWriteExt},
-    },
+use std::{
+    path::PathBuf,
+    sync::{Arc, RwLock},
+    time::Duration,
 };
+
+use app_dirs2::AppDataType;
+use tokio::io::AsyncWriteExt;
+
+use holochain::conductor::{state::AppInterfaceId, Conductor};
 use holochain_client::AdminWebsocket;
 use holochain_keystore::{lair_keystore::spawn_lair_keystore, LairResult, MetaLairClient};
-use lair_keystore::server::StandaloneServer;
+use lair_keystore::{
+    dependencies::{
+        lair_keystore_api::prelude::{LairServerConfig, LairServerConfigInner},
+        sodoken::{BufRead, BufWrite},
+    },
+    server::StandaloneServer,
+};
 
 use crate::filesystem::FileSystem;
 
@@ -44,13 +45,52 @@ fn override_gossip_arc_clamping() -> Option<String> {
     }
 }
 
-pub async fn launch(
-    fs: &FileSystem,
-    admin_port: u16,
-    app_port: u16,
-) -> crate::Result<MetaLairClient> {
+#[derive(Clone)]
+pub struct RunningHolochainInfo {
+    pub app_port: u16,
+    pub admin_port: u16,
+    pub lair_client: MetaLairClient,
+    pub filesystem: FileSystem,
+}
+
+static RUNNING_HOLOCHAIN: RwLock<Option<RunningHolochainInfo>> = RwLock::new(None);
+
+pub async fn launch() -> crate::Result<RunningHolochainInfo> {
+    {
+        let read_lock = RUNNING_HOLOCHAIN
+            .read()
+            .expect("Could not read the running holochain lock");
+
+        if let Some(info) = read_lock.to_owned() {
+            return Ok(info);
+        }
+    }
+
+    let app_data_dir = app_dirs2::app_root(
+        AppDataType::UserData,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir")
+    .join("holochain");
+    let app_config_dir = app_dirs2::app_root(
+        AppDataType::UserConfig,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir")
+    .join("holochain");
+
+    let filesystem = FileSystem::new(app_data_dir, app_config_dir).await?;
+    let admin_port = portpicker::pick_unused_port().expect("No ports free");
+    let app_port = portpicker::pick_unused_port().expect("No ports free");
+
     let passphrase = vec_to_locked(vec![]).expect("Can't build passphrase");
-    let fs = fs.clone();
+    let fs = filesystem.clone();
 
     let lair_client = spawn_lair_keystore_in_proc(fs.keystore_config_path(), passphrase.clone())
         .await
@@ -85,7 +125,22 @@ pub async fn launch(
 
     wait_until_admin_ws_is_available(admin_port).await?;
 
-    Ok(lair_client)
+    log::info!("Connected to the admin websocket");
+
+    let mut lock = RUNNING_HOLOCHAIN
+        .write()
+        .expect("Could not acquire lock to write holochain info");
+
+    let info = RunningHolochainInfo {
+        admin_port,
+        app_port,
+        filesystem,
+        lair_client,
+    };
+
+    *lock = Some(info.clone());
+
+    Ok(info)
 }
 
 pub async fn wait_until_admin_ws_is_available(admin_port: u16) -> crate::Result<()> {
@@ -133,7 +188,7 @@ fn read_config(config_path: &std::path::Path) -> crate::Result<LairServerConfig>
 /// Spawn an in-process keystore backed by lair_keystore.
 pub async fn spawn_lair_keystore_in_proc(
     config_path: std::path::PathBuf,
-    passphrase: sodoken::BufRead,
+    passphrase: BufRead,
 ) -> LairResult<MetaLairClient> {
     let config = get_config(&config_path, passphrase.clone()).await?;
     let connection_url = config.connection_url.clone();
@@ -151,9 +206,9 @@ pub async fn spawn_lair_keystore_in_proc(
     spawn_lair_keystore(connection_url.into(), passphrase).await
 }
 
-async fn get_config(
+pub async fn get_config(
     config_path: &std::path::Path,
-    passphrase: sodoken::BufRead,
+    passphrase: BufRead,
 ) -> LairResult<LairServerConfig> {
     match read_config(config_path) {
         Ok(config) => Ok(config),
@@ -161,9 +216,9 @@ async fn get_config(
     }
 }
 
-async fn write_config(
+pub async fn write_config(
     config_path: &std::path::Path,
-    passphrase: sodoken::BufRead,
+    passphrase: BufRead,
 ) -> LairResult<LairServerConfig> {
     let lair_root = config_path
         .parent()

@@ -28,7 +28,7 @@ log = "0.4"
 serde = { version = "1.0.193", features = ["derive"] }
 serde_json = "1.0"
 
-holochain_types = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", features = [
+holochain_types = { version = "0.3.0-beta-dev", features = [
   "sqlite-encrypted",
 ] }
 holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }

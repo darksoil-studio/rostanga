@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use hc_zome_trait_pending_notifications::{GetNotificationInput, Notification};
 use holochain_client::{sign_zome_call_with_client, AdminWebsocket, AppWebsocket};
 use holochain_conductor_api::CellInfo;
-use holochain_state::nonce::fresh_nonce;
+use holochain_nonce::fresh_nonce;
 use holochain_types::{
     prelude::{
         AnyDhtHash, AnyDhtHashB64, AppBundle, DnaHash, DnaHashB64, ExternIO, FunctionName,
@@ -12,7 +12,7 @@ use holochain_types::{
     web_app::WebAppBundle,
 };
 use hrl::Hrl;
-use tauri_plugin_holochain::{launch_in_background, HolochainExt};
+use tauri_plugin_holochain::launch;
 
 use tauri_plugin_notification::*;
 
@@ -24,16 +24,12 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         let hrl_body: Hrl =
             serde_json::from_str(body.as_str()).expect("Malformed notification body");
 
-        let admin_port = portpicker::pick_unused_port().expect("No ports free");
-        let app_port = portpicker::pick_unused_port().expect("No ports free");
-        let meta_lair_client = launch_in_background(admin_port, app_port)
-            .await
-            .expect("Failed to launch holochain");
+        let info = launch().await.expect("Failed to launch holochain");
 
-        let mut admin_ws = AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
+        let mut admin_ws = AdminWebsocket::connect(format!("ws://localhost:{}", info.admin_port))
             .await
             .expect("Could not connect to admin interface");
-        let mut app_ws = AppWebsocket::connect(format!("ws://localhost:{}", app_port))
+        let mut app_ws = AppWebsocket::connect(format!("ws://localhost:{}", info.app_port))
             .await
             .expect("Could not connect to app interface");
 
@@ -80,7 +76,7 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         };
 
         let zome_call =
-            sign_zome_call_with_client(zome_call_unsigned, &meta_lair_client.lair_client())
+            sign_zome_call_with_client(zome_call_unsigned, &info.lair_client.lair_client())
                 .await
                 .expect("Could not sign zome call");
 

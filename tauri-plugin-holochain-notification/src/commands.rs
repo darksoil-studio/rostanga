@@ -1,13 +1,13 @@
-use tauri::{AppHandle, command, Runtime, State, Window};
+use tauri::{command, AppHandle, Runtime, State, Window};
 
-use crate::{MyState, Result};
+use crate::Result;
 
-#[command]
-pub(crate) async fn execute<R: Runtime>(
-  _app: AppHandle<R>,
-  _window: Window<R>,
-  state: State<'_, MyState>,
-) -> Result<String> {
-  state.0.lock().unwrap().insert("key".into(), "value".into());
-  Ok("success".to_string())
-}
+// #[command]
+// pub(crate) async fn execute<R: Runtime>(
+//   _app: AppHandle<R>,
+//   _window: Window<R>,
+//   state: State<'_, MyState>,
+// ) -> Result<String> {
+//   state.0.lock().unwrap().insert("key".into(), "value".into());
+//   Ok("success".to_string())
+// }

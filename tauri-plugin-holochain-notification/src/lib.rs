@@ -43,8 +43,6 @@ use mobile::HolochainNotification;
 use tauri_plugin_holochain::HolochainExt;
 use yup_oauth2::ServiceAccountKey;
 
-#[derive(Default)]
-struct MyState(Mutex<HashMap<String, String>>);
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
 pub trait HolochainNotificationExt<R: Runtime> {
@@ -117,7 +115,7 @@ pub fn init<R: Runtime>(
     notifications_provider_recipient_app_id: String,
 ) -> TauriPlugin<R> {
     Builder::new("holochain-notification")
-        .invoke_handler(tauri::generate_handler![commands::execute])
+        // .invoke_handler(tauri::generate_handler![commands::execute])
         .setup(|app, api| {
             #[cfg(mobile)]
             let holochain_notification = mobile::init(app, api)?;
@@ -271,8 +269,6 @@ pub fn init<R: Runtime>(
                 });
             }
 
-            // manage state so it is accessible by the commands
-            app.manage(MyState::default());
             Ok(())
         })
         .build()

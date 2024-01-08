@@ -1,11 +1,10 @@
 use holochain::{
     conductor::{api::ZomeCall, ConductorHandle},
-    prelude::{
-        kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        *,
-    },
+    prelude::{CapSecret, CellId, ExternIO, FunctionName, Timestamp, ZomeCallUnsigned, ZomeName},
 };
+use holochain_client::{sign_zome_call_with_client, AgentPubKey};
 use holochain_keystore::MetaLairClient;
+use serde::Deserialize;
 use tauri::{command, AppHandle, Runtime, State};
 
 use crate::HolochainExt;
@@ -21,44 +20,45 @@ pub(crate) async fn sign_zome_call<R: Runtime>(
         zome_call_unsigned_converted,
         &app_handle.holochain().lair_client.lair_client(),
     )
-    .await?;
+    .await
+    .map_err(|err| crate::Error::SignZomeCallError(err))?;
 
     Ok(signed_zome_call)
 }
 
-/// Signs an unsigned zome call with the given LairClient
-pub async fn sign_zome_call_with_client(
-    zome_call_unsigned: ZomeCallUnsigned,
-    client: &LairClient,
-) -> crate::Result<ZomeCall> {
-    // sign the zome call
-    let pub_key = zome_call_unsigned.provenance.clone();
-    let mut pub_key_2 = [0; 32];
-    pub_key_2.copy_from_slice(pub_key.get_raw_32());
+// /// Signs an unsigned zome call with the given LairClient
+// pub async fn sign_zome_call_with_client(
+//     zome_call_unsigned: ZomeCallUnsigned,
+//     client: &LairClient,
+// ) -> crate::Result<ZomeCall> {
+//     // sign the zome call
+//     let pub_key = zome_call_unsigned.provenance.clone();
+//     let mut pub_key_2 = [0; 32];
+//     pub_key_2.copy_from_slice(pub_key.get_raw_32());
 
-    let data_to_sign = zome_call_unsigned.data_to_sign()?;
+//     let data_to_sign = zome_call_unsigned.data_to_sign()?;
 
-    let sig = client
-        .sign_by_pub_key(pub_key_2.into(), None, data_to_sign)
-        .await
-        .map_err(|err| crate::Error::LairError(err))?;
+//     let sig = client
+//         .sign_by_pub_key(pub_key_2.into(), None, data_to_sign)
+//         .await
+//         .map_err(|err| crate::Error::LairError(err))?;
 
-    let signature = Signature(*sig.0);
+//     let signature = Signature(*sig.0);
 
-    let signed_zome_call = ZomeCall {
-        cell_id: zome_call_unsigned.cell_id,
-        zome_name: zome_call_unsigned.zome_name,
-        fn_name: zome_call_unsigned.fn_name,
-        payload: zome_call_unsigned.payload,
-        cap_secret: zome_call_unsigned.cap_secret,
-        provenance: zome_call_unsigned.provenance,
-        nonce: zome_call_unsigned.nonce,
-        expires_at: zome_call_unsigned.expires_at,
-        signature,
-    };
+//     let signed_zome_call = ZomeCall {
+//         cell_id: zome_call_unsigned.cell_id,
+//         zome_name: zome_call_unsigned.zome_name,
+//         fn_name: zome_call_unsigned.fn_name,
+//         payload: zome_call_unsigned.payload,
+//         cap_secret: zome_call_unsigned.cap_secret,
+//         provenance: zome_call_unsigned.provenance,
+//         nonce: zome_call_unsigned.nonce,
+//         expires_at: zome_call_unsigned.expires_at,
+//         signature,
+//     };
 
-    return Ok(signed_zome_call);
-}
+//     return Ok(signed_zome_call);
+// }
 
 /// The version of an unsigned zome call that's compatible with the serialization
 /// behavior of tauri's IPC channel (serde serialization)

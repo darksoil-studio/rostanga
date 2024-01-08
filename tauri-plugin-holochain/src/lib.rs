@@ -1,13 +1,8 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
-use app_dirs2::AppDataType;
-use commands::install_web_app::install_web_app;
-use filesystem::FileSystem;
-use holochain_conductor_api::CellInfo;
-use hrl::Hrl;
 use http_server::{pong_iframe, read_asset};
 use hyper::StatusCode;
-use launch::launch;
+use launch::RunningHolochainInfo;
 use serde::{Deserialize, Serialize};
 use tauri::{
     http::response,
@@ -21,8 +16,10 @@ use holochain::prelude::{
     SerializedBytes,
 };
 use holochain_client::{AdminWebsocket, AppAgentWebsocket, AppWebsocket};
+use holochain_conductor_api::CellInfo;
 use holochain_keystore::MetaLairClient;
 use holochain_types::web_app::WebAppBundle;
+use hrl::Hrl;
 
 #[cfg(desktop)]
 mod desktop;
@@ -36,9 +33,10 @@ mod filesystem;
 mod http_server;
 mod launch;
 
+use commands::install_web_app::{install_app, install_web_app};
 pub use error::{Error, Result};
-
-use crate::commands::install_web_app::install_app;
+use filesystem::FileSystem;
+pub use launch::launch;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HolochainRuntimeInfo {
@@ -178,16 +176,20 @@ impl<R: Runtime> HolochainPlugin<R> {
         membrane_proofs: HashMap<RoleName, MembraneProof>,
         network_seed: Option<NetworkSeed>,
     ) -> crate::Result<()> {
+        log::info!("Installing web-app {app_id}");
         let mut admin_ws = self.admin_websocket().await?;
         install_web_app(
             &mut admin_ws,
             &self.filesystem,
-            app_id,
+            app_id.clone(),
             web_app_bundle,
             membrane_proofs,
             network_seed,
         )
-        .await
+        .await?;
+        log::info!("Installed web-app {app_id}");
+
+        Ok(())
     }
 
     pub async fn install_app(
@@ -197,15 +199,19 @@ impl<R: Runtime> HolochainPlugin<R> {
         membrane_proofs: HashMap<RoleName, MembraneProof>,
         network_seed: Option<NetworkSeed>,
     ) -> crate::Result<()> {
+        log::info!("Installing app {app_id}");
         let mut admin_ws = self.admin_websocket().await?;
         install_app(
             &mut admin_ws,
-            app_id,
+            app_id.clone(),
             app_bundle,
             membrane_proofs,
             network_seed,
         )
-        .await
+        .await?;
+        log::info!("Installed app {app_id}");
+
+        Ok(())
     }
 }
 
@@ -304,34 +310,26 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
             let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
 
-            let filesystem = FileSystem::new(app_data_dir, app_config_dir)?;
-            let admin_port = portpicker::pick_unused_port().expect("No ports free");
-            let app_port = portpicker::pick_unused_port().expect("No ports free");
             let http_server_port = portpicker::pick_unused_port().expect("No ports free");
 
-            let (lair_client, admin_ws) = tauri::async_runtime::block_on(async {
+            let RunningHolochainInfo {
+                admin_port,
+                app_port,
+                lair_client,
+                filesystem,
+            } = tauri::async_runtime::block_on(async {
                 #[cfg(mobile)]
                 mobile::init(app, api).await?;
                 #[cfg(desktop)]
                 desktop::init(app, api).await?;
 
-                let lair_client = launch(&filesystem, admin_port, app_port).await?;
+                let info = launch().await?;
 
-                let mut retry_count = 0;
-                let mut admin_ws =
-                    AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
-                        .await
-                        .map_err(|err| {
-                            crate::Error::AdminWebsocketError(format!(
-                                "Could not connect to the admin interface: {}",
-                                err
-                            ))
-                        })?;
-
-                let r: crate::Result<(MetaLairClient, AdminWebsocket)> =
-                    Ok((lair_client, admin_ws));
+                let r: crate::Result<RunningHolochainInfo> = Ok(info);
                 r
             })?;
+
+            log::info!("Starting http server at port {http_server_port:?}");
 
             http_server::start_http_server(app.clone(), http_server_port);
 
@@ -350,32 +348,4 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             Ok(())
         })
         .build()
-}
-
-pub async fn launch_in_background(admin_port: u16, app_port: u16) -> Result<MetaLairClient> {
-    let app_data_dir = app_dirs2::app_root(
-        AppDataType::UserData,
-        &app_dirs2::AppInfo {
-            name: "studio.darksoil.rostanga",
-            author: "darksoil.studio",
-        },
-    )
-    .expect("Can't get app dir")
-    .join("holochain");
-    let app_config_dir = app_dirs2::app_root(
-        AppDataType::UserConfig,
-        &app_dirs2::AppInfo {
-            name: "studio.darksoil.rostanga",
-            author: "darksoil.studio",
-        },
-    )
-    .expect("Can't get app dir")
-    .join("holochain");
-
-    let fs = FileSystem {
-        app_data_dir,
-        app_config_dir,
-    };
-
-    launch(&fs, admin_port, app_port).await
 }

@@ -14,23 +14,26 @@ tauri = { version = "2.0.0-alpha", features = [
   "native-tls-vendored",
 ] }
 
-mr_bundle = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29" }
-holochain = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", default-features = false, features = [
+mr_bundle = "0.3.0-beta-dev"
+holochain = { version = "0.3.0-beta-dev", default-features = false, features = [
   "sqlite-encrypted",
   "tx5",
 ] }
-holochain_types = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", default-features = false, features = [
+holochain_types = { version = "0.3.0-beta-dev", default-features = false, features = [
   "sqlite-encrypted",
 ] }
 holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
 lair_keystore = "0.3.0"
-holochain_keystore = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29", default-features = false, features = [
+holochain_keystore = { version = "0.3.0-beta-dev", default-features = false, features = [
   "sqlite-encrypted",
 ] }
-holochain_conductor_api = { git = "https://github.com/holochain/holochain", rev = "holochain-0.3.0-beta-dev.29" }
+holochain_conductor_api = { version = "0.3.0-beta-dev" }
 
 hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
 
+log = "0.4"
+symlink = "0.1.0"
+nanoid = "0.4.0"
 sys-locale = "0.3"
 app_dirs2 = "2.5.5"
 async-std = "1.12"
@@ -44,9 +47,10 @@ portpicker = "0.1"
 mime_guess = "2.0.4"
 hyper = { version = "0.14.27", features = ["full"] }
 tls-listener = "0.8"
-tokio-rustls = "0.24"
 futures = "0.3"
 either = "*"
+tokio = "1"
+one_err = "0"
 
 [build-dependencies]
 tauri-build = { version = "2.0.0-alpha" }

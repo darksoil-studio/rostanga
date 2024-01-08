@@ -17,15 +17,27 @@ lto = true
 [patch.crates-io]
 swift-rs = { git = "https://github.com/guillemcordoba/swift-rs", branch = "main" }
 tao = { git = "https://github.com/guillemcordoba/tao", branch = "dev" }
-
 # dirs = { path = "./dirs-rs" }
 
+holochain_wasmer_host = { git = "https://github.com/holochain/holochain-wasmer", branch = "refactor/reinstate-module-cache" }
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
-tx5-go-pion-sys = { git ="https://github.com/holochain/tx5", rev = "6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae" }
+tx5-go-pion-sys = { git = "https://github.com/holochain/tx5", rev = "6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae" }
+
 # tx5-go-pion = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion" }
 # tx5-signal = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-signal" }
 # tx5-signal-srv = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-signal-srv" }
 # tx5-demo = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-demo" }
 # tx5-go-pion-turn = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion-turn" }
+
+holochain = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_nonce = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_types = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_zome_types = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_integrity_types = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_keystore = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holo_hash = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+kitsune_p2p_timestamp = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+holochain_conductor_api = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }
+mr_bundle = { git = "https://github.com/holochain/holochain", branch = "fix/wasmer-cache-latency" }

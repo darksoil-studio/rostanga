@@ -5,9 +5,8 @@ use holochain::{
         config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
         interface::InterfaceDriver,
     },
-    prelude::{
-        kitsune_p2p::dependencies::kitsune_p2p_types::config::tuning_params_struct::KitsuneP2pTuningParams,
-        KitsuneP2pConfig, TransportConfig,
+    prelude::dependencies::kitsune_p2p_types::config::{
+        tuning_params_struct::KitsuneP2pTuningParams, KitsuneP2pConfig, TransportConfig,
     },
 };
 
@@ -20,7 +19,7 @@ pub fn conductor_config(
     override_gossip_arc_clamping: Option<String>,
 ) -> ConductorConfig {
     let mut config = ConductorConfig::default();
-    config.environment_path = fs.conductor_path().into();
+    config.data_root_path = Some(fs.conductor_dir().into());
     config.keystore = KeystoreConfig::LairServer { connection_url };
 
     let mut network_config = KitsuneP2pConfig::default();

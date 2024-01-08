@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use holochain_client::AppAgentWebsocket;
 use holochain_types::web_app::WebAppBundle;
 use serde_json::Value;
 use tauri::{AppHandle, Runtime, WindowBuilder, WindowUrl};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
-use tauri_plugin_holochain::{launch_in_background, HolochainExt};
+use tauri_plugin_holochain::HolochainExt;
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_notification::*;
 
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
@@ -16,12 +16,20 @@ const FCM_PROJECT_ID: &'static str = "studio.darksoil.rostanga";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
-                .build(),
-        )
+    let mut builder = tauri::Builder::default().plugin(
+        tauri_plugin_log::Builder::default()
+            .level(log::LevelFilter::Info)
+            .clear_targets()
+            .target(Target::new(TargetKind::LogDir { file_name: None }))
+            .build(),
+    );
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_cli::init());
+    }
+
+    builder
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         .plugin(tauri_plugin_holochain_notification::init(
@@ -47,8 +55,8 @@ pub fn run() {
             )?;
             app.holochain().open_app(String::from("gather")).unwrap();
 
-            //#[cfg(mobile)]
-            //setup_notifications(app.handle())?;
+            #[cfg(mobile)]
+            setup_notifications(app.handle())?;
 
             Ok(())
         })
