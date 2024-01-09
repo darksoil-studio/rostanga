@@ -1769,9 +1769,8 @@ dependencies = [
 [[package]]
 name = "dirs"
 version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44c45a9d03d6676652bcb5e724c7e988de1acad23a711b5217ab9cbecbec2225"
 dependencies = [
+ "app_dirs2",
  "dirs-sys 0.4.1",
 ]
 
@@ -3969,7 +3968,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.51.1",
+ "windows-core 0.52.0",
 ]
 
 [[package]]
@@ -6986,6 +6985,7 @@ dependencies = [
  "tauri-plugin-holochain-notification",
  "tauri-plugin-log",
  "tauri-plugin-notification",
+ "wry",
 ]
 
 [[package]]
@@ -10467,9 +10467,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.35.2"
+version = "0.35.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3016c47c9b6f7029a9da7cd48af8352327226bba0e955f3c92e2966651365a9"
+checksum = "a2ad1bc1d6925e0cde1bd01830b0073cd0448e21357e843b9ede33b6d81c7423"
 dependencies = [
  "base64 0.21.5",
  "block",

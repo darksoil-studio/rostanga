@@ -12,10 +12,12 @@ use tauri::{
 };
 
 use holochain::prelude::{
-    holochain_serial, AnyDhtHash, AppBundle, DnaHash, MembraneProof, NetworkSeed, RoleName,
-    SerializedBytes,
+    holochain_serial, AnyDhtHash, AppBundle, DnaHash, ExternIO, MembraneProof, NetworkSeed,
+    RoleName, SerializedBytes,
 };
-use holochain_client::{AdminWebsocket, AppAgentWebsocket, AppWebsocket};
+use holochain_client::{
+    AdminWebsocket, AppAgentWebsocket, AppInfo, AppWebsocket, ConductorApiError,
+};
 use holochain_conductor_api::CellInfo;
 use holochain_keystore::MetaLairClient;
 use holochain_types::web_app::WebAppBundle;
@@ -57,13 +59,15 @@ impl<R: Runtime> HolochainPlugin<R> {
     fn build_window(&self, app_id: String, query_args: Option<String>) -> Result<Window<R>> {
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
+        let query_args = query_args.unwrap_or_default();
+
         let mut window_builder = WindowBuilder::new(
             &self.app_handle,
             app_id.clone(),
             WindowUrl::External(
                 url::Url::parse(
                     format!(
-                        "http://localhost:{}?{query_args:?}",
+                        "http://localhost:{}?{query_args}",
                         self.runtime_info.http_server_port
                     )
                     .as_str(),
@@ -169,16 +173,84 @@ impl<R: Runtime> HolochainPlugin<R> {
         Ok(app_ws)
     }
 
+    async fn workaround_join_failed(&self, app_info: AppInfo) -> crate::Result<()> {
+        let app_id = app_info.installed_app_id;
+        let mut app_agent_websocket = self.app_agent_websocket(app_id.clone()).await?;
+        let mut admin_websocket = self.admin_websocket().await?;
+
+        for (role, cells) in app_info.cell_info {
+            for cell in cells {
+                match cell {
+                    CellInfo::Provisioned(cell_info) => {
+                        let dna_def = admin_websocket
+                            .get_dna_definition(cell_info.cell_id.dna_hash().clone())
+                            .await
+                            .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+                        log::info!("Called dna def {dna_def:?}");
+
+                        if let Some((zome_name, _)) = dna_def.integrity_zomes.first() {
+                            let mut result = app_agent_websocket
+                                .call_zome(
+                                    role.clone(),
+                                    zome_name.clone(),
+                                    "entry_defs".into(),
+                                    ExternIO::encode(()).unwrap(),
+                                )
+                                .await;
+                            log::info!("Called entry_defs {result:?}");
+
+                            fn is_pending_join_error(
+                                result: &std::result::Result<ExternIO, ConductorApiError>,
+                            ) -> bool {
+                                if let Err(err) = result {
+                                    !format!("{err:?}").contains(
+                                        "Attempted to call a zome function that doesn't exist",
+                                    )
+                                } else {
+                                    false
+                                }
+                            }
+
+                            while is_pending_join_error(&result) {
+                                log::error!("Error calling entry_defs {result:?}");
+                                std::thread::sleep(std::time::Duration::from_millis(400));
+                                admin_websocket
+                                    .disable_app(app_id.clone())
+                                    .await
+                                    .map_err(|err| crate::Error::ConductorApiError(err))?;
+                                admin_websocket
+                                    .enable_app(app_id.clone())
+                                    .await
+                                    .map_err(|err| crate::Error::ConductorApiError(err))?;
+                                result = app_agent_websocket
+                                    .call_zome(
+                                        role.clone(),
+                                        zome_name.clone(),
+                                        "entry_defs".into(),
+                                        ExternIO::encode(()).unwrap(),
+                                    )
+                                    .await;
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn install_web_app(
         &self,
         app_id: String,
         web_app_bundle: WebAppBundle,
         membrane_proofs: HashMap<RoleName, MembraneProof>,
         network_seed: Option<NetworkSeed>,
-    ) -> crate::Result<()> {
-        log::info!("Installing web-app {app_id}");
+    ) -> crate::Result<AppInfo> {
         let mut admin_ws = self.admin_websocket().await?;
-        install_web_app(
+        let app_info = install_web_app(
             &mut admin_ws,
             &self.filesystem,
             app_id.clone(),
@@ -187,9 +259,10 @@ impl<R: Runtime> HolochainPlugin<R> {
             network_seed,
         )
         .await?;
-        log::info!("Installed web-app {app_id}");
 
-        Ok(())
+        self.workaround_join_failed(app_info.clone()).await?;
+
+        Ok(app_info)
     }
 
     pub async fn install_app(
@@ -198,10 +271,9 @@ impl<R: Runtime> HolochainPlugin<R> {
         app_bundle: AppBundle,
         membrane_proofs: HashMap<RoleName, MembraneProof>,
         network_seed: Option<NetworkSeed>,
-    ) -> crate::Result<()> {
-        log::info!("Installing app {app_id}");
+    ) -> crate::Result<AppInfo> {
         let mut admin_ws = self.admin_websocket().await?;
-        install_app(
+        let app_info = install_app(
             &mut admin_ws,
             app_id.clone(),
             app_bundle,
@@ -209,9 +281,10 @@ impl<R: Runtime> HolochainPlugin<R> {
             network_seed,
         )
         .await?;
-        log::info!("Installed app {app_id}");
 
-        Ok(())
+        self.workaround_join_failed(app_info.clone()).await?;
+
+        Ok(app_info)
     }
 }
 

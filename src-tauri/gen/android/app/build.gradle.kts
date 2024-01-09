@@ -15,7 +15,7 @@ android {
     compileSdk = 33
     namespace = "studio.darksoil.rostanga"
     defaultConfig {
-        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        manifestPlaceholders["usesCleartextTraffic"] = "true"
         applicationId = "studio.darksoil.rostanga"
         minSdk = 24
         targetSdk = 33
@@ -38,7 +38,8 @@ android {
             isDebuggable = true
             isJniDebuggable = true
             isMinifyEnabled = false
-            packaging {                jniLibs.keepDebugSymbols.add("*/arm64-v8a/*.so")
+            packaging {                
+                jniLibs.keepDebugSymbols.add("*/arm64-v8a/*.so")
                 jniLibs.keepDebugSymbols.add("*/armeabi-v7a/*.so")
                 jniLibs.keepDebugSymbols.add("*/x86/*.so")
                 jniLibs.keepDebugSymbols.add("*/x86_64/*.so")
@@ -47,7 +48,9 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(
-                *fileTree(".") { include("**/*.pro") }
+                *fileTree(".") { 
+                    include("**/*.pro") 
+                }
                     .plus(getDefaultProguardFile("proguard-android-optimize.txt"))
                     .toList().toTypedArray()
             )

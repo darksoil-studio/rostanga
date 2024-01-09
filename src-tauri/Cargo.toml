@@ -23,6 +23,8 @@ tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notifi
 tauri-plugin-log = "2.0.0-alpha"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
 
+wry = "=0.35.1"
+
 anyhow = "1"
 log = "0.4"
 serde = { version = "1.0.193", features = ["derive"] }

@@ -3,9 +3,8 @@ use holochain::{
     prelude::{CapSecret, CellId, ExternIO, FunctionName, Timestamp, ZomeCallUnsigned, ZomeName},
 };
 use holochain_client::{sign_zome_call_with_client, AgentPubKey};
-use holochain_keystore::MetaLairClient;
 use serde::Deserialize;
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{command, AppHandle, Runtime};
 
 use crate::HolochainExt;
 

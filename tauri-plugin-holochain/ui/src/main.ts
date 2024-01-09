@@ -155,7 +155,9 @@ function buildFrame(
   appId: string
 ) {
   const iframe = document.createElement("iframe");
-  iframe.src = appOrigin(iframeProtocol, appId, runtimeInfo.http_server_port);
+  const origin = appOrigin(iframeProtocol, appId, runtimeInfo.http_server_port);
+
+  iframe.src = `${origin}${window.location.search}`;
   iframe.frameBorder = "0";
   document.body.appendChild(iframe);
 }
