@@ -42,3 +42,4 @@ holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "fix
 kitsune_p2p_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "fix/wasmer-cache-latency" }
 holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "fix/wasmer-cache-latency" }
 mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "fix/wasmer-cache-latency" }
+lair_keystore_api = { git = "https://github.com/guillemcordoba/lair", branch = "main" }

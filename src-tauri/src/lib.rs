@@ -19,8 +19,8 @@ pub fn run() {
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Info)
-            .clear_targets()
-            .target(Target::new(TargetKind::LogDir { file_name: None }))
+            //.clear_targets()
+            //.target(Target::new(TargetKind::LogDir { file_name: None }))
             .build(),
     );
 

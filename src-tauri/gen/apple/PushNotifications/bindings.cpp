@@ -1,8 +1,8 @@
 //
 //  bindings.cpp
-//  PushNotificationsExtension
+//  PushNotifications
 //
-//  Created by Guillem Córdoba on 12/12/23.
+//  Created by Guillem Córdoba on 9/1/24.
 //
 
 #include <stdio.h>

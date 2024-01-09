@@ -14,8 +14,14 @@
 		8761568A8A2F6D20269B85F9 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = EE425B73E55AF03DDD983F29 /* main.mm */; };
 		95F3068AD2230B0ED85C2F82 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0822D4125C0582249184704 /* QuartzCore.framework */; };
 		BC861FEA82940E93E610118E /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A36C0EED9050762BFD228922 /* WebKit.framework */; };
-		BD65CEF32B485660000FF798 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD65CEF22B485660000FF798 /* NotificationService.swift */; };
-		BD65CEF72B485660000FF798 /* PushNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BD65CEF02B485660000FF798 /* PushNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BDFDE0102B4D7B050047637A /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BDFDE00E2B4D7B040047637A /* libresolv.tbd */; };
+		BDFDE0112B4D7B050047637A /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BDFDE00F2B4D7B050047637A /* libresolv.9.tbd */; };
+		BDFDE0192B4D7DF30047637A /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFDE0182B4D7DF30047637A /* NotificationService.swift */; };
+		BDFDE01D2B4D7DF30047637A /* PushNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BDFDE0162B4D7DF30047637A /* PushNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BDFDE0232B4D7E050047637A /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDFDE0222B4D7E050047637A /* bindings.cpp */; };
+		BDFDE0262B4D7FDC0047637A /* librostanga_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BDFDE0252B4D7FCE0047637A /* librostanga_lib.a */; };
+		BDFDE0272B4D81570047637A /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BDFDE00F2B4D7B050047637A /* libresolv.9.tbd */; };
+		BDFDE0282B4D81570047637A /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BDFDE00E2B4D7B040047637A /* libresolv.tbd */; };
 		C5D8C74C54E353D8ACBE4805 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = D9455E355C35170CAE65C3E7 /* assets */; };
 		C6237D32E966984A2047296F /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC1FA2EDC240D4201BE60C49 /* MetalKit.framework */; };
 		F21410039061DC2A157FFAFC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7113FF043CB51839919B878 /* Security.framework */; };
@@ -23,11 +29,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		BD65CEF52B485660000FF798 /* PBXContainerItemProxy */ = {
+		BDFDE01B2B4D7DF30047637A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1E56A8E5C797E10FB2E2924B /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = BD65CEEF2B485660000FF798;
+			remoteGlobalIDString = BDFDE0152B4D7DF30047637A;
 			remoteInfo = PushNotifications;
 		};
 /* End PBXContainerItemProxy section */
@@ -39,7 +45,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				BD65CEF72B485660000FF798 /* PushNotifications.appex in Embed Foundation Extensions */,
+				BDFDE01D2B4D7DF30047637A /* PushNotifications.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -59,9 +65,16 @@
 		A7113FF043CB51839919B878 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B66106AE345FB8326C89B81E /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		BC1FA2EDC240D4201BE60C49 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-		BD65CEF02B485660000FF798 /* PushNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PushNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		BD65CEF22B485660000FF798 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-		BD65CEF42B485660000FF798 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BD65CF1D2B4D747B000FF798 /* librostanga_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librostanga_lib.a; path = "../../../target/aarch64-apple-ios/debug/deps/librostanga_lib.a"; sourceTree = "<group>"; };
+		BDFDE00C2B4D756D0047637A /* librostanga_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librostanga_lib.a; path = "../../../target/aarch64-apple-ios/debug/librostanga_lib.a"; sourceTree = "<group>"; };
+		BDFDE00E2B4D7B040047637A /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		BDFDE00F2B4D7B050047637A /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
+		BDFDE0162B4D7DF30047637A /* PushNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PushNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BDFDE0182B4D7DF30047637A /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		BDFDE01A2B4D7DF30047637A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BDFDE0212B4D7E050047637A /* PushNotifications-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PushNotifications-Bridging-Header.h"; sourceTree = "<group>"; };
+		BDFDE0222B4D7E050047637A /* bindings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bindings.cpp; sourceTree = "<group>"; };
+		BDFDE0252B4D7FCE0047637A /* librostanga_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librostanga_lib.a; path = Externals/arm64/debug/librostanga_lib.a; sourceTree = "<group>"; };
 		C0822D4125C0582249184704 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		CE91409F649FEDE1987B5D03 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D9455E355C35170CAE65C3E7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
@@ -70,10 +83,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		BD65CEED2B485660000FF798 /* Frameworks */ = {
+		BDFDE0132B4D7DF30047637A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDFDE0272B4D81570047637A /* libresolv.9.tbd in Frameworks */,
+				BDFDE0262B4D7FDC0047637A /* librostanga_lib.a in Frameworks */,
+				BDFDE0282B4D81570047637A /* libresolv.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +97,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDFDE0102B4D7B050047637A /* libresolv.tbd in Frameworks */,
+				BDFDE0112B4D7B050047637A /* libresolv.9.tbd in Frameworks */,
 				65A48B19A1AF95EDA7043858 /* librostanga_lib.a in Frameworks */,
 				2CC90585A3BF0B3D4F48C857 /* CoreGraphics.framework in Frameworks */,
 				7939B827D7427C57A83560E4 /* Metal.framework in Frameworks */,
@@ -106,6 +124,11 @@
 		20F965C276131604C139FCE0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BDFDE0252B4D7FCE0047637A /* librostanga_lib.a */,
+				BDFDE00F2B4D7B050047637A /* libresolv.9.tbd */,
+				BDFDE00E2B4D7B040047637A /* libresolv.tbd */,
+				BD65CF1D2B4D747B000FF798 /* librostanga_lib.a */,
+				BDFDE00C2B4D756D0047637A /* librostanga_lib.a */,
 				4B2CD93CD9B1BA34D6708810 /* CoreGraphics.framework */,
 				66F217EF434CD336F1BB96B4 /* librostanga_lib.a */,
 				B66106AE345FB8326C89B81E /* Metal.framework */,
@@ -122,7 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				F1DE860E95DED46B4A962F62 /* rostanga.app */,
-				BD65CEF02B485660000FF798 /* PushNotifications.appex */,
+				BDFDE0162B4D7DF30047637A /* PushNotifications.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,17 +185,19 @@
 				5AF921F1CCFF17935700BDAE /* rostanga_iOS */,
 				9DB3B34C925136231EDA9802 /* Sources */,
 				F0DDA4C370EC1C284CEFD9E1 /* src */,
-				BD65CEF12B485660000FF798 /* PushNotifications */,
+				BDFDE0172B4D7DF30047637A /* PushNotifications */,
 				20F965C276131604C139FCE0 /* Frameworks */,
 				3146AA53DAEE8568E03689E5 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		BD65CEF12B485660000FF798 /* PushNotifications */ = {
+		BDFDE0172B4D7DF30047637A /* PushNotifications */ = {
 			isa = PBXGroup;
 			children = (
-				BD65CEF22B485660000FF798 /* NotificationService.swift */,
-				BD65CEF42B485660000FF798 /* Info.plist */,
+				BDFDE0182B4D7DF30047637A /* NotificationService.swift */,
+				BDFDE01A2B4D7DF30047637A /* Info.plist */,
+				BDFDE0222B4D7E050047637A /* bindings.cpp */,
+				BDFDE0212B4D7E050047637A /* PushNotifications-Bridging-Header.h */,
 			);
 			path = PushNotifications;
 			sourceTree = "<group>";
@@ -210,20 +235,20 @@
 			buildRules = (
 			);
 			dependencies = (
-				BD65CEF62B485660000FF798 /* PBXTargetDependency */,
+				BDFDE01C2B4D7DF30047637A /* PBXTargetDependency */,
 			);
 			name = rostanga_iOS;
 			productName = rostanga_iOS;
 			productReference = F1DE860E95DED46B4A962F62 /* rostanga.app */;
 			productType = "com.apple.product-type.application";
 		};
-		BD65CEEF2B485660000FF798 /* PushNotifications */ = {
+		BDFDE0152B4D7DF30047637A /* PushNotifications */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BD65CEFB2B485660000FF798 /* Build configuration list for PBXNativeTarget "PushNotifications" */;
+			buildConfigurationList = BDFDE01E2B4D7DF30047637A /* Build configuration list for PBXNativeTarget "PushNotifications" */;
 			buildPhases = (
-				BD65CEEC2B485660000FF798 /* Sources */,
-				BD65CEED2B485660000FF798 /* Frameworks */,
-				BD65CEEE2B485660000FF798 /* Resources */,
+				BDFDE0122B4D7DF30047637A /* Sources */,
+				BDFDE0132B4D7DF30047637A /* Frameworks */,
+				BDFDE0142B4D7DF30047637A /* Resources */,
 			);
 			buildRules = (
 			);
@@ -231,7 +256,7 @@
 			);
 			name = PushNotifications;
 			productName = PushNotifications;
-			productReference = BD65CEF02B485660000FF798 /* PushNotifications.appex */;
+			productReference = BDFDE0162B4D7DF30047637A /* PushNotifications.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -243,13 +268,14 @@
 				BuildIndependentTargetsInParallel = YES;
 				DefaultBuildSystemTypeForWorkspace = Original;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					8A4A9241D19BF33E9AF46CFD = {
 						DevelopmentTeam = 4XN3VLHC68;
 					};
-					BD65CEEF2B485660000FF798 = {
+					BDFDE0152B4D7DF30047637A = {
 						CreatedOnToolsVersion = 15.0;
+						LastSwiftMigration = 1500;
 					};
 				};
 			};
@@ -266,7 +292,7 @@
 			projectRoot = "";
 			targets = (
 				8A4A9241D19BF33E9AF46CFD /* rostanga_iOS */,
-				BD65CEEF2B485660000FF798 /* PushNotifications */,
+				BDFDE0152B4D7DF30047637A /* PushNotifications */,
 			);
 		};
 /* End PBXProject section */
@@ -281,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BD65CEEE2B485660000FF798 /* Resources */ = {
+		BDFDE0142B4D7DF30047637A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -323,21 +349,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BD65CEEC2B485660000FF798 /* Sources */ = {
+		BDFDE0122B4D7DF30047637A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD65CEF32B485660000FF798 /* NotificationService.swift in Sources */,
+				BDFDE0192B4D7DF30047637A /* NotificationService.swift in Sources */,
+				BDFDE0232B4D7E050047637A /* bindings.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		BD65CEF62B485660000FF798 /* PBXTargetDependency */ = {
+		BDFDE01C2B4D7DF30047637A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BD65CEEF2B485660000FF798 /* PushNotifications */;
-			targetProxy = BD65CEF52B485660000FF798 /* PBXContainerItemProxy */;
+			target = BDFDE0152B4D7DF30047637A /* PushNotifications */;
+			targetProxy = BDFDE01B2B4D7DF30047637A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -465,10 +492,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = (
-					arm64,
-					"arm64-sim",
-				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = rostanga_iOS/rostanga_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -518,10 +541,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = (
-					arm64,
-					"arm64-sim",
-				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = rostanga_iOS/rostanga_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -567,7 +586,7 @@
 			};
 			name = release;
 		};
-		BD65CEF92B485660000FF798 /* debug */ = {
+		BDFDE01F2B4D7DF30047637A /* debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -633,6 +652,10 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/debug",
+				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -644,13 +667,14 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PushNotifications/PushNotifications-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = debug;
 		};
-		BD65CEFA2B485660000FF798 /* release */ = {
+		BDFDE0202B4D7DF30047637A /* release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -710,6 +734,10 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/debug",
+				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -720,6 +748,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PushNotifications/PushNotifications-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -747,11 +776,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = debug;
 		};
-		BD65CEFB2B485660000FF798 /* Build configuration list for PBXNativeTarget "PushNotifications" */ = {
+		BDFDE01E2B4D7DF30047637A /* Build configuration list for PBXNativeTarget "PushNotifications" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BD65CEF92B485660000FF798 /* debug */,
-				BD65CEFA2B485660000FF798 /* release */,
+				BDFDE01F2B4D7DF30047637A /* debug */,
+				BDFDE0202B4D7DF30047637A /* release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = debug;
