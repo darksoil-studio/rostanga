@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration};
+use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration, fs::canonicalize};
 
 use fcm_v1::{
     android::{AndroidConfig, },
@@ -136,7 +136,7 @@ pub fn init<R: Runtime>(
             
             #[cfg(desktop)]
             {
-                let args = app.cli().matches().expect("Can't get matches").args;
+                let args = app.cli().matches().expect("Can't get matches").args; // TODO: fix this so that the app doesn't have to configure it
 
                 // Get service account key argument
                 // Publish to fcm notifications provider app
@@ -145,8 +145,14 @@ pub fn init<R: Runtime>(
                         let result: crate::Result<()> =
                             tauri::async_runtime::block_on(async move {
                                 let service_account_key_path = PathBuf::from(s);
-                                let service_account_key = yup_oauth2::read_service_account_key(
-                                    service_account_key_path.clone(),
+
+let absolute_path = canonicalize(      
+                                      service_account_key_path.clone()
+                                        ).expect("Could not canonicalize path");
+                                println!("Reading service account key: {absolute_path:?}");
+                                let service_account_key = 
+                                    yup_oauth2::read_service_account_key(
+                            absolute_path
                                 )
                                 .await
                                 .expect("Failed to read service account key");

@@ -31,8 +31,7 @@
     "cli": {
       "args": [
         {
-          "short": "p",
-          "name": "profile",
+          "name": "service-account-key",
           "takesValue": true,
           "multiple": false
         }
