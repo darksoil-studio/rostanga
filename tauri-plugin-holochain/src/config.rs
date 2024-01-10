@@ -6,7 +6,8 @@ use holochain::{
         interface::InterfaceDriver,
     },
     prelude::dependencies::kitsune_p2p_types::config::{
-        tuning_params_struct::KitsuneP2pTuningParams, KitsuneP2pConfig, TransportConfig,
+        tuning_params_struct::KitsuneP2pTuningParams, KitsuneP2pConfig, ProxyConfig,
+        TransportConfig,
     },
 };
 
@@ -34,6 +35,18 @@ pub fn conductor_config(
 
     network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host"));
 
+    //tx2
+    // network_config.transport_pool.push(TransportConfig::Proxy {
+    //     sub_transport: Box::new(TransportConfig::Quic {
+    //         bind_to: None,
+    //         override_host: None,
+    //         override_port: None,
+    //     }),
+    //     proxy_config: ProxyConfig::RemoteProxyClient {
+    //         proxy_url: url2::url2!("kitsune-proxy://f3gH2VMkJ4qvZJOXx0ccL_Zo5n-s_CnBjSzAsEHHDCA/kitsune-quic/h/137.184.142.208/p/5788/--")
+    //     },
+    // });
+    // tx5
     network_config.transport_pool.push(TransportConfig::WebRTC {
         signal_url: String::from("wss://signal.holo.host"),
     });

@@ -8,6 +8,7 @@ use fcm_v1::{
     Client,
 };
 
+use holochain_client::{AppAgentWebsocket, AppInfo};
 use hrl::Hrl;
 use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
 use holochain_types::{
@@ -60,7 +61,7 @@ async fn install_app_if_not_present<R: Runtime>(
     app_handle: &AppHandle<R>,
     app_id: String,
     app_bundle: AppBundle,
-) -> crate::Result<()> {
+) -> crate::Result<Option<AppInfo>> {
     let mut admin_ws = app_handle.holochain().admin_websocket().await?;
 
     let apps = admin_ws
@@ -68,13 +69,14 @@ async fn install_app_if_not_present<R: Runtime>(
         .await
         .map_err(|err| crate::Error::ConductorApiError(err))?;
 
-    if let None = apps.iter().find(|app| app.installed_app_id.eq(&app_id)) {
-        app_handle
+    match apps.iter().find(|app| app.installed_app_id.eq(&app_id)) {
+       None => Ok(Some(app_handle
             .holochain()
             .install_app(app_id, app_bundle, HashMap::new(), None)
-            .await?;
+            .await?))
+        ,
+        _ => Ok(None)
     }
-    Ok(())
 }
 
 async fn install_initial_apps<R: Runtime>(
@@ -88,11 +90,20 @@ async fn install_initial_apps<R: Runtime>(
             "../../workdir/notifications_provider_fcm.happ"
         ))
         .unwrap();
-        install_app_if_not_present(&app, notifications_provider_app_id, provider_app_bundle)
-            .await?;
+if let Some(_app_info) =         install_app_if_not_present(&app, notifications_provider_app_id.clone(), provider_app_bundle)
+            .await? {
+            
+                let mut app_agent_websocket = app.holochain().app_agent_websocket(notifications_provider_app_id).await?;
+                app_agent_websocket.call_zome(
+                "notifications".into(), 
+                ZomeName::from("notifications"), 
+                FunctionName::from("announce_as_provider"),
+                 ExternIO::encode(()).unwrap()
+            ).await.map_err(|err| crate::Error::ConductorApiError(err))?;
+        }
     }
 
-    // #[cfg(mobile)]
+    #[cfg(mobile)]
     {
         let recipient_app_bundle = AppBundle::decode(include_bytes!(
             "../../workdir/notifications_fcm_recipient.happ"
@@ -128,10 +139,11 @@ pub fn init<R: Runtime>(
             let provider_app_id = notifications_provider_app_id.clone();
 
             tauri::async_runtime::block_on(async move {
-                install_initial_apps(&app, notifications_provider_app_id, 
+                install_initial_apps(&app, provider_app_id.clone(), 
                     recipient_app_id).await
             })?;
 
+            let provider_app_id = notifications_provider_app_id.clone();
             let recipient_app_id = notifications_provider_recipient_app_id.clone();
             
             #[cfg(desktop)]
@@ -144,38 +156,12 @@ pub fn init<R: Runtime>(
                     if let Value::String(s) = m.value.clone() {
                         let result: crate::Result<()> =
                             tauri::async_runtime::block_on(async move {
-                                let service_account_key_path = PathBuf::from(s);
-
-let absolute_path = canonicalize(      
-                                      service_account_key_path.clone()
-                                        ).expect("Could not canonicalize path");
-                                println!("Reading service account key: {absolute_path:?}");
-                                let service_account_key = 
-                                    yup_oauth2::read_service_account_key(
-                            absolute_path
-                                )
-                                .await
-                                .expect("Failed to read service account key");
-
                                 let mut app_agent_ws = app
                                     .holochain()
-                                    .app_agent_websocket(notifications_provider_recipient_app_id)
+                                    .app_agent_websocket(provider_app_id)
                                     .await?;
 
-                                let payload = ExternIO::encode(service_account_key)
-                                    .expect("Could not encode service account key");
-
-                                app_agent_ws
-                                    .call_zome(
-                                        RoleName::from("notifications_provider_fcm"),
-                                        ZomeName::from("notifications_provider_fcm"),
-                                        FunctionName::from("publish_new_service_account_key"),
-                                        payload,
-                                    )
-                                    .await
-                                    .expect("Failed to upload the service account key");
-
-                                Ok(())
+                                publish_service_account_key(&mut app_agent_ws,  PathBuf::from(s)).await
                             });
                         result.expect("Failed to upload the service account key");
                         println!("Successfully uploaded new service account key");
@@ -352,6 +338,39 @@ async fn send_push_notification(
     message.token = Some(token);
 
     client.send(&message).await.expect("Failed to send message");
+
+    Ok(())
+}
+
+async fn publish_service_account_key(app_agent_ws: &mut AppAgentWebsocket, service_account_key_path: PathBuf) -> crate::Result<()> {
+    println!("before {:?}", 
+    std::env::current_dir()?.join(
+            &service_account_key_path.clone())
+            );
+let absolute_path = canonicalize(
+        std::env::current_dir()?.join(
+            &service_account_key_path.clone())
+            ).expect("Could not canonicalize path");
+    println!("Reading service account key: {absolute_path:?}");
+    let service_account_key = 
+        yup_oauth2::read_service_account_key(
+    absolute_path
+    )
+    .await
+    .expect("Failed to read service account key");
+
+    let payload = ExternIO::encode(service_account_key)
+        .expect("Could not encode service account key");
+
+    app_agent_ws
+        .call_zome(
+            RoleName::from("notifications_provider_fcm"),
+            ZomeName::from("notifications_provider_fcm"),
+            FunctionName::from("publish_new_service_account_key"),
+            payload,
+        )
+        .await
+        .expect("Failed to upload the service account key");
 
     Ok(())
 }

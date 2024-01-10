@@ -173,6 +173,26 @@ impl<R: Runtime> HolochainPlugin<R> {
         Ok(app_ws)
     }
 
+    async fn workaround_join_failed_all_apps(&self) -> crate::Result<()> {
+        let mut admin_websocket = self.admin_websocket().await?;
+
+        let apps = admin_websocket
+            .list_apps(None)
+            .await
+            .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+        let futures: Vec<_> = apps
+            .iter()
+            .map(|app| async {
+                let app = app.clone();
+                self.workaround_join_failed(app).await
+            })
+            .collect();
+        futures::future::join_all(futures).await;
+
+        Ok(())
+    }
+
     async fn workaround_join_failed(&self, app_info: AppInfo) -> crate::Result<()> {
         let app_id = app_info.installed_app_id;
         let mut app_agent_websocket = self.app_agent_websocket(app_id.clone()).await?;
@@ -380,43 +400,47 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             })
         })
         .setup(move |app: &AppHandle<R>, api| {
-            let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
-            let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
+            let r: crate::Result<()> = tauri::async_runtime::block_on(async move {
+                let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
+                let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
 
-            let http_server_port = portpicker::pick_unused_port().expect("No ports free");
-
-            let RunningHolochainInfo {
-                admin_port,
-                app_port,
-                lair_client,
-                filesystem,
-            } = tauri::async_runtime::block_on(async {
+                let http_server_port = portpicker::pick_unused_port().expect("No ports free");
                 #[cfg(mobile)]
                 mobile::init(app, api).await?;
                 #[cfg(desktop)]
                 desktop::init(app, api).await?;
 
-                let info = launch().await?;
-
-                let r: crate::Result<RunningHolochainInfo> = Ok(info);
-                r
-            })?;
-
-            log::info!("Starting http server at port {http_server_port:?}");
-
-            http_server::start_http_server(app.clone(), http_server_port);
-
-            // manage state so it is accessible by the commands
-            app.manage(HolochainPlugin::<R> {
-                app_handle: app.clone(),
-                lair_client,
-                runtime_info: HolochainRuntimeInfo {
-                    http_server_port,
-                    app_port,
+                let RunningHolochainInfo {
                     admin_port,
-                },
-                filesystem,
+                    app_port,
+                    lair_client,
+                    filesystem,
+                } = launch().await?;
+
+                log::info!("Starting http server at port {http_server_port:?}");
+
+                http_server::start_http_server(app.clone(), http_server_port);
+
+                let p = HolochainPlugin::<R> {
+                    app_handle: app.clone(),
+                    lair_client,
+                    runtime_info: HolochainRuntimeInfo {
+                        http_server_port,
+                        app_port,
+                        admin_port,
+                    },
+                    filesystem,
+                };
+
+                p.workaround_join_failed_all_apps().await?;
+
+                // manage state so it is accessible by the commands
+                app.manage(p);
+
+                Ok(())
             });
+            println!("Finished holochain plugin setup: {r:?}");
+            r?;
 
             Ok(())
         })
