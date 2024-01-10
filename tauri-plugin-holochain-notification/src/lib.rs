@@ -1,20 +1,16 @@
-use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Duration, fs::canonicalize};
+use std::{collections::HashMap, fs::canonicalize, path::PathBuf, sync::Mutex, time::Duration};
 
 use fcm_v1::{
-    android::{AndroidConfig, },
-    apns::ApnsConfig,
-    auth::Authenticator,
-    message::{Message, },
-    Client,
+    android::AndroidConfig, apns::ApnsConfig, auth::Authenticator, message::Message, Client,
 };
 
-use holochain_client::{AppAgentWebsocket, AppInfo};
-use hrl::Hrl;
 use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
+use holochain_client::{AppAgentWebsocket, AppInfo};
 use holochain_types::{
     prelude::{AppBundle, ExternIO, FunctionName, RoleName, ZomeName},
     signal::Signal,
 };
+use hrl::Hrl;
 use serde_json::{Map, Value};
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -45,7 +41,6 @@ pub use error::{Error, Result};
 use tauri_plugin_holochain::HolochainExt;
 use yup_oauth2::ServiceAccountKey;
 
-
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
 // pub trait HolochainNotificationExt<R: Runtime> {
 //     fn holochain_notification(&self) -> &HolochainNotification<R>;
@@ -70,12 +65,13 @@ async fn install_app_if_not_present<R: Runtime>(
         .map_err(|err| crate::Error::ConductorApiError(err))?;
 
     match apps.iter().find(|app| app.installed_app_id.eq(&app_id)) {
-       None => Ok(Some(app_handle
-            .holochain()
-            .install_app(app_id, app_bundle, HashMap::new(), None)
-            .await?))
-        ,
-        _ => Ok(None)
+        None => Ok(Some(
+            app_handle
+                .holochain()
+                .install_app(app_id, app_bundle, HashMap::new(), None)
+                .await?,
+        )),
+        _ => Ok(None),
     }
 }
 
@@ -84,22 +80,27 @@ async fn install_initial_apps<R: Runtime>(
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
-    #[cfg(not(mobile))]
+    // #[cfg(not(mobile))]
     {
         let provider_app_bundle = AppBundle::decode(include_bytes!(
             "../../workdir/notifications_provider_fcm.happ"
         ))
         .unwrap();
-if let Some(_app_info) =         install_app_if_not_present(&app, notifications_provider_app_id.clone(), provider_app_bundle)
-            .await? {
-            
-                let mut app_agent_websocket = app.holochain().app_agent_websocket(notifications_provider_app_id).await?;
-                app_agent_websocket.call_zome(
-                "notifications".into(), 
-                ZomeName::from("notifications"), 
-                FunctionName::from("announce_as_provider"),
-                 ExternIO::encode(()).unwrap()
-            ).await.map_err(|err| crate::Error::ConductorApiError(err))?;
+        if let Some(_app_info) = install_app_if_not_present(
+            &app,
+            notifications_provider_app_id.clone(),
+            provider_app_bundle,
+        )
+        .await?
+        {
+
+            //     let mut app_agent_websocket = app.holochain().app_agent_websocket(notifications_provider_app_id).await?;
+            //     app_agent_websocket.call_zome(
+            //     "notifications".into(),
+            //     ZomeName::from("notifications"),
+            //     FunctionName::from("announce_as_provider"),
+            //      ExternIO::encode(()).unwrap()
+            // ).await.map_err(|err| crate::Error::ConductorApiError(err))?;
         }
     }
 
@@ -139,13 +140,12 @@ pub fn init<R: Runtime>(
             let provider_app_id = notifications_provider_app_id.clone();
 
             tauri::async_runtime::block_on(async move {
-                install_initial_apps(&app, provider_app_id.clone(), 
-                    recipient_app_id).await
+                install_initial_apps(&app, provider_app_id.clone(), recipient_app_id).await
             })?;
 
             let provider_app_id = notifications_provider_app_id.clone();
             let recipient_app_id = notifications_provider_recipient_app_id.clone();
-            
+
             #[cfg(desktop)]
             {
                 let args = app.cli().matches().expect("Can't get matches").args; // TODO: fix this so that the app doesn't have to configure it
@@ -156,12 +156,11 @@ pub fn init<R: Runtime>(
                     if let Value::String(s) = m.value.clone() {
                         let result: crate::Result<()> =
                             tauri::async_runtime::block_on(async move {
-                                let mut app_agent_ws = app
-                                    .holochain()
-                                    .app_agent_websocket(provider_app_id)
-                                    .await?;
+                                let mut app_agent_ws =
+                                    app.holochain().app_agent_websocket(provider_app_id).await?;
 
-                                publish_service_account_key(&mut app_agent_ws,  PathBuf::from(s)).await
+                                publish_service_account_key(&mut app_agent_ws, PathBuf::from(s))
+                                    .await
                             });
                         result.expect("Failed to upload the service account key");
                         println!("Successfully uploaded new service account key");
@@ -177,35 +176,40 @@ pub fn init<R: Runtime>(
                         .await
                         .expect("Failed to connect to holochain");
 
-                    app_agent_websocket.on_signal(move |signal| {
-                        let Signal::App {  signal , ..} = signal else {
+                    app_agent_websocket
+                        .on_signal(move |signal| {
+                            let Signal::App {  signal , ..} = signal else {
                             return ();
                         };
 
-                        let Ok(notify_agent_signal) = 
-                            signal.into_inner().decode::<NotifyAgentSignal>() else {
+                            let Ok(notify_agent_signal) = signal.into_inner().decode::<NotifyAgentSignal>() else {
                             return ();
                         };
 
-                        let fcm_project_id = fcm_project_id.clone();
-                        tauri::async_runtime::block_on(async move {
-                            let service_account_key = into(notify_agent_signal.service_account_key);
+                            let fcm_project_id = fcm_project_id.clone();
+                            tauri::async_runtime::block_on(async move {
+                                let service_account_key =
+                                    into(notify_agent_signal.service_account_key);
 
-                            let body = Hrl::try_from(notify_agent_signal.notification)
+                                let body = Hrl::try_from(notify_agent_signal.notification)
                                     .expect("Could not deserialize hrl");
 
-                            let str_body = serde_json::to_string(&body)
-                                .expect("Could not serialize body");
+                                let str_body =
+                                    serde_json::to_string(&body).expect("Could not serialize body");
 
-                            send_push_notification(
-                                fcm_project_id, 
-                                service_account_key, 
-                                notify_agent_signal.token, 
-                                String::from(""),  
-                                str_body
-                            ).await.expect("Failed to send push notification")
-                        });
-                    }).await.expect("Failed to set up on signal");
+                                send_push_notification(
+                                    fcm_project_id,
+                                    service_account_key,
+                                    notify_agent_signal.token,
+                                    String::from(""),
+                                    str_body,
+                                )
+                                .await
+                                .expect("Failed to send push notification")
+                            });
+                        })
+                        .await
+                        .expect("Failed to set up on signal");
                 });
             }
 
@@ -226,13 +230,17 @@ pub fn init<R: Runtime>(
                                 notification_action_performed_payload
                             );
 
-                            let notification_data = notification_action_performed_payload.notification;
+                            let notification_data =
+                                notification_action_performed_payload.notification;
 
                             let extra = notification_data.extra;
 
                             if let Some(serde_json::Value::String(hrl)) = extra.get("hrl") {
                                 if let Ok(hrl) = Hrl::try_from(hrl.clone()) {
-                                    h.holochain().open_hrl(hrl).await.expect("Could not open Hrl");
+                                    h.holochain()
+                                        .open_hrl(hrl)
+                                        .await
+                                        .expect("Could not open Hrl");
                                 }
                             }
                         });
@@ -251,7 +259,8 @@ pub fn init<R: Runtime>(
                         tauri::async_runtime::block_on(async move {
                             log::info!("new-fcm-token {:?}", token);
 
-                            let mut app_agent_ws = h.holochain()
+                            let mut app_agent_ws = h
+                                .holochain()
                                 .app_agent_websocket(recipient_app_id)
                                 .await
                                 .expect("Failed to connect to holochain");
@@ -304,12 +313,7 @@ async fn send_push_notification(
         .await
         .expect("Failed to read service account");
 
-    let client = Client::new(
-        auth, 
-        fcm_project_id, 
-        false, 
-        Duration::from_secs(2)
-    );
+    let client = Client::new(auth, fcm_project_id, false, Duration::from_secs(2));
 
     let mut message = Message::default();
 
@@ -342,25 +346,24 @@ async fn send_push_notification(
     Ok(())
 }
 
-async fn publish_service_account_key(app_agent_ws: &mut AppAgentWebsocket, service_account_key_path: PathBuf) -> crate::Result<()> {
-    println!("before {:?}", 
-    std::env::current_dir()?.join(
-            &service_account_key_path.clone())
-            );
-let absolute_path = canonicalize(
-        std::env::current_dir()?.join(
-            &service_account_key_path.clone())
-            ).expect("Could not canonicalize path");
+async fn publish_service_account_key(
+    app_agent_ws: &mut AppAgentWebsocket,
+    service_account_key_path: PathBuf,
+) -> crate::Result<()> {
+    println!(
+        "before {:?}",
+        std::env::current_dir()?.join(&service_account_key_path.clone())
+    );
+    let absolute_path =
+        canonicalize(std::env::current_dir()?.join(&service_account_key_path.clone()))
+            .expect("Could not canonicalize path");
     println!("Reading service account key: {absolute_path:?}");
-    let service_account_key = 
-        yup_oauth2::read_service_account_key(
-    absolute_path
-    )
-    .await
-    .expect("Failed to read service account key");
+    let service_account_key = yup_oauth2::read_service_account_key(absolute_path)
+        .await
+        .expect("Failed to read service account key");
 
-    let payload = ExternIO::encode(service_account_key)
-        .expect("Could not encode service account key");
+    let payload =
+        ExternIO::encode(service_account_key).expect("Could not encode service account key");
 
     app_agent_ws
         .call_zome(

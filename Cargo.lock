@@ -95,6 +95,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "aitia"
+version = "0.1.0"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
+dependencies = [
+ "anyhow",
+ "derive_more",
+ "holochain_trace 0.3.0-beta-dev.4",
+ "parking_lot 0.10.2",
+ "petgraph",
+ "regex",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-core",
+ "tracing-serde",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "alerts"
+version = "0.0.1"
+source = "git+https://github.com/darksoil-studio/gather?branch=for-hdk-0.3.0-beta-dev#ae383dfa16c733ee83ca2262d28fc496f537987e"
+dependencies = [
+ "alerts_integrity",
+ "hc_zome_notifications_types",
+ "hdk 0.3.0-beta-dev.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+]
+
+[[package]]
+name = "alerts_integrity"
+version = "0.0.1"
+source = "git+https://github.com/darksoil-studio/gather?branch=for-hdk-0.3.0-beta-dev#ae383dfa16c733ee83ca2262d28fc496f537987e"
+dependencies = [
+ "hdi 0.4.0-beta-dev.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+]
+
+[[package]]
 name = "aliasable"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,6 +340,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-compression"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "942c7cd7ae39e91bde4820d74132e9862e62c2f386c3aa90ccf55949f5bad63a"
+dependencies = [
+ "flate2",
+ "futures-core",
+ "memchr",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "async-executor"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -497,8 +549,19 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22068c0c19514942eefcfd4daf8976ef1aad84e61539f95cd200c35202f80af5"
 dependencies = [
- "async-stream-impl",
+ "async-stream-impl 0.2.1",
  "futures-core",
+]
+
+[[package]]
+name = "async-stream"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd56dd203fef61ac097dd65721a419ddccb106b2d2b70ba60a6b529f03961a51"
+dependencies = [
+ "async-stream-impl 0.3.5",
+ "futures-core",
+ "pin-project-lite",
 ]
 
 [[package]]
@@ -510,6 +573,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16e62a023e7c117e27523144c5d2459f4397fcc3cab0085af8e2224f643a0193"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
@@ -594,6 +668,65 @@ dependencies = [
  "derive_more",
  "serde",
  "shrinkwraprs",
+]
+
+[[package]]
+name = "axum"
+version = "0.6.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b829e4e32b91e643de6eafe82b1d90675f5874230191a4ffbc1b336dec4d6bf"
+dependencies = [
+ "async-trait",
+ "axum-core",
+ "bitflags 1.3.2",
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "hyper",
+ "itoa 1.0.10",
+ "matchit",
+ "memchr",
+ "mime",
+ "percent-encoding 2.3.1",
+ "pin-project-lite",
+ "rustversion",
+ "serde",
+ "sync_wrapper",
+ "tower",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
+name = "axum-core"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "759fa577a247914fd3f7f76d62972792636412fbfd634cd452f6a385a74d2d2c"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "mime",
+ "rustversion",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
+name = "backoff"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b62ddb9cb1ec0a098ad4bbf9344d0713fa193ae1a80af55febcff2627b6a00c1"
+dependencies = [
+ "futures-core",
+ "getrandom 0.2.11",
+ "instant",
+ "pin-project-lite",
+ "rand 0.8.5",
+ "tokio",
 ]
 
 [[package]]
@@ -2165,6 +2298,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "firestore"
+version = "0.39.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24cb37202f30c37613fd1e446aa0f91867d11294938fd77d3b2e8281401a1441"
+dependencies = [
+ "async-trait",
+ "backoff",
+ "chrono",
+ "futures",
+ "gcloud-sdk",
+ "hex",
+ "hyper",
+ "rsb_derive",
+ "rvstruct",
+ "serde",
+ "struct-path",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2173,7 +2328,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fixt"
 version = "0.3.0-beta-dev.0"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "holochain_serialized_bytes",
  "lazy_static",
@@ -2436,6 +2591,49 @@ name = "gcc"
 version = "0.3.55"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f5f3913fa0bfe7ee1fd8248b6b9f42a5af4b9d65ec2dd2c3c26132b950ecfc2"
+
+[[package]]
+name = "gcemeta"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d460327b24cc34c86d53d60a90e9e6044817f7906ebd9baa5c3d0ee13e1ecf"
+dependencies = [
+ "bytes",
+ "hyper",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "gcloud-sdk"
+version = "0.24.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aadc9cb591a5806e375116ae813659760208d21c23e979162fbe3f599b7d39b4"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "futures",
+ "gcemeta",
+ "hyper",
+ "jsonwebtoken",
+ "once_cell",
+ "prost",
+ "prost-types",
+ "reqwest",
+ "secret-vault-value",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tonic",
+ "tower",
+ "tower-layer",
+ "tower-util",
+ "tracing",
+ "url 2.5.0",
+]
 
 [[package]]
 name = "gcollections"
@@ -2917,7 +3115,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_sleuth"
+version = "0.1.0"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
+dependencies = [
+ "aitia",
+ "anyhow",
+ "derive_more",
+ "holochain_state_types",
+ "holochain_trace 0.3.0-beta-dev.3",
+ "holochain_types",
+ "kitsune_p2p",
+ "once_cell",
+ "parking_lot 0.10.2",
+ "petgraph",
+ "regex",
+ "serde",
+ "structopt",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "hc_zome_notifications_provider_fcm_types"
+version = "0.1.0"
+source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#fa48c2a756c8e4e0c809cefc00a9cb95b8608c13"
+dependencies = [
+ "hdi 0.4.0-beta-dev.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_notifications_types"
 version = "0.1.0"
 source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#fa48c2a756c8e4e0c809cefc00a9cb95b8608c13"
 dependencies = [
@@ -2968,9 +3197,9 @@ dependencies = [
 [[package]]
 name = "hdi"
 version = "0.4.0-beta-dev.20"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
- "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
+ "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holo_hash",
  "holochain_integrity_types",
  "holochain_wasmer_guest",
@@ -3004,11 +3233,11 @@ dependencies = [
 [[package]]
 name = "hdk"
 version = "0.3.0-beta-dev.24"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "getrandom 0.2.11",
- "hdi 0.4.0-beta-dev.20 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
- "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
+ "hdi 0.4.0-beta-dev.20 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
+ "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holo_hash",
  "holochain_wasmer_guest",
  "holochain_zome_types",
@@ -3039,7 +3268,7 @@ dependencies = [
 [[package]]
 name = "hdk_derive"
 version = "0.3.0-beta-dev.19"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "darling 0.14.4",
  "heck 0.4.1",
@@ -3123,7 +3352,7 @@ dependencies = [
 [[package]]
 name = "holo_hash"
 version = "0.3.0-beta-dev.16"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.13.1",
  "blake2b_simd 0.5.11",
@@ -3145,8 +3374,9 @@ dependencies = [
 [[package]]
 name = "holochain"
 version = "0.3.0-beta-dev.29"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
+ "aitia",
  "anyhow",
  "async-once-cell",
  "async-recursion 0.3.2",
@@ -3165,7 +3395,8 @@ dependencies = [
  "get_if_addrs",
  "getrandom 0.2.11",
  "ghost_actor 0.3.0-alpha.6",
- "hdk 0.3.0-beta-dev.24 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
+ "hc_sleuth",
+ "hdk 0.3.0-beta-dev.24 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holo_hash",
  "holochain_cascade",
  "holochain_conductor_api",
@@ -3178,12 +3409,12 @@ dependencies = [
  "holochain_services",
  "holochain_sqlite",
  "holochain_state",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "holochain_types",
  "holochain_util",
  "holochain_wasm_test_utils",
  "holochain_wasmer_host",
- "holochain_websocket 0.3.0-beta-dev.6 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
+ "holochain_websocket 0.3.0-beta-dev.6 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holochain_zome_types",
  "hostname",
  "human-panic",
@@ -3242,7 +3473,7 @@ dependencies = [
 [[package]]
 name = "holochain_cascade"
 version = "0.3.0-beta-dev.29"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -3251,15 +3482,15 @@ dependencies = [
  "fixt",
  "futures",
  "ghost_actor 0.3.0-alpha.6",
- "hdk 0.3.0-beta-dev.24 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
- "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency)",
+ "hdk 0.3.0-beta-dev.24 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
+ "hdk_derive 0.3.0-beta-dev.19 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holo_hash",
  "holochain_nonce",
  "holochain_p2p",
  "holochain_serialized_bytes",
  "holochain_sqlite",
  "holochain_state",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "holochain_types",
  "holochain_util",
  "holochain_zome_types",
@@ -3299,7 +3530,7 @@ dependencies = [
 [[package]]
 name = "holochain_conductor_api"
 version = "0.3.0-beta-dev.29"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derive_more",
  "directories",
@@ -3324,7 +3555,7 @@ dependencies = [
 [[package]]
 name = "holochain_integrity_types"
 version = "0.3.0-beta-dev.19"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derive_builder",
  "holo_hash",
@@ -3343,7 +3574,7 @@ dependencies = [
 [[package]]
 name = "holochain_keystore"
 version = "0.3.0-beta-dev.21"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.13.1",
  "derive_more",
@@ -3371,7 +3602,7 @@ dependencies = [
 [[package]]
 name = "holochain_metrics"
 version = "0.3.0-beta-dev.7"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "opentelemetry_api",
  "reqwest",
@@ -3382,7 +3613,7 @@ dependencies = [
 [[package]]
 name = "holochain_nonce"
 version = "0.3.0-beta-dev.22"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "getrandom 0.2.11",
  "holochain_secure_primitive",
@@ -3392,18 +3623,22 @@ dependencies = [
 [[package]]
 name = "holochain_p2p"
 version = "0.3.0-beta-dev.28"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
+ "aitia",
  "async-trait",
  "derive_more",
+ "firestore",
  "fixt",
  "futures",
+ "gcloud-sdk",
  "ghost_actor 0.3.0-alpha.6",
+ "hc_sleuth",
  "holo_hash",
  "holochain_keystore",
  "holochain_nonce",
  "holochain_serialized_bytes",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "holochain_types",
  "holochain_util",
  "holochain_zome_types",
@@ -3422,7 +3657,7 @@ dependencies = [
 [[package]]
 name = "holochain_secure_primitive"
 version = "0.3.0-beta-dev.21"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "paste",
  "serde",
@@ -3457,7 +3692,7 @@ dependencies = [
 [[package]]
 name = "holochain_services"
 version = "0.2.0-beta-dev.0"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3474,7 +3709,7 @@ dependencies = [
 [[package]]
 name = "holochain_sqlite"
 version = "0.3.0-beta-dev.26"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3518,8 +3753,9 @@ dependencies = [
 [[package]]
 name = "holochain_state"
 version = "0.3.0-beta-dev.28"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
+ "aitia",
  "async-recursion 0.3.2",
  "byteorder",
  "cfg-if 0.1.10",
@@ -3529,6 +3765,7 @@ dependencies = [
  "either",
  "fallible-iterator",
  "futures",
+ "hc_sleuth",
  "holo_hash",
  "holochain_keystore",
  "holochain_nonce",
@@ -3556,7 +3793,7 @@ dependencies = [
 [[package]]
 name = "holochain_state_types"
 version = "0.3.0-beta-dev.26"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "holo_hash",
  "holochain_integrity_types",
@@ -3566,7 +3803,25 @@ dependencies = [
 [[package]]
 name = "holochain_trace"
 version = "0.3.0-beta-dev.3"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "inferno",
+ "once_cell",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "tracing-core",
+ "tracing-serde",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "holochain_trace"
+version = "0.3.0-beta-dev.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d06e7ed01d69701138e3f34ec00f3e90bfc93e149b37960a1c7fb7aac28d06f"
 dependencies = [
  "chrono",
  "derive_more",
@@ -3583,7 +3838,7 @@ dependencies = [
 [[package]]
 name = "holochain_types"
 version = "0.3.0-beta-dev.26"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3604,7 +3859,7 @@ dependencies = [
  "holochain_nonce",
  "holochain_serialized_bytes",
  "holochain_sqlite",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "holochain_util",
  "holochain_wasmer_host",
  "holochain_zome_types",
@@ -3640,7 +3895,7 @@ dependencies = [
 [[package]]
 name = "holochain_util"
 version = "0.3.0-beta-dev.3"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "backtrace",
  "cfg-if 0.1.10",
@@ -3658,7 +3913,7 @@ dependencies = [
 [[package]]
 name = "holochain_wasm_test_utils"
 version = "0.3.0-beta-dev.27"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "holochain_types",
  "holochain_util",
@@ -3671,7 +3926,7 @@ dependencies = [
 [[package]]
 name = "holochain_wasmer_common"
 version = "0.0.90"
-source = "git+https://github.com/holochain/holochain-wasmer?branch=refactor/reinstate-module-cache#55f7b996c611cd6ea8981780484f853902aa5b09"
+source = "git+https://github.com/holochain/holochain-wasmer?branch=refactor/reinstate-module-cache#3aa836d3e40551b3f695a232dbf0c4a84fdec074"
 dependencies = [
  "holochain_serialized_bytes",
  "serde",
@@ -3712,7 +3967,7 @@ dependencies = [
 [[package]]
 name = "holochain_wasmer_host"
 version = "0.0.91"
-source = "git+https://github.com/holochain/holochain-wasmer?branch=refactor/reinstate-module-cache#55f7b996c611cd6ea8981780484f853902aa5b09"
+source = "git+https://github.com/holochain/holochain-wasmer?branch=refactor/reinstate-module-cache#3aa836d3e40551b3f695a232dbf0c4a84fdec074"
 dependencies = [
  "bimap",
  "bytes",
@@ -3755,7 +4010,7 @@ dependencies = [
 [[package]]
 name = "holochain_websocket"
 version = "0.3.0-beta-dev.6"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "futures",
  "ghost_actor 0.4.0-alpha.5",
@@ -3779,7 +4034,7 @@ dependencies = [
 [[package]]
 name = "holochain_zome_types"
 version = "0.3.0-beta-dev.20"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derive_builder",
  "holo_hash",
@@ -3926,6 +4181,19 @@ dependencies = [
 
 [[package]]
 name = "hyper-rustls"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1788965e61b367cd03a62950836d5cd41560c3577d90e40e0819373194d1661c"
+dependencies = [
+ "http",
+ "hyper",
+ "rustls 0.20.9",
+ "tokio",
+ "tokio-rustls 0.23.4",
+]
+
+[[package]]
+name = "hyper-rustls"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec3efd23720e2049821a693cbc7e65ea87c72f1c58ff2f9522ff332b1491e590"
@@ -3938,6 +4206,18 @@ dependencies = [
  "rustls-native-certs",
  "tokio",
  "tokio-rustls 0.24.1",
+]
+
+[[package]]
+name = "hyper-timeout"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1"
+dependencies = [
+ "hyper",
+ "pin-project-lite",
+ "tokio",
+ "tokio-io-timeout",
 ]
 
 [[package]]
@@ -3964,7 +4244,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.52.0",
+ "windows-core 0.51.1",
 ]
 
 [[package]]
@@ -4307,6 +4587,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonwebtoken"
+version = "9.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c7ea04a7c5c055c175f189b6dc6ba036fd62306b58c66c9f6389036c503a3f4"
+dependencies = [
+ "base64 0.21.5",
+ "js-sys",
+ "pem 3.0.3",
+ "ring 0.17.7",
+ "serde",
+ "serde_json",
+ "simple_asn1",
+]
+
+[[package]]
 name = "keyboard-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4320,7 +4615,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p"
 version = "0.3.0-beta-dev.25"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "arrayref",
  "base64 0.21.5",
@@ -4331,7 +4626,7 @@ dependencies = [
  "futures",
  "ghost_actor 0.3.0-alpha.6",
  "governor",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "itertools 0.11.0",
  "kitsune_p2p_bin_data",
  "kitsune_p2p_block",
@@ -4363,7 +4658,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bin_data"
 version = "0.3.0-beta-dev.11"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.13.1",
  "derive_more",
@@ -4377,7 +4672,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_block"
 version = "0.3.0-beta-dev.13"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "kitsune_p2p_bin_data",
  "kitsune_p2p_timestamp",
@@ -4387,7 +4682,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bootstrap"
 version = "0.2.0-beta-dev.16"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "clap 4.4.13",
  "futures",
@@ -4406,7 +4701,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bootstrap_client"
 version = "0.3.0-beta-dev.22"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "ed25519-dalek",
  "kitsune_p2p_bin_data",
@@ -4423,7 +4718,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_dht"
 version = "0.3.0-beta-dev.12"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derivative",
  "derive_more",
@@ -4443,7 +4738,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_dht_arc"
 version = "0.3.0-beta-dev.10"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derive_more",
  "gcollections",
@@ -4457,7 +4752,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_fetch"
 version = "0.3.0-beta-dev.18"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "derive_more",
  "kitsune_p2p_timestamp",
@@ -4471,7 +4766,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_mdns"
 version = "0.3.0-beta-dev.1"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.21.5",
  "err-derive 0.3.1",
@@ -4485,12 +4780,12 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_proxy"
 version = "0.3.0-beta-dev.16"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.21.5",
  "derive_more",
  "futures",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "kitsune_p2p_transport_quic",
  "kitsune_p2p_types",
  "serde",
@@ -4502,7 +4797,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_timestamp"
 version = "0.3.0-beta-dev.5"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "chrono",
  "rusqlite",
@@ -4512,7 +4807,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_transport_quic"
 version = "0.3.0-beta-dev.16"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "blake2b_simd 1.0.2",
  "futures",
@@ -4527,13 +4822,13 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_types"
 version = "0.3.0-beta-dev.16"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "base64 0.21.5",
  "derive_more",
  "futures",
  "ghost_actor 0.3.0-alpha.6",
- "holochain_trace",
+ "holochain_trace 0.3.0-beta-dev.3",
  "kitsune_p2p_bin_data",
  "kitsune_p2p_dht",
  "kitsune_p2p_dht_arc",
@@ -4919,6 +5214,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"
 
 [[package]]
+name = "matchit"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
+
+[[package]]
 name = "matrixmultiply"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4941,7 +5242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c769962ac75a6ea437f0922b27834bcccd4c013d591383a16ae5731e3ef0f3f3"
 dependencies = [
  "async-std",
- "async-stream",
+ "async-stream 0.2.1",
  "dns-parser",
  "err-derive 0.2.4",
  "futures-core",
@@ -5086,7 +5387,7 @@ checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
 [[package]]
 name = "mr_bundle"
 version = "0.3.0-beta-dev.3"
-source = "git+https://github.com/guillemcordoba/holochain?branch=fix/wasmer-cache-latency#21c11c6bb1551328ab48b154c51b751bea805294"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#f178a06fea7e999e728b27bb2d7253db42e444d6"
 dependencies = [
  "bytes",
  "derive_more",
@@ -5370,6 +5671,17 @@ checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
 dependencies = [
  "overload",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "num-bigint"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
+dependencies = [
+ "autocfg 1.1.0",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -5831,6 +6143,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pem"
+version = "3.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b8fcc794035347fb64beda2d3b462595dd2753e3f268d89c5aae77e8cf2c310"
+dependencies = [
+ "base64 0.21.5",
+ "serde",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6000,11 +6322,31 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
+version = "0.4.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ef0f924a5ee7ea9cbcea77529dba45f8a9ba9f622419fe3386ca581a3ae9d5a"
+dependencies = [
+ "pin-project-internal 0.4.30",
+]
+
+[[package]]
+name = "pin-project"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fda4ed1c6c173e3fc7a83629421152e01d7b1f9b7f65fb301e490e8cfc656422"
 dependencies = [
- "pin-project-internal",
+ "pin-project-internal 1.1.3",
+]
+
+[[package]]
+name = "pin-project-internal"
+version = "0.4.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "851c8d0ce9bebe43790dedfc86614c23494ac9f423dd618d3a61fc693eafe61e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -6234,6 +6576,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95fc56cda0b5c3325f5fbbd7ff9fda9e02bb00bb3dac51252d2f1bfa1cb8cc8c"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "prost"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "146c289cda302b98a28d40c8b3b90498d6e526dd24ac2ecea73e4e491685b94a"
+dependencies = [
+ "bytes",
+ "prost-derive",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efb6c9a1dd1def8e2124d17e83a20af56f1570d6c2d2bd9e266ccb768df3840e"
+dependencies = [
+ "anyhow",
+ "itertools 0.11.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
+
+[[package]]
+name = "prost-types"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "193898f59edcf43c26227dcd4c8427f00d99d61e95dcde58dabd49fa291d470e"
+dependencies = [
+ "prost",
 ]
 
 [[package]]
@@ -6646,7 +7020,7 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ffbe84efe2f38dea12e9bfc1f65377fdf03e53a18cb3b995faedf7934c7e785b"
 dependencies = [
- "pem",
+ "pem 1.1.1",
  "ring 0.16.20",
  "time",
  "yasna",
@@ -6780,6 +7154,7 @@ version = "0.11.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13293b639a097af28fc8a90f22add145a9c954e49d77da06263d58cf44d5fb91"
 dependencies = [
+ "async-compression",
  "base64 0.21.5",
  "bytes",
  "encoding_rs",
@@ -6789,20 +7164,26 @@ dependencies = [
  "http",
  "http-body",
  "hyper",
+ "hyper-rustls 0.23.2",
  "hyper-tls",
  "ipnet",
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding 2.3.1",
  "pin-project-lite",
+ "rustls 0.20.9",
+ "rustls-native-certs",
+ "rustls-pemfile 1.0.4",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
+ "tokio-rustls 0.23.4",
  "tokio-util",
  "tower-service",
  "url 2.5.0",
@@ -6925,7 +7306,10 @@ dependencies = [
 name = "rostanga"
 version = "0.0.0"
 dependencies = [
+ "alerts",
  "anyhow",
+ "firestore",
+ "hc_zome_notifications_types",
  "holochain_client",
  "holochain_types",
  "log",
@@ -6960,6 +7344,17 @@ dependencies = [
  "libc",
  "rtoolbox",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "rsb_derive"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2c53e42fccdc5f1172e099785fe78f89bc0c1e657d0c2ef591efbfac427e9a4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -7140,6 +7535,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
+name = "rvs_derive"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e1fa12378eb54f3d4f2db8dcdbe33af610b7e7d001961c1055858282ecef2a5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "rvstruct"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5107860ec34506b64cf3680458074eac5c2c564f7ccc140918bbcd1714fd8d5d"
+dependencies = [
+ "rvs_derive",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7220,6 +7635,19 @@ name = "seahash"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
+
+[[package]]
+name = "secret-vault-value"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5f8cfb86d2019f64a4cfb49e499f401f406fbec946c1ffeea9d0504284347de"
+dependencies = [
+ "prost",
+ "prost-types",
+ "serde",
+ "serde_json",
+ "zeroize",
+]
 
 [[package]]
 name = "security-framework"
@@ -7618,6 +8046,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
+name = "simple_asn1"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adc4e5204eb1910f40f9cfa375f6f05b68c3abac4b6fd879c8ff5e7ae8a0a085"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "thiserror",
+ "time",
+]
+
+[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7804,7 +8244,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f9fbf9bd71e4cf18d68a8a0951c0e5b7255920c0cd992c4ff51cddd6ef514a3"
 dependencies = [
  "futures-core",
- "pin-project",
+ "pin-project 1.1.3",
  "tokio",
 ]
 
@@ -7851,6 +8291,15 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+
+[[package]]
+name = "struct-path"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "899edf28cf7320503eda593b4bbce1bc5e9533501a11d45537e2c5be90128fc7"
+dependencies = [
+ "convert_case 0.6.0",
+]
 
 [[package]]
 name = "structopt"
@@ -7969,6 +8418,12 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "sync_wrapper"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
 name = "synstructure"
@@ -8696,6 +9151,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-io-timeout"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf"
+dependencies = [
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "tokio-macros"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8758,7 +9223,7 @@ dependencies = [
  "futures-util",
  "log",
  "native-tls",
- "pin-project",
+ "pin-project 1.1.3",
  "tokio",
  "tokio-native-tls",
  "tungstenite 0.12.0",
@@ -8886,6 +9351,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "tonic"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d560933a0de61cf715926b9cac824d4c883c2c43142f787595e48280c40a1d0e"
+dependencies = [
+ "async-stream 0.3.5",
+ "async-trait",
+ "axum",
+ "base64 0.21.5",
+ "bytes",
+ "h2",
+ "http",
+ "http-body",
+ "hyper",
+ "hyper-timeout",
+ "percent-encoding 2.3.1",
+ "pin-project 1.1.3",
+ "prost",
+ "rustls 0.21.10",
+ "rustls-native-certs",
+ "rustls-pemfile 1.0.4",
+ "tokio",
+ "tokio-rustls 0.24.1",
+ "tokio-stream",
+ "tower",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "toolchain_find"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8899,10 +9395,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "tower"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
+dependencies = [
+ "futures-core",
+ "futures-util",
+ "indexmap 1.9.3",
+ "pin-project 1.1.3",
+ "pin-project-lite",
+ "rand 0.8.5",
+ "slab",
+ "tokio",
+ "tokio-util",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
+name = "tower-layer"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c20c8dbed6283a09604c3e69b4b7eeb54e298b8a600d4d5ecb5ad39de609f1d0"
+
+[[package]]
 name = "tower-service"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
+
+[[package]]
+name = "tower-util"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1093c19826d33807c72511e68f73b4a0469a3f22c2bd5f7d5212178b4b89674"
+dependencies = [
+ "futures-core",
+ "futures-util",
+ "pin-project 0.4.30",
+ "tower-service",
+]
 
 [[package]]
 name = "tracing"
@@ -8943,7 +9477,7 @@ version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97d095ae15e245a057c8e8451bab9b3ee1e1f68e9ba2b4fbc18d0ac5237835f2"
 dependencies = [
- "pin-project",
+ "pin-project 1.1.3",
  "tracing",
 ]
 
@@ -9523,7 +10057,7 @@ dependencies = [
  "mime_guess",
  "multer",
  "percent-encoding 2.3.1",
- "pin-project",
+ "pin-project 1.1.3",
  "rustls-pemfile 1.0.4",
  "scoped-tls",
  "serde",
@@ -10495,7 +11029,7 @@ dependencies = [
  "futures",
  "http",
  "hyper",
- "hyper-rustls",
+ "hyper-rustls 0.24.2",
  "itertools 0.12.0",
  "log",
  "percent-encoding 2.3.1",

@@ -23,7 +23,11 @@ tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notifi
 tauri-plugin-log = "2.0.0-alpha"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
 
+alerts = { git = "https://github.com/darksoil-studio/gather", branch = "for-hdk-0.3.0-beta-dev" }                             # TODO: remove
+hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
+
 wry = "=0.35.1"
+firestore = "0.39"
 
 anyhow = "1"
 log = "0.4"

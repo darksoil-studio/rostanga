@@ -51,7 +51,7 @@ pub fn conductor_config(
         signal_url: String::from("wss://signal.holo.host"),
     });
 
-    config.network = Some(network_config);
+    config.network = network_config;
 
     config.admin_interfaces = Some(vec![AdminInterfaceConfig {
         driver: InterfaceDriver::Websocket { port: admin_port },
