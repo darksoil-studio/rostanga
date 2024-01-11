@@ -29,6 +29,7 @@ hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifi
 wry = "=0.35.1"
 firestore = "0.39"
 
+app_dirs2 = "2.5.5"
 anyhow = "1"
 log = "0.4"
 serde = { version = "1.0.193", features = ["derive"] }

@@ -20,7 +20,7 @@ swift-rs = { git = "https://github.com/guillemcordoba/swift-rs", branch = "main"
 tao = { git = "https://github.com/guillemcordoba/tao", branch = "dev" }
 dirs = { path = "./dirs-rs" }
 
-holochain_wasmer_host = { git = "https://github.com/holochain/holochain-wasmer", branch = "refactor/reinstate-module-cache" }
+holochain_wasmer_host = { git = "https://github.com/guillemcordoba/holochain-wasmer", branch = "refactor/reinstate-module-cache" }
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }

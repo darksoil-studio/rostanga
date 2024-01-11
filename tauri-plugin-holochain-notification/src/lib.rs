@@ -177,7 +177,6 @@ async fn setup<R: Runtime>(
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
-    return Ok(());
     install_initial_apps(
         &app,
         notifications_provider_app_id.clone(),

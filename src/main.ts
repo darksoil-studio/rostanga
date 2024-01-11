@@ -30,10 +30,7 @@ event.listen("gather-setup-complete", () => {
 });
 
 async function openGather() {
-  window.Window.getCurrent().close();
-  invoke("plugin:holochain|open_app", {
-    appId: "gather",
-  });
+  invoke("launch_gather");
 }
 
 const holochainReady = writable(false);
@@ -55,6 +52,7 @@ invoke("plugin:holochain|is_holochain_ready")
   })
   .catch(() => holochainReady.set(false));
 event.listen("holochain-ready", () => {
+  console.log('hiiiii');
   holochainReady.set(true);
   invoke("plugin:holochain|list_apps").then((apps) => {
     console.log(apps);

@@ -53,7 +53,7 @@ pub struct RunningHolochainInfo {
     pub filesystem: FileSystem,
 }
 
-static RUNNING_HOLOCHAIN: RwLock<Option<RunningHolochainInfo>> = RwLock::new(None);
+pub static RUNNING_HOLOCHAIN: RwLock<Option<RunningHolochainInfo>> = RwLock::new(None);
 
 pub async fn launch() -> crate::Result<RunningHolochainInfo> {
     {

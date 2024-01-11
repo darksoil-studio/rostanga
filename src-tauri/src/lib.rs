@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use holochain_client::AppInfo;
 use holochain_types::prelude::{ExternIO, SerializedBytes, Signal, UnsafeBytes, ZomeName};
 use holochain_types::web_app::WebAppBundle;
-use tauri::{AppHandle, Manager, Runtime, WindowBuilder, WindowUrl};
+use tauri::{AppHandle, Manager, Runtime, WindowBuilder, WindowUrl, Window};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_holochain::HolochainExt;
@@ -13,6 +13,43 @@ use tauri_plugin_notification::*;
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
 const NOTIFICATIONS_PROVIDER_APP_ID: &'static str = "notifications_provider_fcm";
 const FCM_PROJECT_ID: &'static str = "studio.darksoil.rostanga";
+
+
+#[tauri::command]
+pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
+    window.close()?;
+
+    app.holochain().open_app(String::from("gather"))?;
+
+    Ok(())
+}
+
+fn is_first_run() {
+
+    let app_data_dir = app_dirs2::app_root(
+        AppDataType::UserData,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir");
+!app_data_dir.join("setup").exists()
+}
+
+fn create_setup_file() {
+    let app_data_dir = app_dirs2::app_root(
+        AppDataType::UserData,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir");
+
+    let mut file = File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
+    file.write_all(b"Hello, world!").expect("Failed to create setup file");
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -30,6 +67,9 @@ pub fn run() {
     }
 
     builder
+    .invoke_handler(tauri::generate_handler![
+        launch_gather,
+    ])
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         .plugin(tauri_plugin_holochain_notification::init(
@@ -54,7 +94,7 @@ pub fn run() {
 
             let h = app.handle().clone();
             app.handle()
-                .listen_global("holochain-notifications-setup-complete", move |_| {
+                .listen_global("holochain-ready", move |_| {
                     let h = h.clone();
                     let h2 = h.clone();
 
@@ -69,7 +109,22 @@ pub fn run() {
                         }
                     });
                 });
-
+         
+if is_first_run() {
+                let mut window_builder =
+                WindowBuilder::new(app.handle(), "Welcome", WindowUrl::App("index.html".into()));
+    
+            #[cfg(desktop)]
+            {
+                window_builder = window_builder.min_inner_size(1000.0, 800.0);
+            }
+            let window = window_builder.build()?;
+            create_setup_file();
+    
+        } else {
+            app.handle().holochain().open_app(String::from("gather"));
+        }
+                log::info!("Finishing setup");
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -80,15 +135,6 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     if let None = install_initial_apps_if_necessary(&app).await? {
         // Gather is already installed, skipping splashscreen
         app.holochain().open_app(String::from("gather"))?;
-    } else {
-        let mut window_builder =
-            WindowBuilder::new(&app, "Welcome", WindowUrl::App("index.html".into()));
-
-        #[cfg(desktop)]
-        {
-            window_builder = window_builder.min_inner_size(1000.0, 800.0);
-        }
-        let window = window_builder.build()?;
     }
 
     // TODO: remove all this
