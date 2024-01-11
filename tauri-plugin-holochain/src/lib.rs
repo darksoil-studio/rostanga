@@ -325,6 +325,7 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::sign_zome_call::sign_zome_call,
             commands::get_locales::get_locales,
+            commands::open_app::open_app,
             commands::get_runtime_info::get_runtime_info
         ])
         .register_uri_scheme_protocol("happ", |app_handle, request| {
@@ -400,22 +401,27 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             })
         })
         .setup(move |app: &AppHandle<R>, api| {
-            let r: crate::Result<()> = tauri::async_runtime::block_on(async move {
-                let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
-                let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
+            let app = app.clone();
+            tauri::async_runtime::spawn(async move {
+                // let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
+                // let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
 
                 let http_server_port = portpicker::pick_unused_port().expect("No ports free");
                 #[cfg(mobile)]
-                mobile::init(app, api).await?;
+                mobile::init(&app, api)
+                    .await
+                    .expect("Could not init plugin");
                 #[cfg(desktop)]
-                desktop::init(app, api).await?;
+                desktop::init(&app, api)
+                    .await
+                    .expect("Could not init plugin");
 
                 let RunningHolochainInfo {
                     admin_port,
                     app_port,
                     lair_client,
                     filesystem,
-                } = launch().await?;
+                } = launch().await.expect("Could not launch holochain");
 
                 log::info!("Starting http server at port {http_server_port:?}");
 
@@ -432,15 +438,14 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                     filesystem,
                 };
 
-                p.workaround_join_failed_all_apps().await?;
+                // p.workaround_join_failed_all_apps().await?;
 
                 // manage state so it is accessible by the commands
                 app.manage(p);
 
-                Ok(())
+                app.emit("holochain-ready", ())
+                    .expect("Could not emit holochain ready event");
             });
-            println!("Finished holochain plugin setup: {r:?}");
-            r?;
 
             Ok(())
         })

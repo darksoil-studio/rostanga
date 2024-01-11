@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="sv" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s38e806c57d9ab98d">
+  <source>Welcome to the Röstånga app!</source>
+</trans-unit>
+<trans-unit id="sf3ff78cc329d3528">
+  <source>Previous</source>
+</trans-unit>
+<trans-unit id="saad73c902e6a9791">
+  <source>Launch App</source>
+</trans-unit>
+<trans-unit id="s0fbf6dc6a1966408">
+  <source>Next</source>
+</trans-unit>
+</body>
+</file>
+</xliff>

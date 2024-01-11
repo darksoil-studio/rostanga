@@ -5,7 +5,7 @@
   "type": "module",
   "workspaces": ["tauri-plugin-holochain/ui"],
   "scripts": {
-    "start": "npm run tauri dev -- --release --no-watch --no-dev-server-wait",
+    "start": "npm run tauri dev -- --release",
     "start:android": "npm run tauri android dev -- --no-dev-server-wait --release --no-watch",
     "android:emulator": "emulator -avd Pixel -gpu off",
     "dev": "vite",
@@ -14,14 +14,21 @@
     "tauri": "tauri",
     "prepare": "npm run prepare:gather && npm run prepare:notifications",
     "prepare:notifications": "curl -L --output workdir/notifications_provider_fcm.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_provider_fcm.happ && curl -L --output workdir/notifications_fcm_recipient.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_fcm_recipient.happ",
-    "prepare:gather": "curl -L --output workdir/gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.7/gather.webhapp"
+    "prepare:gather": "curl -L --output workdir/gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.7/gather.webhapp",
+    "localize:extract": "lit-localize extract",
+    "localize:build": "lit-localize build"
   },
   "dependencies": {
+    "@holochain-open-dev/stores": "^0.8.10",
     "@holochain/client": "^0.16.2",
+    "@lit/localize": "^0.12.1",
     "@msgpack/msgpack": "^3.0.0-beta2",
-    "@tauri-apps/api": "^2.0.0-alpha.13"
+    "@shoelace-style/shoelace": "^2.12.0",
+    "@tauri-apps/api": "^2.0.0-alpha.13",
+    "lit": "^3.1.1"
   },
   "devDependencies": {
+    "@lit/localize-tools": "^0.7.1",
     "@tauri-apps/cli": "^2.0.0-alpha.20",
     "concurrently": "^8.2.1",
     "internal-ip": "^7.0.0",

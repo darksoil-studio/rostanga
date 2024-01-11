@@ -1,6 +1,7 @@
 {
   "build": {
     "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": true
@@ -25,7 +26,14 @@
     "security": {
       "csp": null
     },
-    "windows": []
+    "windows": [
+      {
+        "label": "splashscreen",
+        "title": "Rostanga",
+        "width": 1000,
+        "height": 800
+      }
+    ]
   },
   "plugins": {
     "cli": {
