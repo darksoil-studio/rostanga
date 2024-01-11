@@ -1,5 +1,7 @@
 import { event } from "@tauri-apps/api";
 import {
+  AsyncStatus,
+  Readable,
   Writable,
   derived,
   subscribe,
@@ -13,28 +15,54 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { msg } from "@lit/localize";
 import { invoke } from "@tauri-apps/api/core";
+import { renderAsyncStatus } from "@holochain-open-dev/elements";
 
-const STATUS = [
-  "start",
-  // "lair-keystore-launched",
-  "holochain-ready",
-  "notifications-setup-complete",
-  "gather-setup-complete",
-];
-
-const status: Writable<string> = writable(STATUS[0]);
-const progress = derived(status, (status) => {
-  const statusIndex = STATUS.findIndex((s) => s === status);
-  return Math.floor((statusIndex + 1) / STATUS.length) * 100;
+const setupError: Writable<string | undefined> = writable(undefined);
+event.listen("setup-error", (e) => {
+  setupError.set(e.payload as string);
 });
 
-event.listen("setup-progress", (e) => {
-  status.set(e.payload as string);
+const gatherSetup = writable(false);
+event.listen("gather-setup-complete", () => {
+  gatherSetup.set(true);
 });
 
+const holochainReady = writable(false);
 event.listen("holochain-ready", () => {
-  status.set("holochain-ready");
+  holochainReady.set(true);
 });
+
+const notificationsSetup = writable(false);
+event.listen("holochain-notifications-setup-complete", () => {
+  notificationsSetup.set(true);
+});
+
+const progress = derived(
+  [gatherSetup, notificationsSetup],
+  ([gatherSetup, notificationsSetup]) => {
+    const setupsDone = (gatherSetup ? 1 : 0) + (notificationsSetup ? 1 : 0);
+
+    return (100 * setupsDone) / 2;
+  }
+);
+const status: Readable<AsyncStatus<number>> = derived(
+  [setupError, holochainReady, progress],
+  ([setupError, holochainReady, progress]) => {
+    if (setupError)
+      return {
+        status: "error",
+        error: setupError,
+      } as AsyncStatus<number>;
+    if (!holochainReady)
+      return {
+        status: "pending",
+      } as AsyncStatus<number>;
+    return {
+      status: "complete",
+      value: progress,
+    } as AsyncStatus<number>;
+  }
+);
 
 @customElement("splash-screen")
 export class SplashScreen extends LitElement {
@@ -71,7 +99,7 @@ export class SplashScreen extends LitElement {
       >
       <span
         >${msg(
-          "What if we could tie our own technical infrastructure to our village?"
+          "What if we could tie our own technical infrastructure to our village, and bring all that we need in a single place?"
         )}</span
       >
     </div>`;
@@ -106,7 +134,7 @@ export class SplashScreen extends LitElement {
       >
       <span
         >${msg(
-          "Imagine you want to play a football match. It's not worth it to meet unless we have at least 10 players to play! Oh and if no one has a ball, then we can't play either!"
+          "Imagine you want to play a football match. It's not worth it to meet unless we have at least 10 players to play! Oh, and if no one has a ball, then we can't play either!"
         )}</span
       >
     </div>`;
@@ -162,6 +190,7 @@ export class SplashScreen extends LitElement {
     return html`${subscribe(
       progress,
       (p) => html`<sl-progress-bar .value=${p}></sl-progress-bar>`
+      // (_p) => html`<sl-progress-bar indeterminate></sl-progress-bar>`
     )}`;
   }
 
@@ -218,8 +247,17 @@ export class SplashScreen extends LitElement {
   }
 
   render() {
-    return html`${subscribe(status, (status) =>
-      status === STATUS[0] ? this.renderLoading() : this.renderSplashScreen()
+    return html`${subscribe(
+      status,
+      renderAsyncStatus({
+        pending: () => this.renderLoading(),
+        error: (e) =>
+          html`<display-error
+            .headline=${msg("Sorry... There was an error launching the app.")}
+            .error=${e}
+          ></display-error>`,
+        complete: () => this.renderSplashScreen(),
+      })
     )}`;
   }
 

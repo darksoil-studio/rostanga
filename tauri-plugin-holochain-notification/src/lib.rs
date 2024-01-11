@@ -154,7 +154,7 @@ pub fn init<R: Runtime>(
                     .await
                     {
                         Ok(_) => app2
-                            .emit("setup-progress", "notifications-setup-complete")
+                            .emit("holochain-notifications-setup-complete", ())
                             .expect("Could not emit setup progress event"),
                         Err(err) => app2
                             .emit(

@@ -5,7 +5,7 @@
   "type": "module",
   "workspaces": ["tauri-plugin-holochain/ui"],
   "scripts": {
-    "start": "npm run tauri dev -- --release",
+    "start": "npm run tauri dev -- --release --no-watch",
     "start:android": "npm run tauri android dev -- --no-dev-server-wait --release --no-watch",
     "android:emulator": "emulator -avd Pixel -gpu off",
     "dev": "vite",
@@ -19,6 +19,7 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
+    "@holochain-open-dev/elements": "^0.8.4",
     "@holochain-open-dev/stores": "^0.8.10",
     "@holochain/client": "^0.16.2",
     "@lit/localize": "^0.12.1",

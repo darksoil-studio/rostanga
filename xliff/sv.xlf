@@ -14,6 +14,54 @@
 <trans-unit id="s0fbf6dc6a1966408">
   <source>Next</source>
 </trans-unit>
+<trans-unit id="s7553e6aa82bbfb23">
+  <source>Everything that is relevant to Röstånga, in one place.</source>
+</trans-unit>
+<trans-unit id="sa2100ef4b91c2519">
+  <source>Connecting with each other is hard when everyone is using a different app.</source>
+</trans-unit>
+<trans-unit id="seef1c6f076c763fb">
+  <source>What if we could tie our own technical infrastructure to our village, and bring all that we need in a single place?</source>
+</trans-unit>
+<trans-unit id="s91693af61dcad350">
+  <source>At darksoil studio, we want to make this dream a reality.</source>
+</trans-unit>
+<trans-unit id="s4953dd1bb35c1d7e">
+  <source>This app is the first step in that direction, an experiment.</source>
+</trans-unit>
+<trans-unit id="s11cc77d7c5a5d2b0">
+  <source>For now, it only includes Gather, an app to organize events in a collaborative way.</source>
+</trans-unit>
+<trans-unit id="s831bab80c57967e8">
+  <source>In gather, you'll be able to propose events, and invite others around you to join them.</source>
+</trans-unit>
+<trans-unit id="s3744e29dd1d8bf10">
+  <source>Imagine you want to play a football match. It's not worth it to meet unless we have at least 10 players to play! Oh, and if no one has a ball, then we can't play either!</source>
+</trans-unit>
+<trans-unit id="saa6c6193506c46bf">
+  <source>In gather, you can set a minimum number of participants or required needs for your events.</source>
+</trans-unit>
+<trans-unit id="s73d72862020671dc">
+  <source>If the proposal is interesting to other participants, they will start contributing to that proposal. If those needs are not met, then the proposal fails and the event never happens.</source>
+</trans-unit>
+<trans-unit id="s94a340b5734bfd94">
+  <source>But if all the needs are met, then the proposal succeeds and we get to have a great time with each other doing what we love doing!</source>
+</trans-unit>
+<trans-unit id="sf7eb8e202881fc48">
+  <source>Gather is still a prototype, so we want to get as much feedback about it as we can.</source>
+</trans-unit>
+<trans-unit id="s52343bb6dfd1cacb">
+  <source>Play with it! What's working? What's not? Tell us about it!</source>
+</trans-unit>
+<trans-unit id="s7bbafd5a8628854a">
+  <source>We are really excited to start this journey, and we invite you to join us!</source>
+</trans-unit>
+<trans-unit id="sb6f36683e9177ed7">
+  <source>Thanks so much for being here and trying this out.</source>
+</trans-unit>
+<trans-unit id="s96d937bf317c5e45">
+  <source>Sorry... There was an error launching the app.</source>
+</trans-unit>
 </body>
 </file>
 </xliff>
