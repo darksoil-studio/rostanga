@@ -177,6 +177,7 @@ async fn setup<R: Runtime>(
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
+    return Ok(());
     install_initial_apps(
         &app,
         notifications_provider_app_id.clone(),
@@ -205,11 +206,11 @@ async fn setup<R: Runtime>(
 
                     match publish_service_account_key(&mut app_agent_ws, PathBuf::from(s)).await {
                         Ok(_) => {
-                            println!("Successfully uploaded new service account key");
+                            log::info!("Successfully uploaded new service account key");
                             std::process::exit(0);
                         }
                         Err(err) => {
-                            println!("Failed to upload new service account key: {err:?}");
+                            log::error!("Failed to upload new service account key: {err:?}");
                             std::process::exit(1);
                         }
                     }
@@ -280,6 +281,25 @@ async fn setup<R: Runtime>(
                     let notification_data = notification_action_performed_payload.notification;
 
                     let extra = notification_data.extra;
+
+                    if let Some(serde_json::Value::String(notification_hash_b64)) =
+                        extra.get("notification")
+                    {
+                        // TODO: remove this hardcoded stuff
+                        let mut app_agent_ws = h
+                            .holochain()
+                            .app_agent_websocket("gather".into())
+                            .await
+                            .expect("Failed to connect to holochain");
+
+                        let notification_hash =
+                            AnyDhtHash::from(AnyDhtHashB64::from_base64_str(notification_hash_b64));
+
+                        let _response = app_agent_ws
+                            .call_zome("gather".into(), ZomeName::from("gather"), notification_hash)
+                            .await
+                            .expect("Failed to call zome");
+                    }
 
                     if let Some(serde_json::Value::String(hrl)) = extra.get("hrl") {
                         if let Ok(hrl) = Hrl::try_from(hrl.clone()) {

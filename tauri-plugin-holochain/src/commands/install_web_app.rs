@@ -24,7 +24,7 @@ pub async fn install_web_app(
     .await?;
 
     fs.ui_store().extract_and_store_ui(&app_id, &bundle).await?;
-    log::info!("Installed app {app_info:?}");
+    log::info!("Installed web-app's ui {app_id:?}");
 
     Ok(app_info)
 }
@@ -52,12 +52,14 @@ pub async fn install_app(
         })
         .await
         .map_err(|err| crate::Error::ConductorApiError(err))?;
+    log::info!("Installed app {app_info:?}");
+
     let response = admin_ws
         .enable_app(app_id.clone())
         .await
         .map_err(|err| crate::Error::ConductorApiError(err))?;
 
-    println!("Installed app {app_info:?}");
+    log::info!("Enabled app {app_id:?}");
 
     Ok(response.app)
 }

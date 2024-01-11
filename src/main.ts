@@ -1,4 +1,4 @@
-import { event } from "@tauri-apps/api";
+import { event, window } from "@tauri-apps/api";
 import {
   AsyncStatus,
   Readable,
@@ -16,6 +16,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { msg } from "@lit/localize";
 import { invoke } from "@tauri-apps/api/core";
 import { renderAsyncStatus } from "@holochain-open-dev/elements";
+import { AppInfo } from "@holochain/client";
 
 const setupError: Writable<string | undefined> = writable(undefined);
 event.listen("setup-error", (e) => {
@@ -24,17 +25,51 @@ event.listen("setup-error", (e) => {
 
 const gatherSetup = writable(false);
 event.listen("gather-setup-complete", () => {
+  console.log("gathersteupcomplete");
   gatherSetup.set(true);
 });
 
+async function openGather() {
+  window.Window.getCurrent().close();
+  invoke("plugin:holochain|open_app", {
+    appId: "gather",
+  });
+}
+
 const holochainReady = writable(false);
+invoke("plugin:holochain|is_holochain_ready")
+  .then((v) => {
+    holochainReady.set(v as boolean);
+    if (v as boolean) {
+      invoke("plugin:holochain|list_apps").then((apps) => {
+        console.log(apps);
+        if (
+          (apps as Array<AppInfo>).find(
+            (app) => app.installed_app_id === "gather"
+          )
+        ) {
+          gatherSetup.set(true);
+        }
+      });
+    }
+  })
+  .catch(() => holochainReady.set(false));
 event.listen("holochain-ready", () => {
   holochainReady.set(true);
+  invoke("plugin:holochain|list_apps").then((apps) => {
+    console.log(apps);
+    if (
+      (apps as Array<AppInfo>).find((app) => app.installed_app_id === "gather")
+    ) {
+      gatherSetup.set(true);
+    }
+  });
 });
 
 const notificationsSetup = writable(false);
 event.listen("holochain-notifications-setup-complete", () => {
-  notificationsSetup.set(true);
+  console.log("heyuyy2");
+  // notificationsSetup.set(true);
 });
 
 const progress = derived(
@@ -42,7 +77,7 @@ const progress = derived(
   ([gatherSetup, notificationsSetup]) => {
     const setupsDone = (gatherSetup ? 1 : 0) + (notificationsSetup ? 1 : 0);
 
-    return (100 * setupsDone) / 2;
+    return (100 * setupsDone) / 1;
   }
 );
 const status: Readable<AsyncStatus<number>> = derived(
@@ -63,6 +98,7 @@ const status: Readable<AsyncStatus<number>> = derived(
     } as AsyncStatus<number>;
   }
 );
+status.subscribe(console.log);
 
 @customElement("splash-screen")
 export class SplashScreen extends LitElement {
@@ -201,10 +237,11 @@ export class SplashScreen extends LitElement {
   renderActions() {
     const lastPage = this.currentPage === this.pages().length - 1;
     return html`
-      <div class="row" style="gap: 8px">
+      <div class="row" style="gap: 8px;">
         <sl-button
-          .style=${styleMap({
-            display: this.currentPage === 0 ? "none" : "auto",
+          style=${styleMap({
+            flex: 1,
+            opacity: this.currentPage === 0 ? "0" : "1",
           })}
           @click=${() => (this.currentPage -= 1)}
         >
@@ -215,12 +252,10 @@ export class SplashScreen extends LitElement {
           (p) => html`
             <sl-button
               .disabled=${lastPage && p !== 100}
+              style="flex: 1"
+              .variant=${lastPage ? "primary" : "default"}
               @click=${() =>
-                lastPage
-                  ? invoke("open_app", {
-                      appId: "gather",
-                    })
-                  : (this.currentPage += 1)}
+                lastPage ? openGather() : (this.currentPage += 1)}
             >
               ${lastPage ? msg("Launch App") : msg("Next")}
             </sl-button>
@@ -231,16 +266,16 @@ export class SplashScreen extends LitElement {
   }
 
   renderSplashScreen() {
-    return html`<div class="column" style="gap: 16px">
-      ${this.renderCurrentPage()} ${this.renderActions()}
-      ${this.renderProgress()}
+    return html`<div class="column" style="gap: 16px; flex: 1; margin: 16px">
+      <div style="flex: 1">${this.renderCurrentPage()}</div>
+      ${this.renderActions()} ${this.renderProgress()}
     </div>`;
   }
 
   renderLoading() {
     return html`<div
       class="column"
-      style="align-items: center; justify-content: center"
+      style="flex: 1; align-items: center; justify-content: center"
     >
       <sl-spinner style="font-size: 2rem"></sl-spinner>
     </div>`;
@@ -269,6 +304,10 @@ export class SplashScreen extends LitElement {
     .column {
       display: flex;
       flex-direction: column;
+    }
+    :host {
+      display: flex;
+      flex: 1;
     }
   `;
 }

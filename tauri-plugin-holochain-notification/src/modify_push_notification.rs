@@ -61,8 +61,10 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
             })
             .expect("No app with this dna hash");
 
+        let notification_hash = AnyDhtHash::from(hrl_body.resource_hash);
+
         let input = GetNotificationInput {
-            notification_hash: AnyDhtHash::from(hrl_body.resource_hash),
+            notification_hash: notification_hash.clone(),
             locale: String::from("sv"),
         };
         let (nonce, expires_at) = fresh_nonce(Timestamp::now()).expect("Could not create nonce");
@@ -70,7 +72,7 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         let zome_call_unsigned = ZomeCallUnsigned {
             provenance: cell_id.agent_pubkey().clone(),
             cell_id,
-            zome_name: ZomeName::from("alerts"), // TODO: remove hardcoded zome name
+            zome_name: ZomeName::from("gather"), // TODO: remove hardcoded zome name
             fn_name: FunctionName::from("get_notification"),
             cap_secret: None,
             payload: ExternIO::encode(input).expect("Could not encode get notification input"),
@@ -105,6 +107,12 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         map.insert(
             String::from("hrl"),
             serde_json::Value::String(pending_notification.hrl_to_navigate_to_on_click.hrl.into()),
+        );
+
+        let notification_hash_b64 = AnyDhtHashB64::from(notification_hash);
+        map.insert(
+            String::from("notification"),
+            serde_json::Value::String(notification_hash_b64.to_string()),
         );
 
         notification.extra = map;

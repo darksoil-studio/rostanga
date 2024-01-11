@@ -326,7 +326,9 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             commands::sign_zome_call::sign_zome_call,
             commands::get_locales::get_locales,
             commands::open_app::open_app,
-            commands::get_runtime_info::get_runtime_info
+            commands::list_apps::list_apps,
+            commands::get_runtime_info::get_runtime_info,
+            commands::get_runtime_info::is_holochain_ready
         ])
         .register_uri_scheme_protocol("happ", |app_handle, request| {
             if request.uri().to_string().starts_with("happ://ping") {

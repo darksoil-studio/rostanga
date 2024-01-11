@@ -26,14 +26,7 @@
     "security": {
       "csp": null
     },
-    "windows": [
-      {
-        "label": "splashscreen",
-        "title": "Rostanga",
-        "width": 1000,
-        "height": 800
-      }
-    ]
+    "windows": []
   },
   "plugins": {
     "cli": {
