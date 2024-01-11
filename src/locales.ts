@@ -2,7 +2,9 @@ import { configureLocalization } from "@lit/localize";
 import { invoke } from "@tauri-apps/api/core";
 
 export async function setLocale() {
-  const locales = await core.invoke("plugin:holochain|get_locales", {});
+  let locales: string[] = await invoke("plugin:holochain|get_locales", {});
+  locales = locales.map(l => l.substring(0, 2));
+  console.log('Locales:', locales)
 
   const sourceLocale = "en";
   const targetLocales = ["es", "de", "sv", "ca"];

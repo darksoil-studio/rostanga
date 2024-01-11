@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use holochain_client::AppInfo;
 use holochain_types::prelude::{ExternIO, SerializedBytes, Signal, UnsafeBytes, ZomeName};
 use holochain_types::web_app::WebAppBundle;
-use tauri::{AppHandle, Manager, Runtime, WindowBuilder, WindowUrl, Window};
+use tauri::{AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_holochain::HolochainExt;
@@ -13,7 +13,6 @@ use tauri_plugin_notification::*;
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
 const NOTIFICATIONS_PROVIDER_APP_ID: &'static str = "notifications_provider_fcm";
 const FCM_PROJECT_ID: &'static str = "studio.darksoil.rostanga";
-
 
 #[tauri::command]
 pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
@@ -24,22 +23,21 @@ pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holo
     Ok(())
 }
 
-fn is_first_run() {
-
+fn is_first_run() -> bool {
     let app_data_dir = app_dirs2::app_root(
-        AppDataType::UserData,
+        app_dirs2::AppDataType::UserData,
         &app_dirs2::AppInfo {
             name: "studio.darksoil.rostanga",
             author: "darksoil.studio",
         },
     )
     .expect("Can't get app dir");
-!app_data_dir.join("setup").exists()
+    !app_data_dir.join("setup").exists()
 }
-
+use std::io::Write;
 fn create_setup_file() {
     let app_data_dir = app_dirs2::app_root(
-        AppDataType::UserData,
+        app_dirs2::AppDataType::UserData,
         &app_dirs2::AppInfo {
             name: "studio.darksoil.rostanga",
             author: "darksoil.studio",
@@ -47,8 +45,9 @@ fn create_setup_file() {
     )
     .expect("Can't get app dir");
 
-    let mut file = File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
-    file.write_all(b"Hello, world!").expect("Failed to create setup file");
+    let mut file = std::fs::File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
+    file.write_all(b"Hello, world!")
+        .expect("Failed to create setup file");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -67,9 +66,7 @@ pub fn run() {
     }
 
     builder
-    .invoke_handler(tauri::generate_handler![
-        launch_gather,
-    ])
+        .invoke_handler(tauri::generate_handler![launch_gather,])
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         .plugin(tauri_plugin_holochain_notification::init(
@@ -93,38 +90,36 @@ pub fn run() {
             setup_notifications(app.handle())?;
 
             let h = app.handle().clone();
-            app.handle()
-                .listen_global("holochain-ready", move |_| {
-                    let h = h.clone();
-                    let h2 = h.clone();
+            app.handle().listen_global("holochain-ready", move |_| {
+                let h = h.clone();
+                let h2 = h.clone();
 
-                    tauri::async_runtime::spawn(async move {
-                        match setup(h).await {
-                            Ok(_) => h2
-                                .emit("setup-progress", "gather-setup-complete")
-                                .expect("Failed to send gather-setup-complete"),
-                            Err(err) => h2
-                                .emit("setup-error", format!("Failed to set up gather: {err:?}"))
-                                .expect("Failed to send gather-setup-error"),
-                        }
-                    });
+                tauri::async_runtime::spawn(async move {
+                    match setup(h).await {
+                        Ok(_) => h2
+                            .emit("gather-setup-complete", ())
+                            .expect("Failed to send gather-setup-complete"),
+                        Err(err) => h2
+                            .emit("setup-error", format!("Failed to set up gather: {err:?}"))
+                            .expect("Failed to send gather-setup-error"),
+                    }
                 });
-         
-if is_first_run() {
-                let mut window_builder =
-                WindowBuilder::new(app.handle(), "Welcome", WindowUrl::App("index.html".into()));
-    
-            #[cfg(desktop)]
-            {
-                window_builder = window_builder.min_inner_size(1000.0, 800.0);
+            });
+
+            if is_first_run() {
+                let mut window_builder = WindowBuilder::new(
+                    app.handle(),
+                    "Welcome",
+                    WindowUrl::App("index.html".into()),
+                );
+
+                #[cfg(desktop)]
+                {
+                    window_builder = window_builder.min_inner_size(1000.0, 800.0);
+                }
+                let window = window_builder.build()?;
             }
-            let window = window_builder.build()?;
-            create_setup_file();
-    
-        } else {
-            app.handle().holochain().open_app(String::from("gather"));
-        }
-                log::info!("Finishing setup");
+            log::info!("Finishing setup");
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -142,51 +137,63 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 
     let h = app.clone();
 
-    app_agent_websocket.on_signal(move |signal| {
-        let h = h.clone();
-        tauri::async_runtime::spawn(async move {
-            use hc_zome_notifications_types::*;
+    app_agent_websocket
+        .on_signal(move |signal| {
+            let h = h.clone();
+            tauri::async_runtime::spawn(async move {
+                use hc_zome_notifications_types::*;
 
-            let Signal::App { signal , zome_name, .. } = signal else {
-                return ();
-            };
+                let Signal::App {
+                    signal, zome_name, ..
+                } = signal
+                else {
+                    return ();
+                };
 
-            if zome_name.to_string() != "alerts" {
-                return ();
-            }
+                if zome_name.to_string() != "alerts" {
+                    return ();
+                }
 
-            let Ok(alerts::Signal::LinkCreated {
-                    action,
-                    link_type}) = signal.into_inner().decode::<alerts::Signal>() else {
-                return ();
-            };
-            let holochain_types::prelude::Action::CreateLink(create_link) = action.hashed.content else {
-                return ();
-            };
+                let Ok(alerts::Signal::LinkCreated { action, link_type }) =
+                    signal.into_inner().decode::<alerts::Signal>()
+                else {
+                    return ();
+                };
+                let holochain_types::prelude::Action::CreateLink(create_link) =
+                    action.hashed.content
+                else {
+                    return ();
+                };
 
-            let mut app_agent_websocket = h
-                .holochain()
-                .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
-                .await
-                .expect("Failed to connect to holochain");
+                let mut app_agent_websocket = h
+                    .holochain()
+                    .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
+                    .await
+                    .expect("Failed to connect to holochain");
 
-            app_agent_websocket
-                .call_zome(
-                    "notifications_provider_fcm".into(),
-                    ZomeName::from("notifications_provider_fcm"),
-                    "notify_agent".into(),
-                    ExternIO::encode(NotifyAgentInput {
-                        notification: SerializedBytes::from(
-                            UnsafeBytes::from(create_link.tag.0)
-                        ),
-                        agent: create_link.base_address
-                            .into_agent_pub_key()
-                            .expect("Could not convert to agent pubkey")
-            })
-            .expect("Could not encode notify agent input"))
-            .await.expect("Failed to notify agent");
-        });
-    }).await?;
+                app_agent_websocket
+                    .call_zome(
+                        "notifications_provider_fcm".into(),
+                        ZomeName::from("notifications_provider_fcm"),
+                        "notify_agent".into(),
+                        ExternIO::encode(NotifyAgentInput {
+                            notification: SerializedBytes::from(UnsafeBytes::from(
+                                create_link.tag.0,
+                            )),
+                            agent: create_link
+                                .base_address
+                                .into_agent_pub_key()
+                                .expect("Could not convert to agent pubkey"),
+                        })
+                        .expect("Could not encode notify agent input"),
+                    )
+                    .await
+                    .expect("Failed to notify agent");
+            });
+        })
+        .await?;
+
+    create_setup_file();
 
     Ok(())
 }

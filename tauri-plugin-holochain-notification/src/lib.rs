@@ -227,24 +227,23 @@ async fn setup<R: Runtime>(
 
         app_agent_websocket
             .on_signal(move |signal| {
-                let Signal::App {  signal , ..} = signal else {
+                let Signal::App { signal, .. } = signal else {
                     return ();
                 };
 
-                let Ok(notify_agent_signal) = signal.into_inner().decode::<NotifyAgentSignal>() else {
+                let Ok(notify_agent_signal) = signal.into_inner().decode::<NotifyAgentSignal>()
+                else {
                     return ();
                 };
 
                 let fcm_project_id = fcm_project_id.clone();
                 tauri::async_runtime::spawn(async move {
-                    let service_account_key =
-                        into(notify_agent_signal.service_account_key);
+                    let service_account_key = into(notify_agent_signal.service_account_key);
 
                     let body = Hrl::try_from(notify_agent_signal.notification)
                         .expect("Could not deserialize hrl");
 
-                    let str_body =
-                        serde_json::to_string(&body).expect("Could not serialize body");
+                    let str_body = serde_json::to_string(&body).expect("Could not serialize body");
 
                     send_push_notification(
                         fcm_project_id,
@@ -295,7 +294,13 @@ async fn setup<R: Runtime>(
                             AnyDhtHash::from(AnyDhtHashB64::from_base64_str(notification_hash_b64));
 
                         let _response = app_agent_ws
-                            .call_zome("gather".into(), ZomeName::from("gather"), notification_hash)
+                            .call_zome(
+                                "gather".into(),
+                                ZomeName::from("gather"),
+                                FunctionName::from("mark_notification_as_read"),
+                                ExternIO::encode(notification_hash)
+                                    .expect("Could not encode notification hash"),
+                            )
                             .await
                             .expect("Failed to call zome");
                     }

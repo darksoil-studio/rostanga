@@ -245,19 +245,19 @@ impl<R: Runtime> HolochainPlugin<R> {
                                     .map_err(|err| crate::Error::ConductorApiError(err))?;
                                 result = app_agent_websocket
                                     .call_zome(
-                                         role.clone(),
+                                        role.clone(),
                                         zome_name.clone(),
-                                         "entry_defs".into(),
-                                       ExternIO::encode(()).unwrap(),
+                                        "entry_defs".into(),
+                                        ExternIO::encode(()).unwrap(),
                                     )
                                     .await;
-                             }
-                         }
-                     }
-                     _ => {}
-                 }
-             }
-         }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
 
         Ok(())
     }

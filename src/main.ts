@@ -17,6 +17,7 @@ import { msg } from "@lit/localize";
 import { invoke } from "@tauri-apps/api/core";
 import { renderAsyncStatus } from "@holochain-open-dev/elements";
 import { AppInfo } from "@holochain/client";
+import { setLocale } from "./locales";
 
 const setupError: Writable<string | undefined> = writable(undefined);
 event.listen("setup-error", (e) => {
@@ -25,7 +26,6 @@ event.listen("setup-error", (e) => {
 
 const gatherSetup = writable(false);
 event.listen("gather-setup-complete", () => {
-  console.log("gathersteupcomplete");
   gatherSetup.set(true);
 });
 
@@ -47,12 +47,18 @@ invoke("plugin:holochain|is_holochain_ready")
         ) {
           gatherSetup.set(true);
         }
+        if (
+          (apps as Array<AppInfo>).find(
+            (app) => app.installed_app_id === "notifications_provider_fcm"
+          )
+        ) {
+          notificationsSetup.set(true);
+        }
       });
     }
   })
   .catch(() => holochainReady.set(false));
 event.listen("holochain-ready", () => {
-  console.log('hiiiii');
   holochainReady.set(true);
   invoke("plugin:holochain|list_apps").then((apps) => {
     console.log(apps);
@@ -61,21 +67,27 @@ event.listen("holochain-ready", () => {
     ) {
       gatherSetup.set(true);
     }
+    if (
+      (apps as Array<AppInfo>).find(
+        (app) => app.installed_app_id === "notifications_provider_fcm"
+      )
+    ) {
+      notificationsSetup.set(true);
+    }
   });
 });
 
 const notificationsSetup = writable(false);
 event.listen("holochain-notifications-setup-complete", () => {
-  console.log("heyuyy2");
-  // notificationsSetup.set(true);
+  notificationsSetup.set(true);
 });
 
 const progress = derived(
-  [gatherSetup, notificationsSetup],
-  ([gatherSetup, notificationsSetup]) => {
-    const setupsDone = (gatherSetup ? 1 : 0) + (notificationsSetup ? 1 : 0);
+  [holochainReady, gatherSetup, notificationsSetup],
+  (readys) => {
+    const setupsDone = readys.filter(i => i);
 
-    return (100 * setupsDone) / 1;
+    return Math.floor(100 * setupsDone.length / readys.length);
   }
 );
 const status: Readable<AsyncStatus<number>> = derived(
@@ -85,10 +97,6 @@ const status: Readable<AsyncStatus<number>> = derived(
       return {
         status: "error",
         error: setupError,
-      } as AsyncStatus<number>;
-    if (!holochainReady)
-      return {
-        status: "pending",
       } as AsyncStatus<number>;
     return {
       status: "complete",
@@ -113,6 +121,10 @@ export class SplashScreen extends LitElement {
       () => this.renderFeedback(),
       () => this.renderThanks(),
     ];
+  }
+
+  firstUpdated() {
+    setLocale()
   }
 
   renderWelcome() {
