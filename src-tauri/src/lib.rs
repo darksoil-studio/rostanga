@@ -16,6 +16,7 @@ const FCM_PROJECT_ID: &'static str = "studio.darksoil.rostanga";
 
 #[tauri::command]
 pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
+    #[cfg(desktop)]
     window.close()?;
 
     app.holochain().open_app(String::from("gather"))?;

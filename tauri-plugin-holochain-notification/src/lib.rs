@@ -8,7 +8,7 @@ use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
 use holochain_client::{AppAgentWebsocket, AppInfo};
 use holochain_types::{
     prelude::{AppBundle, ExternIO, FunctionName, RoleName, ZomeName},
-    signal::Signal,
+    signal::Signal, dna::{AnyDhtHash, AnyDhtHashB64},
 };
 use hrl::Hrl;
 use serde_json::{Map, Value};
@@ -291,7 +291,7 @@ async fn setup<R: Runtime>(
                             .expect("Failed to connect to holochain");
 
                         let notification_hash =
-                            AnyDhtHash::from(AnyDhtHashB64::from_base64_str(notification_hash_b64));
+                            AnyDhtHash::from(AnyDhtHashB64::from_b64_str(notification_hash_b64).expect("Could not convert notification hash"));
 
                         let _response = app_agent_ws
                             .call_zome(
