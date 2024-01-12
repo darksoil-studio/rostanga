@@ -24,7 +24,7 @@ holochain_wasmer_host = { git = "https://github.com/guillemcordoba/holochain-was
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
-tx5-go-pion-sys = { git = "https://github.com/holochain/tx5", rev = "6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae" }
+# tx5-go-pion-sys = { git = "https://github.com/holochain/tx5", rev = "6ce7bafdc2d4fb6d63b1deb8a312ec3e9fae2aae" }
 
 # tx5-go-pion = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion" }
 # tx5-signal = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-signal" }
