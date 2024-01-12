@@ -95,6 +95,7 @@ pub fn run() {
             app.handle().listen_global("holochain-ready", move |_| {
                 let h = h.clone();
                 let h2 = h.clone();
+                let h3 = h.clone();
 
                 tauri::async_runtime::spawn(async move {
                     match setup(h).await {
@@ -106,6 +107,10 @@ pub fn run() {
                             .expect("Failed to send gather-setup-error"),
                     }
                 });
+
+
+                #[cfg(mobile)]
+                setup_notifications(&h3).expect("Failed to setup notifications");
             });
 
             if is_first_run() {
@@ -131,11 +136,17 @@ pub fn run() {
 async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     if let None = install_initial_apps_if_necessary(&app).await? {
         // Gather is already installed, skipping splashscreen
+        let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app.holochain().app_agent_websocket("gather".into()).await?;
+        let r = app_agent_websocket.call_zome("gather".into(), "gather".into(), "entry_defs".into(), ExternIO::encode(()).unwrap()).await;
+        log::warn!("Result {r:?}");
+
         app.holochain().open_app(String::from("gather"))?;
     }
 
     // TODO: remove all this
-    let mut app_agent_websocket = app.holochain().app_agent_websocket("gather".into()).await?;
+    let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app.holochain().app_agent_websocket("gather".into()).await?;
+    //let r = app_agent_websocket.call_zome("gather".into(), "gather".into(), "entry_defs".into(), ExternIO::encode(()).unwrap()).await;
+
 
     let h = app.clone();
 

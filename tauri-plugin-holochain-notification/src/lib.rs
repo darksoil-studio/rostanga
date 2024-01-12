@@ -16,6 +16,8 @@ use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
 };
+#[cfg(mobile)]
+use tauri_plugin_notification::NotificationExt;
 
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
@@ -316,12 +318,8 @@ async fn setup<R: Runtime>(
                 });
             }
         });
-    }
 
-    #[cfg(mobile)]
-    {
         let h = app.app_handle().clone();
-
         app.listen_global("new-fcm-token", move |event| {
             let recipient_app_id = recipient_app_id.clone();
             let h = h.clone();
@@ -349,6 +347,8 @@ async fn setup<R: Runtime>(
                 });
             }
         });
+        //app.notification().register_for_push_notifications().expect("Could not register for push notifications");
+
     }
 
     Ok(())

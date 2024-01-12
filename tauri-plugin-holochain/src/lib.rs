@@ -93,16 +93,16 @@ impl<R: Runtime> HolochainPlugin<R> {
     }
 
     pub fn open_app(&self, app_id: String) -> crate::Result<()> {
-        println!("Opening app {}", app_id);
+        log::info!("Opening app {}", app_id);
 
         let _window = self.build_window(app_id.clone(), None)?;
 
-        println!("Opened app {}", app_id);
+        log::info!("Opened app {}", app_id);
         Ok(())
     }
 
     pub async fn open_hrl(&self, hrl: Hrl) -> crate::Result<()> {
-        println!("Opening hrl {:?}", hrl);
+        log::info!("Opening hrl {:?}", hrl);
 
         let mut admin_ws = self.admin_websocket().await?;
 
@@ -136,7 +136,7 @@ impl<R: Runtime> HolochainPlugin<R> {
         let _window =
             self.build_window(app_info.installed_app_id.clone(), Some(query_args.clone()))?;
 
-        println!(
+        log::info!(
             "Opened app {} with query_args {query_args}",
             app_info.installed_app_id
         );
@@ -439,6 +439,8 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                     },
                     filesystem,
                 };
+
+                //p.workaround_join_failed_all_apps().await.expect("Could not workaround");
 
                 // manage state so it is accessible by the commands
                 app.manage(p);

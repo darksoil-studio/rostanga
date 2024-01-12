@@ -24,7 +24,7 @@ holochain_types = { version = "0.3.0-beta-dev", default-features = false, featur
   "sqlite-encrypted",
 ] }
 holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
-lair_keystore = "0.3.0"
+lair_keystore = "0.4.0"
 holochain_keystore = { version = "0.3.0-beta-dev", default-features = false, features = [
   "sqlite-encrypted",
 ] }

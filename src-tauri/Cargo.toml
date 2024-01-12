@@ -18,6 +18,7 @@ tauri-build = { version = "2.0.0-alpha.13", features = [] }
 
 [dependencies]
 tauri = { version = "2.0.0-alpha.20", features = [] }
+wry = "=0.35.1"
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notification" }
 tauri-plugin-log = "2.0.0-alpha"
@@ -26,7 +27,6 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 alerts = { git = "https://github.com/darksoil-studio/gather", branch = "for-hdk-0.3.0-beta-dev" }                             # TODO: remove
 hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
 
-wry = "=0.35.1"
 firestore = "0.39"
 
 app_dirs2 = "2.5.5"

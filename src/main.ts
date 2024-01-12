@@ -1,4 +1,4 @@
-import { event, window } from "@tauri-apps/api";
+import { event } from "@tauri-apps/api";
 import {
   AsyncStatus,
   Readable,
@@ -92,7 +92,7 @@ const progress = derived(
 );
 const status: Readable<AsyncStatus<number>> = derived(
   [setupError, holochainReady, progress],
-  ([setupError, holochainReady, progress]) => {
+  ([setupError, _holochainReady, progress]) => {
     if (setupError)
       return {
         status: "error",
