@@ -46,7 +46,8 @@ fn create_setup_file() {
     )
     .expect("Can't get app dir");
 
-    let mut file = std::fs::File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
+    let mut file =
+        std::fs::File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
     file.write_all(b"Hello, world!")
         .expect("Failed to create setup file");
 }
@@ -87,8 +88,8 @@ pub fn run() {
             //     }
             // }
 
-            #[cfg(mobile)]
-            setup_notifications(app.handle())?;
+            //            #[cfg(mobile)]
+            //            setup_notifications(app.handle())?;
 
             let h = app.handle().clone();
             app.handle().listen_global("holochain-ready", move |_| {

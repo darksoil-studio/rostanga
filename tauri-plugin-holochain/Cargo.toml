@@ -14,6 +14,7 @@ tauri = { version = "2.0.0-alpha", features = [
   "native-tls-vendored",
 ] }
 
+gcloud-sdk = { version = "0.24", features = ["tls-webpki-roots"] }
 mr_bundle = "0.3.0-beta-dev"
 holochain = { version = "0.3.0-beta-dev", default-features = false, features = [
   "sqlite-encrypted",
