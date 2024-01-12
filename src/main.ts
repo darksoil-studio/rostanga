@@ -277,7 +277,7 @@ export class SplashScreen extends LitElement {
 
   renderSplashScreen() {
     return html`<div class="column" style="gap: 16px; flex: 1; margin: 16px">
-      <div style="flex: 1" style="margin: 32px">
+      <div style="flex: 1" style="padding: 48px">
         ${this.renderCurrentPage()}
       </div>
       ${this.renderActions()} ${this.renderProgress()}
@@ -324,6 +324,7 @@ export class SplashScreen extends LitElement {
 
     span {
       font-size: 20px;
+      text-align: justify;
     }
     h2 {
       font-size: 28px;

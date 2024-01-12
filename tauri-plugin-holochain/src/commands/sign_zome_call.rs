@@ -1,5 +1,5 @@
 use holochain::{
-    conductor::{api::ZomeCall, ConductorHandle},
+    conductor::api::ZomeCall,
     prelude::{CapSecret, CellId, ExternIO, FunctionName, Timestamp, ZomeCallUnsigned, ZomeName},
 };
 use holochain_client::{sign_zome_call_with_client, AgentPubKey};
