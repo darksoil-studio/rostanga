@@ -97,7 +97,7 @@ dependencies = [
 [[package]]
 name = "aitia"
 version = "0.2.0-beta-dev.0"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -2320,7 +2320,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fixt"
 version = "0.3.0-beta-dev.0"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "holochain_serialized_bytes",
  "lazy_static",
@@ -3109,7 +3109,7 @@ dependencies = [
 [[package]]
 name = "hc_sleuth"
 version = "0.2.0-beta-dev.0"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "aitia",
  "anyhow",
@@ -3189,7 +3189,7 @@ dependencies = [
 [[package]]
 name = "hdi"
 version = "0.4.0-beta-dev.21"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "hdk_derive 0.3.0-beta-dev.20 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
  "holo_hash",
@@ -3225,7 +3225,7 @@ dependencies = [
 [[package]]
 name = "hdk"
 version = "0.3.0-beta-dev.25"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "getrandom 0.2.12",
  "hdi 0.4.0-beta-dev.21 (git+https://github.com/guillemcordoba/holochain?branch=firestore)",
@@ -3260,7 +3260,7 @@ dependencies = [
 [[package]]
 name = "hdk_derive"
 version = "0.3.0-beta-dev.20"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "darling 0.14.4",
  "heck 0.4.1",
@@ -3344,7 +3344,7 @@ dependencies = [
 [[package]]
 name = "holo_hash"
 version = "0.3.0-beta-dev.17"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.13.1",
  "blake2b_simd 0.5.11",
@@ -3366,7 +3366,7 @@ dependencies = [
 [[package]]
 name = "holochain"
 version = "0.3.0-beta-dev.30"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "aitia",
  "anyhow",
@@ -3465,7 +3465,7 @@ dependencies = [
 [[package]]
 name = "holochain_cascade"
 version = "0.3.0-beta-dev.30"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -3522,7 +3522,7 @@ dependencies = [
 [[package]]
 name = "holochain_conductor_api"
 version = "0.3.0-beta-dev.30"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derive_more",
  "directories",
@@ -3547,7 +3547,7 @@ dependencies = [
 [[package]]
 name = "holochain_conductor_services"
 version = "0.2.0-beta-dev.1"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3564,7 +3564,7 @@ dependencies = [
 [[package]]
 name = "holochain_integrity_types"
 version = "0.3.0-beta-dev.20"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derive_builder",
  "holo_hash",
@@ -3583,7 +3583,7 @@ dependencies = [
 [[package]]
 name = "holochain_keystore"
 version = "0.3.0-beta-dev.22"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.13.1",
  "derive_more",
@@ -3611,7 +3611,7 @@ dependencies = [
 [[package]]
 name = "holochain_metrics"
 version = "0.3.0-beta-dev.7"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "opentelemetry_api",
  "reqwest",
@@ -3622,7 +3622,7 @@ dependencies = [
 [[package]]
 name = "holochain_nonce"
 version = "0.3.0-beta-dev.22"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "getrandom 0.2.12",
  "holochain_secure_primitive",
@@ -3632,7 +3632,7 @@ dependencies = [
 [[package]]
 name = "holochain_p2p"
 version = "0.3.0-beta-dev.29"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "aitia",
  "async-trait",
@@ -3666,7 +3666,7 @@ dependencies = [
 [[package]]
 name = "holochain_secure_primitive"
 version = "0.3.0-beta-dev.21"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "paste",
  "serde",
@@ -3701,7 +3701,7 @@ dependencies = [
 [[package]]
 name = "holochain_sqlite"
 version = "0.3.0-beta-dev.27"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3745,7 +3745,7 @@ dependencies = [
 [[package]]
 name = "holochain_state"
 version = "0.3.0-beta-dev.29"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "aitia",
  "async-recursion 0.3.2",
@@ -3785,7 +3785,7 @@ dependencies = [
 [[package]]
 name = "holochain_state_types"
 version = "0.3.0-beta-dev.27"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "holo_hash",
  "holochain_integrity_types",
@@ -3795,7 +3795,7 @@ dependencies = [
 [[package]]
 name = "holochain_trace"
 version = "0.3.0-beta-dev.4"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "chrono",
  "derive_more",
@@ -3830,7 +3830,7 @@ dependencies = [
 [[package]]
 name = "holochain_types"
 version = "0.3.0-beta-dev.27"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3885,7 +3885,7 @@ dependencies = [
 [[package]]
 name = "holochain_util"
 version = "0.3.0-beta-dev.3"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "backtrace",
  "cfg-if 0.1.10",
@@ -3903,7 +3903,7 @@ dependencies = [
 [[package]]
 name = "holochain_wasm_test_utils"
 version = "0.3.0-beta-dev.28"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "holochain_types",
  "holochain_util",
@@ -3975,7 +3975,7 @@ dependencies = [
 [[package]]
 name = "holochain_websocket"
 version = "0.3.0-beta-dev.7"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "futures",
  "ghost_actor 0.4.0-alpha.5",
@@ -4024,7 +4024,7 @@ dependencies = [
 [[package]]
 name = "holochain_zome_types"
 version = "0.3.0-beta-dev.21"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derive_builder",
  "holo_hash",
@@ -4234,7 +4234,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.51.1",
+ "windows-core 0.52.0",
 ]
 
 [[package]]
@@ -4605,7 +4605,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p"
 version = "0.3.0-beta-dev.26"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "arrayref",
  "base64 0.21.7",
@@ -4648,7 +4648,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bin_data"
 version = "0.3.0-beta-dev.12"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.13.1",
  "derive_more",
@@ -4662,7 +4662,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_block"
 version = "0.3.0-beta-dev.14"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "kitsune_p2p_bin_data",
  "kitsune_p2p_timestamp",
@@ -4672,7 +4672,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bootstrap"
 version = "0.2.0-beta-dev.17"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "clap 4.4.15",
  "futures",
@@ -4691,7 +4691,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_bootstrap_client"
 version = "0.3.0-beta-dev.23"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "ed25519-dalek",
  "kitsune_p2p_bin_data",
@@ -4708,7 +4708,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_dht"
 version = "0.3.0-beta-dev.13"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derivative",
  "derive_more",
@@ -4728,7 +4728,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_dht_arc"
 version = "0.3.0-beta-dev.11"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derive_more",
  "gcollections",
@@ -4742,7 +4742,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_fetch"
 version = "0.3.0-beta-dev.19"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "derive_more",
  "kitsune_p2p_timestamp",
@@ -4756,7 +4756,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_mdns"
 version = "0.3.0-beta-dev.1"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.21.7",
  "err-derive 0.3.1",
@@ -4770,7 +4770,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_proxy"
 version = "0.3.0-beta-dev.17"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.21.7",
  "derive_more",
@@ -4787,7 +4787,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_timestamp"
 version = "0.3.0-beta-dev.5"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "chrono",
  "rusqlite",
@@ -4797,7 +4797,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_transport_quic"
 version = "0.3.0-beta-dev.17"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "blake2b_simd 1.0.2",
  "futures",
@@ -4812,7 +4812,7 @@ dependencies = [
 [[package]]
 name = "kitsune_p2p_types"
 version = "0.3.0-beta-dev.17"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "base64 0.21.7",
  "derive_more",
@@ -5377,7 +5377,7 @@ checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
 [[package]]
 name = "mr_bundle"
 version = "0.3.0-beta-dev.3"
-source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8f168d3dd27d8a459f275809e19b8cd88d6ba8dc"
+source = "git+https://github.com/guillemcordoba/holochain?branch=firestore#8eb2f55ef860902edb983358df43e5535610e142"
 dependencies = [
  "bytes",
  "derive_more",
