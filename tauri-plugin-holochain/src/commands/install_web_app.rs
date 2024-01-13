@@ -37,6 +37,7 @@ pub async fn install_app(
     network_seed: Option<NetworkSeed>,
 ) -> Result<AppInfo> {
     log::info!("Installing app {}", app_id);
+
     let agent_key = admin_ws
         .generate_agent_pub_key()
         .await

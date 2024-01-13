@@ -44,8 +44,6 @@ fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-
-    tauri::async_runtime::set(holochain_util::tokio_helper::TOKIO.handle().clone());
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Info)
@@ -118,6 +116,8 @@ pub fn run() {
 
 async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     setup_holochain(app.clone()).await?;
+
+    let gather_installed = install_initial_apps_if_necessary(&app).await?;
     setup_notifications(
         app.clone(),
         FCM_PROJECT_ID.into(),
@@ -126,7 +126,7 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     )
     .await?;
 
-    if let None = install_initial_apps_if_necessary(&app).await? {
+    if let None = gather_installed {
         // Gather is already installed, skipping splashscreen
         app.holochain()?.open_app(String::from("gather"))?;
     }
@@ -138,64 +138,64 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         .await?;
 
     let h = app.clone();
-/*
-    app_agent_websocket
-        .on_signal(move |signal| {
-            let h = h.clone();
-            tauri::async_runtime::spawn(async move {
-                use hc_zome_notifications_types::*;
+    /*
+        app_agent_websocket
+            .on_signal(move |signal| {
+                let h = h.clone();
+                tauri::async_runtime::spawn(async move {
+                    use hc_zome_notifications_types::*;
 
-                let Signal::App {
-                    signal, zome_name, ..
-                } = signal
-                else {
-                    return ();
-                };
+                    let Signal::App {
+                        signal, zome_name, ..
+                    } = signal
+                    else {
+                        return ();
+                    };
 
-                if zome_name.to_string() != "alerts" {
-                    return ();
-                }
+                    if zome_name.to_string() != "alerts" {
+                        return ();
+                    }
 
-                let Ok(alerts::Signal::LinkCreated { action, link_type }) =
-                    signal.into_inner().decode::<alerts::Signal>()
-                else {
-                    return ();
-                };
-                let holochain_types::prelude::Action::CreateLink(create_link) =
-                    action.hashed.content
-                else {
-                    return ();
-                };
+                    let Ok(alerts::Signal::LinkCreated { action, link_type }) =
+                        signal.into_inner().decode::<alerts::Signal>()
+                    else {
+                        return ();
+                    };
+                    let holochain_types::prelude::Action::CreateLink(create_link) =
+                        action.hashed.content
+                    else {
+                        return ();
+                    };
 
-                let mut app_agent_websocket = h
-                    .holochain()
-                    .expect("Holochain was not initialized yet")
-                    .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
-                    .await
-                    .expect("Failed to connect to holochain");
+                    let mut app_agent_websocket = h
+                        .holochain()
+                        .expect("Holochain was not initialized yet")
+                        .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
+                        .await
+                        .expect("Failed to connect to holochain");
 
-                app_agent_websocket
-                    .call_zome(
-                        "notifications_provider_fcm".into(),
-                        ZomeName::from("notifications_provider_fcm"),
-                        "notify_agent".into(),
-                        ExternIO::encode(NotifyAgentInput {
-                            notification: SerializedBytes::from(UnsafeBytes::from(
-                                create_link.tag.0,
-                            )),
-                            agent: create_link
-                                .base_address
-                                .into_agent_pub_key()
-                                .expect("Could not convert to agent pubkey"),
-                        })
-                        .expect("Could not encode notify agent input"),
-                    )
-                    .await
-                    .expect("Failed to notify agent");
-            });
-        })
-        .await?;
-*/
+                    app_agent_websocket
+                        .call_zome(
+                            "notifications_provider_fcm".into(),
+                            ZomeName::from("notifications_provider_fcm"),
+                            "notify_agent".into(),
+                            ExternIO::encode(NotifyAgentInput {
+                                notification: SerializedBytes::from(UnsafeBytes::from(
+                                    create_link.tag.0,
+                                )),
+                                agent: create_link
+                                    .base_address
+                                    .into_agent_pub_key()
+                                    .expect("Could not convert to agent pubkey"),
+                            })
+                            .expect("Could not encode notify agent input"),
+                        )
+                        .await
+                        .expect("Failed to notify agent");
+                });
+            })
+            .await?;
+    */
     create_setup_file(&app);
 
     Ok(())

@@ -4,7 +4,7 @@ use fcm_v1::{
     android::AndroidConfig, apns::ApnsConfig, auth::Authenticator, message::Message, Client,
 };
 
-use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
+use hc_zome_notifications_provider_fcm_types::{NotifyAgentSignal, RegisterFCMTokenInput};
 use holochain_client::{AppAgentWebsocket, AppInfo};
 use holochain_types::{
     dna::{AnyDhtHash, AnyDhtHashB64},
@@ -40,7 +40,7 @@ pub use error::{Error, Result};
 // #[cfg(mobile)]
 // use mobile::HolochainNotification;
 use tauri_plugin_holochain::HolochainExt;
-use tauri_plugin_notification::{PermissionState, NotificationExt};
+use tauri_plugin_notification::{NotificationExt, PermissionState};
 use yup_oauth2::ServiceAccountKey;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
@@ -134,7 +134,7 @@ pub async fn setup_notifications<R: Runtime>(
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
-    //setup_tauri_notifications(&app)?;
+    setup_tauri_notifications(&app)?;
     install_initial_apps(
         &app,
         notifications_provider_app_id.clone(),
@@ -280,36 +280,33 @@ pub async fn setup_notifications<R: Runtime>(
             }
         });
 
+        let provider_app_id = notifications_provider_app_id.clone();
+        let recipient_app_id = notifications_provider_recipient_app_id.clone();
         let h = app.app_handle().clone();
         app.listen_global("new-fcm-token", move |event| {
             let recipient_app_id = recipient_app_id.clone();
+            let provider_app_id = provider_app_id.clone();
             let h = h.clone();
             if let Ok(token) = serde_json::from_str::<String>(event.payload()) {
                 tauri::async_runtime::spawn(async move {
                     log::info!("new-fcm-token {:?}", token);
-
-                    let mut app_agent_ws = h
-                        .holochain()
-                        .expect("Holochain was not yet initialized")
-                        .app_agent_websocket(recipient_app_id)
+                    shortcut_publish_new_fcm_token(h, provider_app_id, token)
                         .await
-                        .expect("Failed to connect to holochain");
-
-                    let payload = ExternIO::encode(token).expect("Could not encode FCM token");
-
-                    app_agent_ws
-                        .call_zome(
-                            RoleName::from("notifications"),
-                            ZomeName::from("notifications_provider_fcm_recipient"),
-                            FunctionName::from("register_new_fcm_token"),
-                            payload,
-                        )
-                        .await
-                        .expect("Failed to register new FCM token");
+                        .expect("Failed to publish new fcm token");
                 });
             }
         });
-        //app.notification().register_for_push_notifications().expect("Could not register for push notifications");
+
+        let recipient_app_id = notifications_provider_recipient_app_id.clone();
+        let provider_app_id = notifications_provider_app_id.clone();
+        let h = app.app_handle().clone();
+        let token = app
+            .notification()
+            .register_for_push_notifications()
+            .expect("Could not register for push notifications");
+        shortcut_publish_new_fcm_token(h, provider_app_id, token)
+            .await
+            .expect("Failed to publish new fcm token");
         app.emit("holochain-notifications-setup-complete", ());
     }
 
@@ -344,6 +341,74 @@ fn setup_tauri_notifications<R: Runtime>(
         //     },
         // )?;
     }
+
+    Ok(())
+}
+
+async fn publish_new_fcm_token<R: Runtime>(
+    app_handle: AppHandle<R>,
+    recipient_app_id: String,
+    token: String,
+) -> crate::Result<()> {
+    let mut app_agent_ws = app_handle
+        .holochain()?
+        .app_agent_websocket(recipient_app_id)
+        .await?;
+
+    let payload = ExternIO::encode(token).expect("Failed to encode token");
+
+    app_agent_ws
+        .call_zome(
+            RoleName::from("notifications"),
+            ZomeName::from("notifications_provider_fcm_recipient"),
+            FunctionName::from("register_new_fcm_token"),
+            payload,
+        )
+        .await
+        .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+    Ok(())
+}
+
+async fn shortcut_publish_new_fcm_token<R: Runtime>(
+    app_handle: AppHandle<R>,
+    provider_app_id: String,
+    token: String,
+) -> crate::Result<()> {
+    let mut app_agent_ws = app_handle
+        .holochain()?
+        .app_agent_websocket(provider_app_id)
+        .await?;
+
+    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
+    let apps = admin_ws
+        .list_apps(None)
+        .await
+        .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+    let gather = apps
+        .into_iter()
+        .find(|app| app.installed_app_id.as_str() == "gather")
+        .expect("Could not find gather");
+
+    let payload = ExternIO::encode(RegisterFCMTokenInput {
+        token,
+        agent: gather.agent_pub_key.clone(),
+    })
+    .expect("Failed to encode token");
+
+    app_agent_ws
+        .call_zome(
+            RoleName::from("notifications_provider_fcm"),
+            ZomeName::from("notifications_provider_fcm"),
+            FunctionName::from("register_fcm_token_for_agent"),
+            payload,
+        )
+        .await
+        .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+    log::info!("Successfully published new fcm token");
+
     Ok(())
 }
 

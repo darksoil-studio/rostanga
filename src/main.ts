@@ -83,14 +83,11 @@ event.listen("holochain-notifications-setup-complete", () => {
   notificationsSetup.set(true);
 });
 
-const progress = derived(
-  [holochainReady, gatherSetup, notificationsSetup],
-  (readys) => {
-    const setupsDone = readys.filter((i) => i);
+const progress = derived([holochainReady, gatherSetup], (readys) => {
+  const setupsDone = readys.filter((i) => i);
 
-    return Math.floor((100 * setupsDone.length) / readys.length);
-  }
-);
+  return Math.floor((100 * setupsDone.length) / readys.length);
+});
 const status: Readable<AsyncStatus<number>> = derived(
   [setupError, holochainReady, progress],
   ([setupError, _holochainReady, progress]) => {
@@ -278,9 +275,7 @@ export class SplashScreen extends LitElement {
 
   renderSplashScreen() {
     return html`<div class="column" style="gap: 16px; flex: 1; margin: 16px">
-      <div style="flex: 1" style="padding: 48px">
-        ${this.renderCurrentPage()}
-      </div>
+      <div style="flex: 1">${this.renderCurrentPage()}</div>
       ${this.renderActions()} ${this.renderProgress()}
     </div>`;
   }
