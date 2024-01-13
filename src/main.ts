@@ -320,6 +320,7 @@ export class SplashScreen extends LitElement {
       flex: 1;
     }
     .page {
+      flex: 1;
       margin: 16px;
       gap: 16px;
       display: flex;

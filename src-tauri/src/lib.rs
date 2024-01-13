@@ -92,6 +92,7 @@ pub fn run() {
                         .expect("Failed to send gather-setup-error"),
                 }
             });
+            app.handle().notification().request_permission()?;
 
             //#[cfg(mobile)]
             //setup_notifications(&h3).expect("Failed to setup notifications");
