@@ -307,7 +307,7 @@ pub async fn setup_notifications<R: Runtime>(
         shortcut_publish_new_fcm_token(h, provider_app_id, token)
             .await
             .expect("Failed to publish new fcm token");
-        app.emit("holochain-notifications-setup-complete", ());
+        app.emit("holochain-notifications-setup-complete", ())?;
     }
 
     Ok(())
@@ -316,31 +316,38 @@ pub async fn setup_notifications<R: Runtime>(
 fn setup_tauri_notifications<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> tauri_plugin_notification::Result<()> {
-    let mut permissions_state = app_handle.notification().permission_state()?;
-    if let PermissionState::Unknown = permissions_state {
-        permissions_state = app_handle.notification().request_permission()?;
-    }
-    let h = app_handle.clone();
+    let app_handle = app_handle.clone();
+    tauri::async_runtime::spawn(async move {
+        let Ok(permissions_state) = app_handle.notification().permission_state() else {
+            return ();
+        };
+        if let PermissionState::Unknown = permissions_state {
+            let Ok(_permissions_state) = app_handle.notification().request_permission() else {
+            return ();
+        };
+        }
+        // let h = app_handle.clone();
 
-    if let PermissionState::Granted = permissions_state {
-        // h.notification()
-        //     .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
-        //     .expect("Failed to create channel");
-        // let r = app.background_tasks().schedule_background_task(
-        //     ScheduleBackgroundTaskRequest {
-        //         label: String::from("hi"),
-        //         interval: 1,
-        //     },
-        //     move || {
-        //         h.notification()
-        //             .builder()
-        //             .channel_id("test")
-        //             .title("Hey!")
-        //             .show()
-        //             .expect("Failed to send notification");
-        //     },
-        // )?;
-    }
+        // if let PermissionState::Granted = permissions_state {
+        //     // h.notification()
+        //     //     .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
+        //     //     .expect("Failed to create channel");
+        //     // let r = app.background_tasks().schedule_background_task(
+        //     //     ScheduleBackgroundTaskRequest {
+        //     //         label: String::from("hi"),
+        //     //         interval: 1,
+        //     //     },
+        //     //     move || {
+        //     //         h.notification()
+        //     //             .builder()
+        //     //             .channel_id("test")
+        //     //             .title("Hey!")
+        //     //             .show()
+        //     //             .expect("Failed to send notification");
+        //     //     },
+        //     // )?;
+        // }
+    });
 
     Ok(())
 }
@@ -444,6 +451,7 @@ async fn send_push_notification(
 
     let mut map = HashMap::new();
     map.insert("title".to_string(), Value::String(title.clone()));
+    map.insert("body".to_string(), Value::String(body.clone()));
     message.data = Some(map.clone());
     let mut apns_config = ApnsConfig::default();
 

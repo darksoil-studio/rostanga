@@ -20,7 +20,7 @@ use jni::objects::JClass;
 use jni::JNIEnv;
 
 #[tauri_plugin_notification::modify_push_notification]
-pub fn modify_push_notification(mut notification: NotificationData) -> NotificationData {
+pub fn modify_push_notification(notification: NotificationData) -> NotificationData {
     tauri::async_runtime::block_on(async move {
         let body = notification.body.expect("EMPTY NOTIFICATION BODY");
 
@@ -123,6 +123,7 @@ pub fn modify_push_notification(mut notification: NotificationData) -> Notificat
         //     extra: hrl,
         // };
 
+        log::error!("Hi13");
         notification
     })
 }

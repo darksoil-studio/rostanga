@@ -335,6 +335,7 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             commands::get_runtime_info::is_holochain_ready
         ])
         .register_uri_scheme_protocol("happ", |app_handle, request| {
+            log::info!("Received request {}", request.uri().to_string());
             if request.uri().to_string().starts_with("happ://ping") {
                 return response::Builder::new()
                     .status(StatusCode::ACCEPTED)

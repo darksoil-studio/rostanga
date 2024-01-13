@@ -26,6 +26,7 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 
 alerts = { git = "https://github.com/darksoil-studio/gather", branch = "for-hdk-0.3.0-beta-dev" }                             # TODO: remove
 hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
+hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
 
 firestore = "0.39"
 

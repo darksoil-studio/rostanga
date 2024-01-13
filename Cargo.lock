@@ -7286,6 +7286,7 @@ dependencies = [
  "hc_zome_notifications_types",
  "holochain_client",
  "holochain_types",
+ "hrl",
  "log",
  "serde",
  "serde_json",

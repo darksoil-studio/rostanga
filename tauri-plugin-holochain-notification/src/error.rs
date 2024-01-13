@@ -15,6 +15,8 @@ pub enum Error {
     TauriPluginHolochainError(#[from] tauri_plugin_holochain::Error),
     #[error(transparent)]
     TauriPluginNotificationError(#[from] tauri_plugin_notification::Error),
+    #[error(transparent)]
+    TauriError(#[from] tauri::Error),
     #[error("ConductorApiError: `{0:?}`")]
     ConductorApiError(ConductorApiError),
 }

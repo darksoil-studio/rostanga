@@ -13,12 +13,14 @@ use tauri_plugin_notification::*;
 
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
 const NOTIFICATIONS_PROVIDER_APP_ID: &'static str = "notifications_provider_fcm";
-const FCM_PROJECT_ID: &'static str = "studio.darksoil.rostanga";
+const FCM_PROJECT_ID: &'static str = "rostanga-ce319";
 
 #[tauri::command]
 pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
     #[cfg(desktop)]
     window.close()?;
+
+    log::info!("Launching gather");
 
     app.holochain()?.open_app(String::from("gather"))?;
 
@@ -116,8 +118,10 @@ pub fn run() {
 
 async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     setup_holochain(app.clone()).await?;
+    log::info!("Successfully set up holochain");
 
     let gather_installed = install_initial_apps_if_necessary(&app).await?;
+    app.emit("gather-setup-complete", ())?;
     setup_notifications(
         app.clone(),
         FCM_PROJECT_ID.into(),
@@ -138,64 +142,66 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         .await?;
 
     let h = app.clone();
-    /*
-        app_agent_websocket
-            .on_signal(move |signal| {
-                let h = h.clone();
-                tauri::async_runtime::spawn(async move {
-                    use hc_zome_notifications_types::*;
+    app_agent_websocket
+        .on_signal(move |signal| {
+            let h = h.clone();
+            tauri::async_runtime::block_on(async move {
+                use hc_zome_notifications_types::*;
 
-                    let Signal::App {
-                        signal, zome_name, ..
+                let Signal::App {
+                        signal, zome_name, cell_id
                     } = signal
                     else {
                         return ();
                     };
 
-                    if zome_name.to_string() != "alerts" {
-                        return ();
-                    }
+                if zome_name.to_string() != "alerts" {
+                    return ();
+                }
 
-                    let Ok(alerts::Signal::LinkCreated { action, link_type }) =
-                        signal.into_inner().decode::<alerts::Signal>()
+                let Ok(alerts::Signal::LinkCreated { action, .. }) =
+                    signal.into_inner().decode::<alerts::Signal>() else {
+                    return ();
+                };
+                let holochain_types::prelude::Action::CreateLink(create_link) =
+                    action.hashed.content
                     else {
-                        return ();
-                    };
-                    let holochain_types::prelude::Action::CreateLink(create_link) =
-                        action.hashed.content
-                    else {
-                        return ();
-                    };
+                    return ();
+                };
 
-                    let mut app_agent_websocket = h
-                        .holochain()
-                        .expect("Holochain was not initialized yet")
-                        .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
-                        .await
-                        .expect("Failed to connect to holochain");
+                let mut app_agent_websocket = h
+                    .holochain()
+                    .expect("Holochain was not initialized yet")
+                    .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
+                    .await
+                    .expect("Failed to connect to holochain");
 
-                    app_agent_websocket
-                        .call_zome(
-                            "notifications_provider_fcm".into(),
-                            ZomeName::from("notifications_provider_fcm"),
-                            "notify_agent".into(),
-                            ExternIO::encode(NotifyAgentInput {
-                                notification: SerializedBytes::from(UnsafeBytes::from(
-                                    create_link.tag.0,
-                                )),
-                                agent: create_link
-                                    .base_address
-                                    .into_agent_pub_key()
-                                    .expect("Could not convert to agent pubkey"),
-                            })
-                            .expect("Could not encode notify agent input"),
-                        )
-                        .await
-                        .expect("Failed to notify agent");
-                });
-            })
-            .await?;
-    */
+                let hrl = hrl::Hrl {
+                    dna_hash: cell_id.dna_hash().clone(),
+                    resource_hash: holochain_types::prelude::AnyDhtHash::from(action.hashed.hash),
+                };
+
+                app_agent_websocket
+                    .call_zome(
+                        "notifications_provider_fcm".into(),
+                        ZomeName::from("notifications_provider_fcm"),
+                        "notify_agent".into(),
+                        ExternIO::encode(NotifyAgentInput {
+                            notification: SerializedBytes::try_from(hrl)
+                                .expect("Could not encode hrl"),
+                            agent: create_link
+                                .base_address
+                                .into_agent_pub_key()
+                                .expect("Could not convert to agent pubkey"),
+                        })
+                        .expect("Could not encode notify agent input"),
+                    )
+                    .await
+                    .expect("Failed to notify agent");
+            });
+        })
+        .await?;
+
     create_setup_file(&app);
 
     Ok(())
@@ -211,11 +217,11 @@ async fn install_initial_apps_if_necessary<R: Runtime>(
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-    log::info!("Installing apps");
     if let None = apps
         .iter()
         .find(|app| app.installed_app_id.eq(&String::from("gather")))
     {
+        log::info!("Installing apps: gather");
         let gather_web_app_bundle =
             WebAppBundle::decode(include_bytes!("../../workdir/gather.webhapp"))
                 .expect("Failed to decode gather webhapp");

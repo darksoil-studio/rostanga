@@ -9,7 +9,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { customElement, state } from "lit/decorators.js";
 import { LitElement, html, css } from "lit";
-import '@holochain-open-dev/elements/dist/elements/display-error.js'
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -78,16 +78,19 @@ event.listen("holochain-ready", () => {
   });
 });
 
-const notificationsSetup = writable(true);
+const notificationsSetup = writable(false);
 event.listen("holochain-notifications-setup-complete", () => {
   notificationsSetup.set(true);
 });
 
-const progress = derived([holochainReady, gatherSetup], (readys) => {
-  const setupsDone = readys.filter((i) => i);
+const progress = derived(
+  [holochainReady, gatherSetup, notificationsSetup],
+  (readys) => {
+    const setupsDone = readys.filter((i) => i);
 
-  return Math.floor((100 * setupsDone.length) / readys.length);
-});
+    return Math.floor((100 * setupsDone.length) / readys.length);
+  }
+);
 const status: Readable<AsyncStatus<number>> = derived(
   [setupError, holochainReady, progress],
   ([setupError, _holochainReady, progress]) => {
@@ -102,7 +105,6 @@ const status: Readable<AsyncStatus<number>> = derived(
     } as AsyncStatus<number>;
   }
 );
-status.subscribe(console.log);
 
 @customElement("splash-screen")
 export class SplashScreen extends LitElement {
@@ -126,7 +128,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderWelcome() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <h2>${msg("Welcome to the Röstånga app!")}</h2>
       <span
         >${msg("Everything that is relevant to Röstånga, in one place.")}</span
@@ -135,7 +137,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderContext() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "Connecting with each other is hard when everyone is using a different app."
@@ -150,7 +152,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderStatus() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "At darksoil studio, we want to make this dream a reality."
@@ -170,7 +172,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderGather1() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "In gather, you'll be able to propose events, and invite others around you to join them."
@@ -185,7 +187,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderGather2() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "In gather, you can set a minimum number of participants or required needs for your events."
@@ -205,7 +207,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderFeedback() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "Gather is still a prototype, so we want to get as much feedback about it as we can."
@@ -220,7 +222,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderThanks() {
-    return html`<div class="column" style="gap: 16px">
+    return html`<div class="page">
       <span
         >${msg(
           "We are really excited to start this journey, and we invite you to join us!"
@@ -274,7 +276,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderSplashScreen() {
-    return html`<div class="column" style="gap: 16px; flex: 1; margin: 16px">
+    return html`<div class="page">
       <div style="flex: 1">${this.renderCurrentPage()}</div>
       ${this.renderActions()} ${this.renderProgress()}
     </div>`;
@@ -316,6 +318,12 @@ export class SplashScreen extends LitElement {
     :host {
       display: flex;
       flex: 1;
+    }
+    .page {
+      margin: 16px;
+      gap: 16px;
+      display: flex;
+      flex-direction: column;
     }
 
     span {
