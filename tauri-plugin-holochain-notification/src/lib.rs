@@ -123,10 +123,10 @@ async fn install_initial_apps<R: Runtime>(
     Ok(())
 }
 
-/// Initializes the plugin.
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("holochain-notification").build()
-}
+// /// Initializes the plugin.
+// pub fn init<R: Runtime>() -> TauriPlugin<R> {
+//     Builder::new("holochain-notification").build()
+// }
 
 pub async fn setup_notifications<R: Runtime>(
     app: AppHandle<R>,

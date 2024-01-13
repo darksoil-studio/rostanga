@@ -61,9 +61,9 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![launch_gather,])
-        .plugin(tauri_plugin_notification::init())
+        // .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
-        .plugin(tauri_plugin_holochain_notification::init())
+        // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
             // #[cfg(desktop)]
             // {
@@ -92,7 +92,7 @@ pub fn run() {
                         .expect("Failed to send gather-setup-error"),
                 }
             });
-            app.handle().notification().request_permission()?;
+            // app.handle().notification().request_permission()?;
 
             //#[cfg(mobile)]
             //setup_notifications(&h3).expect("Failed to setup notifications");
@@ -123,13 +123,13 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 
     let gather_installed = install_initial_apps_if_necessary(&app).await?;
     app.emit("gather-setup-complete", ())?;
-    setup_notifications(
-        app.clone(),
-        FCM_PROJECT_ID.into(),
-        NOTIFICATIONS_PROVIDER_APP_ID.into(),
-        NOTIFICATIONS_RECIPIENT_APP_ID.into(),
-    )
-    .await?;
+    // setup_notifications(
+    //     app.clone(),
+    //     FCM_PROJECT_ID.into(),
+    //     NOTIFICATIONS_PROVIDER_APP_ID.into(),
+    //     NOTIFICATIONS_RECIPIENT_APP_ID.into(),
+    // )
+    // .await?;
 
     if let None = gather_installed {
         // Gather is already installed, skipping splashscreen
@@ -142,66 +142,66 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         .app_agent_websocket("gather".into())
         .await?;
 
-    let h = app.clone();
-    app_agent_websocket
-        .on_signal(move |signal| {
-            let h = h.clone();
-            tauri::async_runtime::block_on(async move {
-                use hc_zome_notifications_types::*;
+    // let h = app.clone();
+    // app_agent_websocket
+    //     .on_signal(move |signal| {
+    //         let h = h.clone();
+    //         tauri::async_runtime::block_on(async move {
+    //             use hc_zome_notifications_types::*;
 
-                let Signal::App {
-                        signal, zome_name, cell_id
-                    } = signal
-                    else {
-                        return ();
-                    };
+    //             let Signal::App {
+    //                     signal, zome_name, cell_id
+    //                 } = signal
+    //                 else {
+    //                     return ();
+    //                 };
 
-                if zome_name.to_string() != "alerts" {
-                    return ();
-                }
+    //             if zome_name.to_string() != "alerts" {
+    //                 return ();
+    //             }
 
-                let Ok(alerts::Signal::LinkCreated { action, .. }) =
-                    signal.into_inner().decode::<alerts::Signal>() else {
-                    return ();
-                };
-                let holochain_types::prelude::Action::CreateLink(create_link) =
-                    action.hashed.content
-                    else {
-                    return ();
-                };
+    //             let Ok(alerts::Signal::LinkCreated { action, .. }) =
+    //                 signal.into_inner().decode::<alerts::Signal>() else {
+    //                 return ();
+    //             };
+    //             let holochain_types::prelude::Action::CreateLink(create_link) =
+    //                 action.hashed.content
+    //                 else {
+    //                 return ();
+    //             };
 
-                let mut app_agent_websocket = h
-                    .holochain()
-                    .expect("Holochain was not initialized yet")
-                    .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
-                    .await
-                    .expect("Failed to connect to holochain");
+    //             let mut app_agent_websocket = h
+    //                 .holochain()
+    //                 .expect("Holochain was not initialized yet")
+    //                 .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
+    //                 .await
+    //                 .expect("Failed to connect to holochain");
 
-                let hrl = hrl::Hrl {
-                    dna_hash: cell_id.dna_hash().clone(),
-                    resource_hash: holochain_types::prelude::AnyDhtHash::from(action.hashed.hash),
-                };
+    //             let hrl = hrl::Hrl {
+    //                 dna_hash: cell_id.dna_hash().clone(),
+    //                 resource_hash: holochain_types::prelude::AnyDhtHash::from(action.hashed.hash),
+    //             };
 
-                app_agent_websocket
-                    .call_zome(
-                        "notifications_provider_fcm".into(),
-                        ZomeName::from("notifications_provider_fcm"),
-                        "notify_agent".into(),
-                        ExternIO::encode(NotifyAgentInput {
-                            notification: SerializedBytes::try_from(hrl)
-                                .expect("Could not encode hrl"),
-                            agent: create_link
-                                .base_address
-                                .into_agent_pub_key()
-                                .expect("Could not convert to agent pubkey"),
-                        })
-                        .expect("Could not encode notify agent input"),
-                    )
-                    .await
-                    .expect("Failed to notify agent");
-            });
-        })
-        .await?;
+    //             app_agent_websocket
+    //                 .call_zome(
+    //                     "notifications_provider_fcm".into(),
+    //                     ZomeName::from("notifications_provider_fcm"),
+    //                     "notify_agent".into(),
+    //                     ExternIO::encode(NotifyAgentInput {
+    //                         notification: SerializedBytes::try_from(hrl)
+    //                             .expect("Could not encode hrl"),
+    //                         agent: create_link
+    //                             .base_address
+    //                             .into_agent_pub_key()
+    //                             .expect("Could not convert to agent pubkey"),
+    //                     })
+    //                     .expect("Could not encode notify agent input"),
+    //                 )
+    //                 .await
+    //                 .expect("Failed to notify agent");
+    //         });
+    //     })
+    //     .await?;
 
     create_setup_file(&app);
 
