@@ -7,7 +7,8 @@ use holochain_types::web_app::WebAppBundle;
 use tauri::{AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
-use tauri_plugin_holochain::HolochainExt;
+use tauri_plugin_holochain::{setup_holochain, HolochainExt};
+use tauri_plugin_holochain_notification::setup_notifications;
 use tauri_plugin_notification::*;
 
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
@@ -19,41 +20,32 @@ pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holo
     #[cfg(desktop)]
     window.close()?;
 
-    app.holochain().open_app(String::from("gather"))?;
+    app.holochain()?.open_app(String::from("gather"))?;
 
     Ok(())
 }
 
-fn is_first_run() -> bool {
-    let app_data_dir = app_dirs2::app_root(
-        app_dirs2::AppDataType::UserData,
-        &app_dirs2::AppInfo {
-            name: "studio.darksoil.rostanga",
-            author: "darksoil.studio",
-        },
-    )
-    .expect("Can't get app dir");
-    !app_data_dir.join("setup").exists()
+fn is_first_run(app: &AppHandle) -> bool {
+    !setup_file_path(app).exists()
+}
+fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
+    app.path()
+        .app_data_dir()
+        .expect("Failed to get data dir")
+        .join("setup")
 }
 use std::io::Write;
-fn create_setup_file() {
-    let app_data_dir = app_dirs2::app_root(
-        app_dirs2::AppDataType::UserData,
-        &app_dirs2::AppInfo {
-            name: "studio.darksoil.rostanga",
-            author: "darksoil.studio",
-        },
-    )
-    .expect("Can't get app dir");
-
+fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
     let mut file =
-        std::fs::File::create(app_data_dir.join("setup")).expect("Failed to create setup file");
+        std::fs::File::create(setup_file_path(app)).expect("Failed to create setup file");
     file.write_all(b"Hello, world!")
         .expect("Failed to create setup file");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+
+    tauri::async_runtime::set(holochain_util::tokio_helper::TOKIO.handle().clone());
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Info)
@@ -71,11 +63,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![launch_gather,])
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
-        .plugin(tauri_plugin_holochain_notification::init(
-            FCM_PROJECT_ID.into(),
-            NOTIFICATIONS_PROVIDER_APP_ID.into(),
-            NOTIFICATIONS_RECIPIENT_APP_ID.into(),
-        ))
+        .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
             // #[cfg(desktop)]
             // {
@@ -92,32 +80,23 @@ pub fn run() {
             //            setup_notifications(app.handle())?;
 
             let h = app.handle().clone();
-            app.handle()
-                .listen_global("holochain-notifications-setup-complete", move |_| {
+            let h2 = app.handle().clone();
 
-                    // #[cfg(mobile)]
-                    // setup_notifications(&h3).expect("Failed to setup notifications");
-                });
-
-            let h = app.handle().clone();
-            app.handle().listen_global("holochain-ready", move |_| {
-                let h = h.clone();
-                let h2 = h.clone();
-                let h3 = h.clone();
-
-                tauri::async_runtime::spawn(async move {
-                    match setup(h).await {
-                        Ok(_) => h2
-                            .emit("gather-setup-complete", ())
-                            .expect("Failed to send gather-setup-complete"),
-                        Err(err) => h2
-                            .emit("setup-error", format!("Failed to set up gather: {err:?}"))
-                            .expect("Failed to send gather-setup-error"),
-                    }
-                });
+            tauri::async_runtime::spawn(async move {
+                match setup(h).await {
+                    Ok(_) => h2
+                        .emit("gather-setup-complete", ())
+                        .expect("Failed to send gather-setup-complete"),
+                    Err(err) => h2
+                        .emit("setup-error", format!("Failed to set up gather: {err:?}"))
+                        .expect("Failed to send gather-setup-error"),
+                }
             });
 
-            if is_first_run() {
+            //#[cfg(mobile)]
+            //setup_notifications(&h3).expect("Failed to setup notifications");
+
+            if is_first_run(app.handle()) {
                 let mut window_builder = WindowBuilder::new(
                     app.handle(),
                     "Welcome",
@@ -138,18 +117,28 @@ pub fn run() {
 }
 
 async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
+    setup_holochain(app.clone()).await?;
+    setup_notifications(
+        app.clone(),
+        FCM_PROJECT_ID.into(),
+        NOTIFICATIONS_PROVIDER_APP_ID.into(),
+        NOTIFICATIONS_RECIPIENT_APP_ID.into(),
+    )
+    .await?;
+
     if let None = install_initial_apps_if_necessary(&app).await? {
         // Gather is already installed, skipping splashscreen
-        app.holochain().open_app(String::from("gather"))?;
+        app.holochain()?.open_app(String::from("gather"))?;
     }
 
     // TODO: remove all this
-    let mut app_agent_websocket: holochain_client::AppAgentWebsocket =
-        app.holochain().app_agent_websocket("gather".into()).await?;
-    //let r = app_agent_websocket.call_zome("gather".into(), "gather".into(), "entry_defs".into(), ExternIO::encode(()).unwrap()).await;
+    let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app
+        .holochain()?
+        .app_agent_websocket("gather".into())
+        .await?;
 
     let h = app.clone();
-
+/*
     app_agent_websocket
         .on_signal(move |signal| {
             let h = h.clone();
@@ -180,6 +169,7 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 
                 let mut app_agent_websocket = h
                     .holochain()
+                    .expect("Holochain was not initialized yet")
                     .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
                     .await
                     .expect("Failed to connect to holochain");
@@ -205,8 +195,8 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
             });
         })
         .await?;
-
-    create_setup_file();
+*/
+    create_setup_file(&app);
 
     Ok(())
 }
@@ -214,7 +204,7 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 async fn install_initial_apps_if_necessary<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> anyhow::Result<Option<AppInfo>> {
-    let mut admin_ws = app_handle.holochain().admin_websocket().await?;
+    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
     let apps = admin_ws
         .list_apps(None)
@@ -231,7 +221,7 @@ async fn install_initial_apps_if_necessary<R: Runtime>(
                 .expect("Failed to decode gather webhapp");
 
         let app_info = app_handle
-            .holochain()
+            .holochain()?
             .install_web_app(
                 String::from("gather"),
                 gather_web_app_bundle,
@@ -243,35 +233,4 @@ async fn install_initial_apps_if_necessary<R: Runtime>(
         return Ok(Some(app_info));
     }
     Ok(None)
-}
-
-fn setup_notifications<R: Runtime>(
-    app_handle: &AppHandle<R>,
-) -> tauri_plugin_notification::Result<()> {
-    let mut permissions_state = app_handle.notification().permission_state()?;
-    if let PermissionState::Unknown = permissions_state {
-        permissions_state = app_handle.notification().request_permission()?;
-    }
-    let h = app_handle.clone();
-
-    if let PermissionState::Granted = permissions_state {
-        // h.notification()
-        //     .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
-        //     .expect("Failed to create channel");
-        // let r = app.background_tasks().schedule_background_task(
-        //     ScheduleBackgroundTaskRequest {
-        //         label: String::from("hi"),
-        //         interval: 1,
-        //     },
-        //     move || {
-        //         h.notification()
-        //             .builder()
-        //             .channel_id("test")
-        //             .title("Hey!")
-        //             .show()
-        //             .expect("Failed to send notification");
-        //     },
-        // )?;
-    }
-    Ok(())
 }

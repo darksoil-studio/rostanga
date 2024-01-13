@@ -1,6 +1,6 @@
 use hyper::{
     service::{make_service_fn, service_fn},
-    Body, Response, Server,
+    Body, Response, Server, StatusCode,
 };
 use std::net::SocketAddr;
 use tauri::{AppHandle, Manager, Runtime};
@@ -70,12 +70,24 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
 
                         let split_host: Vec<String> =
                             host.split(".").into_iter().map(|s| s.to_string()).collect();
-                        let lowercase_app_id = split_host.get(0).unwrap();
+                        let lowercase_app_id = split_host.get(0).expect("Failed to get the app id");
 
                         let file_name = request.uri().path();
 
+                        let Ok(holochain) = app_handle.holochain() else {
+                            return Ok(Response::builder()
+                                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                                .body(
+                                    format!("Called http UI before initializing holochain")
+                                        .as_bytes()
+                                        .to_vec()
+                                        .into(),
+                                )
+                                .expect("Failed to return error"));
+                        };
+
                         let r: Result<Response<Body>> = match read_asset(
-                            &app_handle.holochain().filesystem,
+                            &holochain.filesystem,
                             &lowercase_app_id,
                             file_name.to_string(),
                         )
@@ -88,7 +100,9 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                                         response_builder.header("content-type", mime_type);
                                 }
 
-                                Ok(response_builder.body(asset.into()).unwrap())
+                                Ok(response_builder
+                                    .body(asset.into())
+                                    .expect("Failed to build body of resposne"))
                             }
                             Ok(None) => Ok(Response::builder()
                                 .status(404)
@@ -97,7 +111,7 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                             Err(e) => Ok(Response::builder()
                                 .status(500)
                                 .body(format!("{:?}", e).into())
-                                .unwrap()),
+                                .expect("Failed to build body of error response")),
                         };
                         // admin_ws.close();
                         r
@@ -163,7 +177,10 @@ pub async fn read_asset(
 ) -> Result<Option<(Vec<u8>, Option<String>)>> {
     // println!("Reading asset from filesystem. Asset name: {}", asset_name);
     if asset_name.starts_with("/") {
-        asset_name = asset_name.strip_prefix("/").unwrap().to_string();
+        asset_name = asset_name
+            .strip_prefix("/")
+            .expect("Failed to strip prefix")
+            .to_string();
     }
     if asset_name == "" {
         asset_name = String::from("index.html");

@@ -11,10 +11,7 @@ const PLUGIN_IDENTIFIER: &str = "studio.darksoil.tauripluginholochain";
 
 // initializes the Kotlin or Swift plugin classes
 #[cfg(target_os = "android")]
-pub async fn init<R: Runtime, C: DeserializeOwned>(
-    _app: &AppHandle<R>,
-    api: PluginApi<R, C>,
-) -> crate::Result<()> {
+pub async fn init<R: Runtime>(_app: &AppHandle<R>) -> crate::Result<()> {
     // let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ExamplePlugin")?;
     let dir = app_dirs2::app_root(
         app_dirs2::AppDataType::UserCache,
@@ -29,10 +26,7 @@ pub async fn init<R: Runtime, C: DeserializeOwned>(
 }
 
 #[cfg(target_os = "ios")]
-pub async fn init<R: Runtime, C: DeserializeOwned>(
-    _app: &AppHandle<R>,
-    api: PluginApi<R, C>,
-) -> crate::Result<()> {
+pub async fn init<R: Runtime>(_app: &AppHandle<R>) -> crate::Result<()> {
     //  let handle = api.register_ios_plugin(init_plugin_holochain)?;
 
     Ok(())

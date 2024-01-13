@@ -48,8 +48,8 @@ impl FileSystem {
         fs::create_dir_all(fs.ui_store().path)?;
         fs::create_dir_all(fs.keystore_dir())?;
 
-        #[cfg(target_family = "unix")]
-        create_and_apply_lair_symlink(fs.keystore_dir()).await?;
+        //#[cfg(target_family = "unix")]
+        //create_and_apply_lair_symlink(fs.keystore_dir()).await?;
 
         Ok(fs)
     }
@@ -198,22 +198,22 @@ pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> crate::Result<()> 
     let mut archive = zip::ZipArchive::new(reader)?;
 
     for i in 0..archive.len() {
-        let mut file = archive.by_index(i).unwrap();
+        let mut file = archive.by_index(i).expect("Failed to archive by index");
         let outpath = match file.enclosed_name() {
             Some(path) => outpath.join(path).to_owned(),
             None => continue,
         };
 
         if (&*file.name()).ends_with('/') {
-            fs::create_dir_all(&outpath).unwrap();
+            fs::create_dir_all(&outpath)?;
         } else {
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p).unwrap();
+                    fs::create_dir_all(&p)?;
                 }
             }
-            let mut outfile = fs::File::create(&outpath).unwrap();
-            std::io::copy(&mut file, &mut outfile).unwrap();
+            let mut outfile = fs::File::create(&outpath)?;
+            std::io::copy(&mut file, &mut outfile)?;
         }
     }
 
@@ -226,7 +226,11 @@ pub async fn create_and_apply_lair_symlink(keystore_data_dir: PathBuf) -> crate:
     let mut keystore_dir = keystore_data_dir.clone();
 
     let uid = nanoid::nanoid!(13);
-    let src_path = std::env::temp_dir().join(format!("lair.{}", uid));
+
+    let tempdir =
+        app_dirs2::data_root(app_dirs2::AppDataType::UserData).expect("Can't get temp dir");
+
+    let src_path = tempdir.join(format!("lair.{}", uid));
     symlink::symlink_dir(keystore_dir, src_path.clone())?;
     keystore_dir = src_path;
 

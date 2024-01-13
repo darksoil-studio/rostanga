@@ -16,7 +16,7 @@ use holochain::prelude::{
     RoleName, SerializedBytes,
 };
 use holochain_client::{
-    AdminWebsocket, AppAgentWebsocket, AppInfo, AppWebsocket, ConductorApiError,
+    AdminWebsocket, AppAgentWebsocket, AppInfo, AppWebsocket, ConductorApiError, InstallAppPayload,
 };
 use holochain_conductor_api::CellInfo;
 use holochain_keystore::MetaLairClient;
@@ -215,7 +215,7 @@ impl<R: Runtime> HolochainPlugin<R> {
                                     role.clone(),
                                     zome_name.clone(),
                                     "entry_defs".into(),
-                                    ExternIO::encode(()).unwrap(),
+                                    ExternIO::encode(()).expect("Failed to encode payload 1"),
                                 )
                                 .await;
                             log::info!("Called entry_defs {result:?}");
@@ -248,7 +248,7 @@ impl<R: Runtime> HolochainPlugin<R> {
                                         role.clone(),
                                         zome_name.clone(),
                                         "entry_defs".into(),
-                                        ExternIO::encode(()).unwrap(),
+                                        ExternIO::encode(()).expect("Failed to encode payload 1"),
                                     )
                                     .await;
                             }
@@ -310,12 +310,16 @@ impl<R: Runtime> HolochainPlugin<R> {
 
 // Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.
 pub trait HolochainExt<R: Runtime> {
-    fn holochain(&self) -> &HolochainPlugin<R>;
+    fn holochain(&self) -> crate::Result<&HolochainPlugin<R>>;
 }
 
 impl<R: Runtime, T: Manager<R>> crate::HolochainExt<R> for T {
-    fn holochain(&self) -> &HolochainPlugin<R> {
-        self.state::<HolochainPlugin<R>>().inner()
+    fn holochain(&self) -> crate::Result<&HolochainPlugin<R>> {
+        let s = self
+            .try_state::<HolochainPlugin<R>>()
+            .ok_or(crate::Error::HolochainNotInitialized)?;
+
+        Ok(s.inner())
     }
 }
 
@@ -336,7 +340,7 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                     .status(StatusCode::ACCEPTED)
                     .header("Content-Type", "text/html;charset=utf-8")
                     .body(pong_iframe().as_bytes().to_vec())
-                    .unwrap();
+                    .expect("Failed to build body of accepted response");
             }
             // prepare our response
             tauri::async_runtime::block_on(async move {
@@ -350,34 +354,51 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                     .map(|s| s.to_string())
                     .collect::<Vec<String>>()
                     .get(1)
-                    .unwrap()
+                    .expect("Malformed request: not enough items")
                     .clone();
                 let uri_without_querystring: String = uri_without_protocol
                     .split("?")
                     .map(|s| s.to_string())
                     .collect::<Vec<String>>()
                     .get(0)
-                    .unwrap()
+                    .expect("Malformed request: not enough items 2")
                     .clone();
                 let uri_components: Vec<String> = uri_without_querystring
                     .split("/")
                     .map(|s| s.to_string())
                     .collect();
-                let lowercase_app_id = uri_components.get(0).unwrap();
+                let lowercase_app_id = uri_components
+                    .get(0)
+                    .expect("Malformed request: not enough items 3");
                 let mut asset_file = PathBuf::new();
                 for i in 1..uri_components.len() {
                     asset_file = asset_file.join(uri_components[i].clone());
                 }
 
+                let Ok(holochain) = app_handle.holochain() else {
+                    return response::Builder::new()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(
+                            format!("Called http UI before initializing holochain")
+                                .as_bytes()
+                                .to_vec(),
+                        )
+                        .expect("Failed to build asset with not internal server error");
+                };
+
                 let r = match read_asset(
-                    &app_handle.holochain().filesystem,
+                    &holochain.filesystem,
                     lowercase_app_id,
-                    asset_file.as_os_str().to_str().unwrap().to_string(),
+                    asset_file
+                        .as_os_str()
+                        .to_str()
+                        .expect("Malformed request: not enough items 4")
+                        .to_string(),
                 )
                 .await
                 {
                     Ok(Some((asset, mime_type))) => {
-                        println!("Got asset for app with id: {}", lowercase_app_id);
+                        log::info!("Got asset for app with id: {}", lowercase_app_id);
                         let mut response = response::Builder::new().status(StatusCode::ACCEPTED);
                         if let Some(mime_type) = mime_type {
                             response = response
@@ -386,70 +407,67 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                             response = response.header("Content-Type", "charset=utf-8")
                         }
 
-                        return response.body(asset).unwrap();
+                        return response
+                            .body(asset)
+                            .expect("Failed to build response with asset");
                     }
                     Ok(None) => response::Builder::new()
                         .status(StatusCode::NOT_FOUND)
                         .body(vec![])
-                        .unwrap(),
+                        .expect("Failed to build asset with not found"),
                     Err(e) => response::Builder::new()
                         .status(StatusCode::INTERNAL_SERVER_ERROR)
                         .body(format!("{:?}", e).as_bytes().to_vec())
-                        .unwrap(),
+                        .expect("Failed to build asset with not internal server error"),
                 };
 
                 // admin_ws.close();
                 r
             })
         })
-        .setup(move |app: &AppHandle<R>, api| {
-            let app = app.clone();
-            tauri::async_runtime::spawn(async move {
-                // let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
-                // let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
-
-                let http_server_port = portpicker::pick_unused_port().expect("No ports free");
-                #[cfg(mobile)]
-                mobile::init(&app, api)
-                    .await
-                    .expect("Could not init plugin");
-                #[cfg(desktop)]
-                desktop::init(&app, api)
-                    .await
-                    .expect("Could not init plugin");
-
-                let RunningHolochainInfo {
-                    admin_port,
-                    app_port,
-                    lair_client,
-                    filesystem,
-                } = launch().await.expect("Could not launch holochain");
-
-                log::info!("Starting http server at port {http_server_port:?}");
-
-                http_server::start_http_server(app.clone(), http_server_port);
-
-                let p = HolochainPlugin::<R> {
-                    app_handle: app.clone(),
-                    lair_client,
-                    runtime_info: HolochainRuntimeInfo {
-                        http_server_port,
-                        app_port,
-                        admin_port,
-                    },
-                    filesystem,
-                };
-
-                //p.workaround_join_failed_all_apps().await.expect("Could not workaround");
-
-                // manage state so it is accessible by the commands
-                app.manage(p);
-
-                app.emit("holochain-ready", ())
-                    .expect("Could not emit holochain ready event");
-            });
-
-            Ok(())
-        })
         .build()
+}
+
+pub async fn setup_holochain<R: Runtime>(app_handle: AppHandle<R>) -> crate::Result<()> {
+    // let app_data_dir = app.path().app_data_dir()?.join(&subfolder);
+    // let app_config_dir = app.path().app_config_dir()?.join(&subfolder);
+
+    let http_server_port = portpicker::pick_unused_port().expect("No ports free");
+    #[cfg(mobile)]
+    mobile::init(&app_handle)
+        .await
+        .expect("Could not init plugin");
+    #[cfg(desktop)]
+    desktop::init(&app_handle)
+        .await
+        .expect("Could not init plugin");
+
+    let RunningHolochainInfo {
+        admin_port,
+        app_port,
+        lair_client,
+        filesystem,
+    } = launch().await.expect("Could not launch holochain");
+
+    log::info!("Starting http server at port {http_server_port:?}");
+
+    http_server::start_http_server(app_handle.clone(), http_server_port);
+
+    let p = HolochainPlugin::<R> {
+        app_handle: app_handle.clone(),
+        lair_client,
+        runtime_info: HolochainRuntimeInfo {
+            http_server_port,
+            app_port,
+            admin_port,
+        },
+        filesystem,
+    };
+
+    // manage state so it is accessible by the commands
+    app_handle.manage(p);
+
+    app_handle.emit("holochain-ready", ())?;
+
+    Ok(())
 }

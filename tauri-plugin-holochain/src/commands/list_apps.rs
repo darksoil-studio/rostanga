@@ -4,7 +4,7 @@ use tauri::{command, AppHandle, Runtime};
 
 #[command]
 pub(crate) async fn list_apps<R: Runtime>(app: AppHandle<R>) -> crate::Result<Vec<AppInfo>> {
-    let mut admin_ws = app.holochain().admin_websocket().await?;
+    let mut admin_ws = app.holochain()?.admin_websocket().await?;
 
     let apps = admin_ws
         .list_apps(None)

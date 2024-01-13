@@ -61,6 +61,9 @@ pub enum Error {
 
     #[error("Error opening app: {0}")]
     OpenAppError(String),
+
+    #[error("Holochain has not been initialized yet")]
+    HolochainNotInitialized,
 }
 
 impl Serialize for Error {

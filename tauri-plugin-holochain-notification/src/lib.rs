@@ -7,8 +7,9 @@ use fcm_v1::{
 use hc_zome_notifications_provider_fcm_types::NotifyAgentSignal;
 use holochain_client::{AppAgentWebsocket, AppInfo};
 use holochain_types::{
+    dna::{AnyDhtHash, AnyDhtHashB64},
     prelude::{AppBundle, ExternIO, FunctionName, RoleName, ZomeName},
-    signal::Signal, dna::{AnyDhtHash, AnyDhtHashB64},
+    signal::Signal,
 };
 use hrl::Hrl;
 use serde_json::{Map, Value};
@@ -16,8 +17,6 @@ use tauri::{
     plugin::{Builder, TauriPlugin},
     AppHandle, Manager, Runtime,
 };
-#[cfg(mobile)]
-use tauri_plugin_notification::NotificationExt;
 
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
@@ -41,6 +40,7 @@ pub use error::{Error, Result};
 // #[cfg(mobile)]
 // use mobile::HolochainNotification;
 use tauri_plugin_holochain::HolochainExt;
+use tauri_plugin_notification::{PermissionState, NotificationExt};
 use yup_oauth2::ServiceAccountKey;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
@@ -59,7 +59,7 @@ async fn install_app_if_not_present<R: Runtime>(
     app_id: String,
     app_bundle: AppBundle,
 ) -> crate::Result<Option<AppInfo>> {
-    let mut admin_ws = app_handle.holochain().admin_websocket().await?;
+    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
     let apps = admin_ws
         .list_apps(None)
@@ -69,7 +69,7 @@ async fn install_app_if_not_present<R: Runtime>(
     match apps.iter().find(|app| app.installed_app_id.eq(&app_id)) {
         None => Ok(Some(
             app_handle
-                .holochain()
+                .holochain()?
                 .install_app(app_id, app_bundle, HashMap::new(), None)
                 .await?,
         )),
@@ -124,61 +124,17 @@ async fn install_initial_apps<R: Runtime>(
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>(
-    fcm_project_id: String,
-    notifications_provider_app_id: String,
-    notifications_provider_recipient_app_id: String,
-) -> TauriPlugin<R> {
-    Builder::new("holochain-notification")
-        // .invoke_handler(tauri::generate_handler![commands::execute])
-        .setup(move |app_handle, api| {
-            // #[cfg(mobile)]
-            // let holochain_notification = mobile::init(app, api)?;
-            // #[cfg(desktop)]
-            // let holochain_notification = desktop::init(app, api)?;
-            // app.manage(holochain_notification);
-            let app = app_handle.clone();
-            app_handle.listen_global("holochain-ready", move |_| {
-                let notifications_provider_recipient_app_id =
-                    notifications_provider_recipient_app_id.clone();
-                let notifications_provider_app_id = notifications_provider_app_id.clone();
-                let fcm_project_id = fcm_project_id.clone();
-
-                let app = app.clone();
-                tauri::async_runtime::spawn(async move {
-                    let app2 = app.clone();
-                    match setup(
-                        app,
-                        fcm_project_id,
-                        notifications_provider_app_id,
-                        notifications_provider_recipient_app_id,
-                    )
-                    .await
-                    {
-                        Ok(_) => app2
-                            .emit("holochain-notifications-setup-complete", ())
-                            .expect("Could not emit setup progress event"),
-                        Err(err) => app2
-                            .emit(
-                                "setup-error",
-                                format!("Error setting up notifications: {err:?}"),
-                            )
-                            .expect("Could not emit setup progress event"),
-                    }
-                });
-            });
-
-            Ok(())
-        })
-        .build()
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::new("holochain-notification").build()
 }
 
-async fn setup<R: Runtime>(
+pub async fn setup_notifications<R: Runtime>(
     app: AppHandle<R>,
     fcm_project_id: String,
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
+    //setup_tauri_notifications(&app)?;
     install_initial_apps(
         &app,
         notifications_provider_app_id.clone(),
@@ -201,6 +157,7 @@ async fn setup<R: Runtime>(
                 tauri::async_runtime::spawn(async move {
                     let mut app_agent_ws = app
                         .holochain()
+                        .expect("Holochain was not yet initialized")
                         .app_agent_websocket(provider_app_id)
                         .await
                         .expect("Failed to connect with holochain");
@@ -222,7 +179,7 @@ async fn setup<R: Runtime>(
 
         let h = app.clone();
         let mut app_agent_websocket = h
-            .holochain()
+            .holochain()?
             .app_agent_websocket(provider_app_id)
             .await
             .expect("Failed to connect to holochain");
@@ -288,12 +245,15 @@ async fn setup<R: Runtime>(
                         // TODO: remove this hardcoded stuff
                         let mut app_agent_ws = h
                             .holochain()
+                            .expect("Holochain was not yet initialized")
                             .app_agent_websocket("gather".into())
                             .await
                             .expect("Failed to connect to holochain");
 
-                        let notification_hash =
-                            AnyDhtHash::from(AnyDhtHashB64::from_b64_str(notification_hash_b64).expect("Could not convert notification hash"));
+                        let notification_hash = AnyDhtHash::from(
+                            AnyDhtHashB64::from_b64_str(notification_hash_b64.as_str())
+                                .expect("Could not convert notification hash"),
+                        );
 
                         let _response = app_agent_ws
                             .call_zome(
@@ -310,6 +270,7 @@ async fn setup<R: Runtime>(
                     if let Some(serde_json::Value::String(hrl)) = extra.get("hrl") {
                         if let Ok(hrl) = Hrl::try_from(hrl.clone()) {
                             h.holochain()
+                                .expect("Holochain was not yet initialized")
                                 .open_hrl(hrl)
                                 .await
                                 .expect("Could not open Hrl");
@@ -329,6 +290,7 @@ async fn setup<R: Runtime>(
 
                     let mut app_agent_ws = h
                         .holochain()
+                        .expect("Holochain was not yet initialized")
                         .app_agent_websocket(recipient_app_id)
                         .await
                         .expect("Failed to connect to holochain");
@@ -348,9 +310,40 @@ async fn setup<R: Runtime>(
             }
         });
         //app.notification().register_for_push_notifications().expect("Could not register for push notifications");
-
+        app.emit("holochain-notifications-setup-complete", ());
     }
 
+    Ok(())
+}
+
+fn setup_tauri_notifications<R: Runtime>(
+    app_handle: &AppHandle<R>,
+) -> tauri_plugin_notification::Result<()> {
+    let mut permissions_state = app_handle.notification().permission_state()?;
+    if let PermissionState::Unknown = permissions_state {
+        permissions_state = app_handle.notification().request_permission()?;
+    }
+    let h = app_handle.clone();
+
+    if let PermissionState::Granted = permissions_state {
+        // h.notification()
+        //     .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
+        //     .expect("Failed to create channel");
+        // let r = app.background_tasks().schedule_background_task(
+        //     ScheduleBackgroundTaskRequest {
+        //         label: String::from("hi"),
+        //         interval: 1,
+        //     },
+        //     move || {
+        //         h.notification()
+        //             .builder()
+        //             .channel_id("test")
+        //             .title("Hey!")
+        //             .show()
+        //             .expect("Failed to send notification");
+        //     },
+        // )?;
+    }
     Ok(())
 }
 

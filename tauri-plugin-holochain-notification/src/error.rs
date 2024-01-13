@@ -13,6 +13,8 @@ pub enum Error {
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[error(transparent)]
     TauriPluginHolochainError(#[from] tauri_plugin_holochain::Error),
+    #[error(transparent)]
+    TauriPluginNotificationError(#[from] tauri_plugin_notification::Error),
     #[error("ConductorApiError: `{0:?}`")]
     ConductorApiError(ConductorApiError),
 }

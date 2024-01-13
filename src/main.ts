@@ -9,6 +9,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { customElement, state } from "lit/decorators.js";
 import { LitElement, html, css } from "lit";
+import '@holochain-open-dev/elements/dist/elements/display-error.js'
 import "@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -77,7 +78,7 @@ event.listen("holochain-ready", () => {
   });
 });
 
-const notificationsSetup = writable(false);
+const notificationsSetup = writable(true);
 event.listen("holochain-notifications-setup-complete", () => {
   notificationsSetup.set(true);
 });
