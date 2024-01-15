@@ -1,48 +1,23 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 use holochain_client::AppInfo;
-use holochain_types::prelude::{ExternIO, SerializedBytes, Signal, UnsafeBytes, ZomeName};
+use holochain_types::prelude::{
+    AppBundle, ExternIO, SerializedBytes, Signal, UnsafeBytes, ZomeName,
+};
 use holochain_types::web_app::WebAppBundle;
 use tauri::{AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_holochain::{setup_holochain, HolochainExt};
-use tauri_plugin_holochain_notification::setup_notifications;
+use tauri_plugin_holochain_notification::{
+    provider_fcm_app_bundle, provider_fcm_recipient_app_bundle, setup_notifications,
+};
 use tauri_plugin_notification::*;
 
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
 const NOTIFICATIONS_PROVIDER_APP_ID: &'static str = "notifications_provider_fcm";
 const FCM_PROJECT_ID: &'static str = "rostanga-ce319";
-
-#[tauri::command]
-pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
-    #[cfg(desktop)]
-    window.close()?;
-
-    log::info!("Launching gather");
-
-    app.holochain()?.open_app(String::from("gather"))?;
-
-    Ok(())
-}
-
-fn is_first_run(app: &AppHandle) -> bool {
-    !setup_file_path(app).exists()
-}
-fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
-    app.path()
-        .app_data_dir()
-        .expect("Failed to get data dir")
-        .join("setup")
-}
-use std::io::Write;
-fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
-    let mut file =
-        std::fs::File::create(setup_file_path(app)).expect("Failed to create setup file");
-    file.write_all(b"Hello, world!")
-        .expect("Failed to create setup file");
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -117,8 +92,7 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     setup_holochain(app.clone()).await?;
     log::info!("Successfully set up holochain");
 
-    let gather_installed = install_initial_apps_if_necessary(&app).await?;
-    app.emit("gather-setup-complete", ())?;
+    let installed_apps = install_initial_apps_if_necessary(&app, initial_apps()).await?;
     setup_notifications(
         app.clone(),
         FCM_PROJECT_ID.into(),
@@ -127,7 +101,10 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     )
     .await?;
 
-    if let None = gather_installed {
+    if let None = installed_apps
+        .iter()
+        .find(|app| app.installed_app_id.eq(&String::from("gather")))
+    {
         // Gather is already installed, skipping splashscreen
         app.holochain()?.open_app(String::from("gather"))?;
     }
@@ -138,102 +115,192 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         .app_agent_websocket("gather".into())
         .await?;
 
-    // let h = app.clone();
-    // app_agent_websocket
-    //     .on_signal(move |signal| {
-    //         let h = h.clone();
-    //         tauri::async_runtime::block_on(async move {
-    //             use hc_zome_notifications_types::*;
+    let h = app.clone();
+    app_agent_websocket
+        .on_signal(move |signal| {
+            let h = h.clone();
+            tauri::async_runtime::block_on(async move {
+                use hc_zome_notifications_types::*;
 
-    //             let Signal::App {
-    //                     signal, zome_name, cell_id
-    //                 } = signal
-    //                 else {
-    //                     return ();
-    //                 };
+                let Signal::App {
+                        signal, zome_name, cell_id
+                    } = signal
+                    else {
+                        return ();
+                    };
 
-    //             if zome_name.to_string() != "alerts" {
-    //                 return ();
-    //             }
+                if zome_name.to_string() != "alerts" {
+                    return ();
+                }
 
-    //             let Ok(alerts::Signal::LinkCreated { action, .. }) =
-    //                 signal.into_inner().decode::<alerts::Signal>() else {
-    //                 return ();
-    //             };
-    //             let holochain_types::prelude::Action::CreateLink(create_link) =
-    //                 action.hashed.content
-    //                 else {
-    //                 return ();
-    //             };
+                let Ok(alerts::Signal::LinkCreated { action, .. }) =
+                    signal.into_inner().decode::<alerts::Signal>() else {
+                    return ();
+                };
+                let holochain_types::prelude::Action::CreateLink(create_link) =
+                    action.hashed.content
+                    else {
+                    return ();
+                };
 
-    //             let mut app_agent_websocket = h
-    //                 .holochain()
-    //                 .expect("Holochain was not initialized yet")
-    //                 .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
-    //                 .await
-    //                 .expect("Failed to connect to holochain");
+                let mut app_agent_websocket = h
+                    .holochain()
+                    .expect("Holochain was not initialized yet")
+                    .app_agent_websocket(NOTIFICATIONS_PROVIDER_APP_ID.into())
+                    .await
+                    .expect("Failed to connect to holochain");
 
-    //             let hrl = hrl::Hrl {
-    //                 dna_hash: cell_id.dna_hash().clone(),
-    //                 resource_hash: holochain_types::prelude::AnyDhtHash::from(action.hashed.hash),
-    //             };
+                let hrl = hrl::Hrl {
+                    dna_hash: cell_id.dna_hash().clone(),
+                    resource_hash: holochain_types::prelude::AnyDhtHash::from(action.hashed.hash),
+                };
 
-    //             app_agent_websocket
-    //                 .call_zome(
-    //                     "notifications_provider_fcm".into(),
-    //                     ZomeName::from("notifications_provider_fcm"),
-    //                     "notify_agent".into(),
-    //                     ExternIO::encode(NotifyAgentInput {
-    //                         notification: SerializedBytes::try_from(hrl)
-    //                             .expect("Could not encode hrl"),
-    //                         agent: create_link
-    //                             .base_address
-    //                             .into_agent_pub_key()
-    //                             .expect("Could not convert to agent pubkey"),
-    //                     })
-    //                     .expect("Could not encode notify agent input"),
-    //                 )
-    //                 .await
-    //                 .expect("Failed to notify agent");
-    //         });
-    //     })
-    //     .await?;
+                app_agent_websocket
+                    .call_zome(
+                        "notifications_provider_fcm".into(),
+                        ZomeName::from("notifications_provider_fcm"),
+                        "notify_agent".into(),
+                        ExternIO::encode(NotifyAgentInput {
+                            notification: SerializedBytes::try_from(hrl)
+                                .expect("Could not encode hrl"),
+                            agent: create_link
+                                .base_address
+                                .into_agent_pub_key()
+                                .expect("Could not convert to agent pubkey"),
+                        })
+                        .expect("Could not encode notify agent input"),
+                    )
+                    .await
+                    .expect("Failed to notify agent");
+            });
+        })
+        .await?;
 
     create_setup_file(&app);
 
     Ok(())
 }
 
-async fn install_initial_apps_if_necessary<R: Runtime>(
+pub enum InitialApp {
+    App(AppBundle),
+    WebApp(WebAppBundle),
+}
+
+fn initial_apps() -> BTreeMap<String, InitialApp> {
+    let mut apps: BTreeMap<String, InitialApp> = BTreeMap::new();
+    apps.insert(
+        NOTIFICATIONS_PROVIDER_APP_ID.into(),
+        InitialApp::App(provider_fcm_app_bundle()),
+    );
+    apps.insert(
+        NOTIFICATIONS_RECIPIENT_APP_ID.into(),
+        InitialApp::App(provider_fcm_recipient_app_bundle()),
+    );
+    let gather_web_app_bundle =
+        WebAppBundle::decode(include_bytes!("../../workdir/gather.webhapp"))
+            .expect("Failed to decode gather webhapp");
+    apps.insert(
+        String::from("gather"),
+        InitialApp::WebApp(gather_web_app_bundle),
+    );
+
+    apps
+}
+
+pub async fn install_initial_apps_if_necessary<R: Runtime>(
     app_handle: &AppHandle<R>,
-) -> anyhow::Result<Option<AppInfo>> {
+    apps: BTreeMap<String, InitialApp>,
+) -> anyhow::Result<Vec<AppInfo>> {
     let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
-    let apps = admin_ws
+    let installed_apps = admin_ws
         .list_apps(None)
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-    if let None = apps
-        .iter()
-        .find(|app| app.installed_app_id.eq(&String::from("gather")))
-    {
-        log::info!("Installing apps: gather");
-        let gather_web_app_bundle =
-            WebAppBundle::decode(include_bytes!("../../workdir/gather.webhapp"))
-                .expect("Failed to decode gather webhapp");
+    let installed_apps = futures::future::join_all(
+        apps.into_iter()
+            .filter(|(app_id, _)| {
+                installed_apps
+                    .iter()
+                    .find(|app| app.installed_app_id.eq(app_id))
+                    .is_none()
+            })
+            .map(|(app_id, initial_app)| async {
+                match initial_app {
+                    InitialApp::App(bundle) => Ok(app_handle
+                        .holochain()?
+                        .install_app(app_id, bundle, HashMap::new(), None)
+                        .await?),
+                    InitialApp::WebApp(bundle) => Ok(app_handle
+                        .holochain()?
+                        .install_web_app(app_id, bundle, HashMap::new(), None)
+                        .await?),
+                }
+            }),
+    )
+    .await
+    .into_iter()
+    .collect::<tauri_plugin_holochain::Result<Vec<AppInfo>>>()?;
 
-        let app_info = app_handle
-            .holochain()?
-            .install_web_app(
-                String::from("gather"),
-                gather_web_app_bundle,
-                HashMap::new(),
-                None,
-            )
-            .await?;
+    Ok(installed_apps)
+}
+// async fn install_initial_apps_if_necessary<R: Runtime>(
+//     app_handle: &AppHandle<R>,
+// ) -> anyhow::Result<Option<AppInfo>> {
+//     let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
-        return Ok(Some(app_info));
-    }
-    Ok(None)
+//     let apps = admin_ws
+//         .list_apps(None)
+//         .await
+//         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
+
+//     if let None = apps
+//         .iter()
+//         .find(|app| app.installed_app_id.eq(&String::from("gather")))
+//     {
+//         log::info!("Installing apps: gather");
+
+//         let app_info = app_handle
+//             .holochain()?
+//             .install_web_app(
+//                 String::from("gather"),
+//                 gather_web_app_bundle,
+//                 HashMap::new(),
+//                 None,
+//             )
+//             .await?;
+
+//         return Ok(Some(app_info));
+//     }
+//     Ok(None)
+// }
+
+#[tauri::command]
+pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
+    #[cfg(desktop)]
+    window.close()?;
+
+    log::info!("Launching gather");
+
+    app.holochain()?.open_app(String::from("gather"))?;
+
+    Ok(())
+}
+
+fn is_first_run(app: &AppHandle) -> bool {
+    !setup_file_path(app).exists()
+}
+fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
+    app.path()
+        .app_data_dir()
+        .expect("Failed to get data dir")
+        .join("setup")
+}
+use std::io::Write;
+fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
+    let mut file =
+        std::fs::File::create(setup_file_path(app)).expect("Failed to create setup file");
+    file.write_all(b"Hello, world!")
+        .expect("Failed to create setup file");
 }

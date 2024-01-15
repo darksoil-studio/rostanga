@@ -61,76 +61,18 @@ use yup_oauth2::ServiceAccountKey;
 //     }
 // }
 
-async fn install_app_if_not_present<R: Runtime>(
-    app_handle: &AppHandle<R>,
-    app_id: String,
-    app_bundle: AppBundle,
-) -> crate::Result<Option<AppInfo>> {
-    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
-
-    let apps = admin_ws
-        .list_apps(None)
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
-
-    match apps.iter().find(|app| app.installed_app_id.eq(&app_id)) {
-        None => Ok(Some(
-            app_handle
-                .holochain()?
-                .install_app(app_id, app_bundle, HashMap::new(), None)
-                .await?,
-        )),
-        _ => Ok(None),
-    }
-}
-
-async fn install_initial_apps<R: Runtime>(
-    app_handle: &AppHandle<R>,
-    notifications_provider_app_id: String,
-    notifications_provider_recipient_app_id: String,
-) -> crate::Result<()> {
-    let mut apps: BTreeMap<String, AppBundle> = BTreeMap::new();
-    let provider_app_bundle = AppBundle::decode(include_bytes!(
+pub fn provider_fcm_app_bundle() -> AppBundle {
+    AppBundle::decode(include_bytes!(
         "../../workdir/notifications_provider_fcm.happ"
     ))
-    .unwrap();
-    apps.insert(notifications_provider_app_id, provider_app_bundle);
-    let recipient_app_bundle = AppBundle::decode(include_bytes!(
+    .unwrap()
+}
+
+pub fn provider_fcm_recipient_app_bundle() -> AppBundle {
+    AppBundle::decode(include_bytes!(
         "../../workdir/notifications_fcm_recipient.happ"
     ))
-    .unwrap();
-    apps.insert(
-        notifications_provider_recipient_app_id,
-        recipient_app_bundle,
-    );
-
-    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
-
-    let installed_apps = admin_ws
-        .list_apps(None)
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
-
-    futures::future::join_all(
-        apps.into_iter()
-            .filter(|(app_id, _)| {
-                installed_apps
-                    .iter()
-                    .find(|app| app.installed_app_id.eq(app_id))
-                    .is_some()
-            })
-            .map(|(app_id, app_bundle)| async {
-                Ok(app_handle
-                    .holochain()?
-                    .install_app(app_id, app_bundle, HashMap::new(), None)
-                    .await?)
-            }),
-    )
-    .await
-    .into_iter()
-    .collect::<crate::Result<Vec<AppInfo>>>()?;
-
-    Ok(())
+    .unwrap()
 }
 
 // /// Initializes the plugin.
@@ -145,12 +87,6 @@ pub async fn setup_notifications<R: Runtime>(
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
     setup_tauri_notifications(&app)?;
-    install_initial_apps(
-        &app,
-        notifications_provider_app_id.clone(),
-        notifications_provider_recipient_app_id.clone(),
-    )
-    .await?;
 
     let provider_app_id = notifications_provider_app_id.clone();
     let recipient_app_id = notifications_provider_recipient_app_id.clone();
@@ -317,8 +253,8 @@ pub async fn setup_notifications<R: Runtime>(
         shortcut_publish_new_fcm_token(h, provider_app_id, token)
             .await
             .expect("Failed to publish new fcm token");
-        app.emit("holochain-notifications-setup-complete", ())?;
     }
+    app.emit("holochain-notifications-setup-complete", ())?;
 
     Ok(())
 }
@@ -336,12 +272,12 @@ fn setup_tauri_notifications<R: Runtime>(
     let h = app_handle.clone();
 
     if let PermissionState::Granted = permissions_state {
+        #[cfg(mobile)]
         h.notification()
             .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
             .expect("Failed to create channel");
         h.notification()
             .builder()
-            .channel_id("test")
             .title("Hey!")
             .show()
             .expect("Failed to send notification");

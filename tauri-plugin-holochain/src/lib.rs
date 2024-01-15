@@ -291,6 +291,7 @@ impl<R: Runtime> HolochainPlugin<R> {
         .await?;
 
         self.workaround_join_failed(app_info.clone()).await?;
+        self.app_handle.emit("app-installed", app_id)?;
 
         Ok(app_info)
     }
@@ -314,6 +315,7 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         self.workaround_join_failed(app_info.clone()).await?;
 
+        self.app_handle.emit("app-installed", app_id)?;
         Ok(app_info)
     }
 }

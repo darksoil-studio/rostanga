@@ -7283,6 +7283,7 @@ dependencies = [
  "anyhow",
  "app_dirs2",
  "firestore",
+ "futures",
  "hc_zome_notifications_types",
  "holochain_client",
  "holochain_types",

@@ -18,6 +18,7 @@ import { msg } from "@lit/localize";
 import { invoke } from "@tauri-apps/api/core";
 import { renderAsyncStatus } from "@holochain-open-dev/elements";
 import { AppInfo } from "@holochain/client";
+
 import { setLocale } from "./locales";
 
 const setupError: Writable<string | undefined> = writable(undefined);
@@ -25,13 +26,36 @@ event.listen("setup-error", (e) => {
   setupError.set(e.payload as string);
 });
 
-const gatherSetup = writable(false);
-event.listen("gather-setup-complete", () => {
-  gatherSetup.set(true);
+const INITIAL_APPS = [
+  "gather",
+  "notifications_fcm_recipient",
+  "notifications_provider_fcm",
+];
+
+const initialAppsSetup = writable(INITIAL_APPS.map(() => false));
+function appHasBeenSetUp(appId: string) {
+  initialAppsSetup.update((apps) => {
+    const index = INITIAL_APPS.findIndex((a) => a === appId);
+    apps[index] = true;
+
+    return apps;
+  });
+}
+event.listen("app-installed", (e) => {
+  appHasBeenSetUp(e.payload as string);
 });
 
 async function openGather() {
   invoke("launch_gather");
+}
+
+function afterHolochainReady() {
+  invoke("plugin:holochain|list_apps").then((apps) => {
+    console.log(apps);
+    for (const app of apps as Array<AppInfo>) {
+      appHasBeenSetUp(app.installed_app_id);
+    }
+  });
 }
 
 const holochainReady = writable(false);
@@ -39,56 +63,22 @@ invoke("plugin:holochain|is_holochain_ready")
   .then((v) => {
     holochainReady.set(v as boolean);
     if (v as boolean) {
-      invoke("plugin:holochain|list_apps").then((apps) => {
-        console.log(apps);
-        if (
-          (apps as Array<AppInfo>).find(
-            (app) => app.installed_app_id === "gather"
-          )
-        ) {
-          gatherSetup.set(true);
-        }
-        if (
-          (apps as Array<AppInfo>).find(
-            (app) => app.installed_app_id === "notifications_provider_fcm"
-          )
-        ) {
-          notificationsSetup.set(true);
-        }
-      });
+      afterHolochainReady();
     }
   })
   .catch(() => holochainReady.set(false));
 event.listen("holochain-ready", () => {
   holochainReady.set(true);
-  invoke("plugin:holochain|list_apps").then((apps) => {
-    console.log(apps);
-    if (
-      (apps as Array<AppInfo>).find((app) => app.installed_app_id === "gather")
-    ) {
-      gatherSetup.set(true);
-    }
-    if (
-      (apps as Array<AppInfo>).find(
-        (app) => app.installed_app_id === "notifications_provider_fcm"
-      )
-    ) {
-      notificationsSetup.set(true);
-    }
-  });
-});
-
-const notificationsSetup = writable(false);
-event.listen("holochain-notifications-setup-complete", () => {
-  notificationsSetup.set(true);
+  afterHolochainReady();
 });
 
 const progress = derived(
-  [holochainReady, gatherSetup, notificationsSetup],
-  (readys) => {
-    const setupsDone = readys.filter((i) => i);
+  [holochainReady, initialAppsSetup],
+  ([hcReady, readys]) => {
+    const setups = [hcReady, ...readys];
+    const setupsDone = setups.filter((i) => i);
 
-    return Math.floor((100 * setupsDone.length) / readys.length);
+    return Math.floor((100 * setupsDone.length) / setups.length);
   }
 );
 const status: Readable<AsyncStatus<number>> = derived(
@@ -276,7 +266,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderSplashScreen() {
-    return html`<div class="page">
+    return html`<div class="column" style="flex: 1; gap: 16px; margin: 16px">
       <div style="flex: 1">${this.renderCurrentPage()}</div>
       ${this.renderActions()} ${this.renderProgress()}
     </div>`;
@@ -321,7 +311,6 @@ export class SplashScreen extends LitElement {
     }
     .page {
       flex: 1;
-      margin: 16px;
       gap: 16px;
       display: flex;
       flex-direction: column;

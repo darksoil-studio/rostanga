@@ -12,6 +12,7 @@ jobs:
         platform: [windows-2019, macos-11, ubuntu-22.04]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
+      SERVICE_ACCOUNT_KEY: ~
 
     runs-on: ${{ matrix.platform }}
     steps:
