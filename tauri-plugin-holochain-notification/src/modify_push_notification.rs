@@ -140,7 +140,7 @@ pub fn modify_push_notification(notification: NotificationData) -> NotificationD
             url::Url::parse(hrl.as_str()).expect("Could not parse hrl as url"),
         );
 
-        // notification.attachments.push(attachment);
+        notification.attachments.push(attachment);
 
         // TODO: why does putting things in the extra not work? Bug report:
         // 01-15 16:08:52.147  5779  6119 E AndroidRuntime: java.lang.Error: v1.a: Unrecognized field "hrl" (class app.tauri.plugin.JSObject), not marked as ignorable (0 known properties: ])
