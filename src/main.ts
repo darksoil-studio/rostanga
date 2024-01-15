@@ -78,7 +78,7 @@ event.listen("holochain-ready", () => {
   });
 });
 
-const notificationsSetup = writable(true);
+const notificationsSetup = writable(false);
 event.listen("holochain-notifications-setup-complete", () => {
   notificationsSetup.set(true);
 });

@@ -1,4 +1,10 @@
-use std::{collections::HashMap, fs::canonicalize, path::PathBuf, sync::Mutex, time::Duration};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs::canonicalize,
+    path::PathBuf,
+    sync::Mutex,
+    time::Duration,
+};
 
 use fcm_v1::{
     android::AndroidConfig, apns::ApnsConfig, auth::Authenticator, message::Message, Client,
@@ -10,6 +16,7 @@ use holochain_types::{
     dna::{AnyDhtHash, AnyDhtHashB64},
     prelude::{AppBundle, ExternIO, FunctionName, RoleName, ZomeName},
     signal::Signal,
+    web_app::WebAppBundle,
 };
 use hrl::Hrl;
 use serde_json::{Map, Value};
@@ -78,47 +85,50 @@ async fn install_app_if_not_present<R: Runtime>(
 }
 
 async fn install_initial_apps<R: Runtime>(
-    app: &AppHandle<R>,
+    app_handle: &AppHandle<R>,
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
 ) -> crate::Result<()> {
-    // #[cfg(not(mobile))]
-    {
-        let provider_app_bundle = AppBundle::decode(include_bytes!(
-            "../../workdir/notifications_provider_fcm.happ"
-        ))
-        .unwrap();
-        if let Some(_app_info) = install_app_if_not_present(
-            &app,
-            notifications_provider_app_id.clone(),
-            provider_app_bundle,
-        )
-        .await?
-        {
+    let mut apps: BTreeMap<String, AppBundle> = BTreeMap::new();
+    let provider_app_bundle = AppBundle::decode(include_bytes!(
+        "../../workdir/notifications_provider_fcm.happ"
+    ))
+    .unwrap();
+    apps.insert(notifications_provider_app_id, provider_app_bundle);
+    let recipient_app_bundle = AppBundle::decode(include_bytes!(
+        "../../workdir/notifications_fcm_recipient.happ"
+    ))
+    .unwrap();
+    apps.insert(
+        notifications_provider_recipient_app_id,
+        recipient_app_bundle,
+    );
 
-            //     let mut app_agent_websocket = app.holochain().app_agent_websocket(notifications_provider_app_id).await?;
-            //     app_agent_websocket.call_zome(
-            //     "notifications".into(),
-            //     ZomeName::from("notifications"),
-            //     FunctionName::from("announce_as_provider"),
-            //      ExternIO::encode(()).unwrap()
-            // ).await.map_err(|err| crate::Error::ConductorApiError(err))?;
-        }
-    }
+    let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
-    #[cfg(mobile)]
-    {
-        let recipient_app_bundle = AppBundle::decode(include_bytes!(
-            "../../workdir/notifications_fcm_recipient.happ"
-        ))
-        .unwrap();
-        install_app_if_not_present(
-            &app,
-            notifications_provider_recipient_app_id,
-            recipient_app_bundle,
-        )
-        .await?;
-    }
+    let installed_apps = admin_ws
+        .list_apps(None)
+        .await
+        .map_err(|err| crate::Error::ConductorApiError(err))?;
+
+    futures::future::join_all(
+        apps.into_iter()
+            .filter(|(app_id, _)| {
+                installed_apps
+                    .iter()
+                    .find(|app| app.installed_app_id.eq(app_id))
+                    .is_some()
+            })
+            .map(|(app_id, app_bundle)| async {
+                Ok(app_handle
+                    .holochain()?
+                    .install_app(app_id, app_bundle, HashMap::new(), None)
+                    .await?)
+            }),
+    )
+    .await
+    .into_iter()
+    .collect::<crate::Result<Vec<AppInfo>>>()?;
 
     Ok(())
 }
@@ -316,33 +326,34 @@ pub async fn setup_notifications<R: Runtime>(
 fn setup_tauri_notifications<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> tauri_plugin_notification::Result<()> {
-    // let app_handle = app_handle.clone();
+    let app_handle = app_handle.clone();
 
-    // let permissions_state = app_handle.notification().permission_state()?;
-    // if let PermissionState::Unknown = permissions_state {
-    //     app_handle.notification().request_permission()?;
-    // }
-    // let h = app_handle.clone();
+    let permissions_state = app_handle.notification().permission_state()?;
+    log::info!("Permissions state: {permissions_state}");
+    if let PermissionState::Unknown = permissions_state {
+        app_handle.notification().request_permission()?;
+    }
+    let h = app_handle.clone();
 
-    // if let PermissionState::Granted = permissions_state {
-    //     // h.notification()
-    //     //     .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
-    //     //     .expect("Failed to create channel");
-    //     // let r = app.background_tasks().schedule_background_task(
-    //     //     ScheduleBackgroundTaskRequest {
-    //     //         label: String::from("hi"),
-    //     //         interval: 1,
-    //     //     },
-    //     //     move || {
-    //     //         h.notification()
-    //     //             .builder()
-    //     //             .channel_id("test")
-    //     //             .title("Hey!")
-    //     //             .show()
-    //     //             .expect("Failed to send notification");
-    //     //     },
-    //     // )?;
-    // }
+    if let PermissionState::Granted = permissions_state {
+        h.notification()
+            .create_channel(tauri_plugin_notification::Channel::builder("test", "test").build())
+            .expect("Failed to create channel");
+        h.notification()
+            .builder()
+            .channel_id("test")
+            .title("Hey!")
+            .show()
+            .expect("Failed to send notification");
+        // let r = app.background_tasks().schedule_background_task(
+        //     ScheduleBackgroundTaskRequest {
+        //         label: String::from("hi"),
+        //         interval: 1,
+        //     },
+        //     move || {
+        //     },
+        // )?;
+    }
 
     Ok(())
 }

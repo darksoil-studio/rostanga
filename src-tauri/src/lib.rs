@@ -61,7 +61,7 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![launch_gather,])
-        // .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
@@ -92,10 +92,6 @@ pub fn run() {
                         .expect("Failed to send gather-setup-error"),
                 }
             });
-            // app.handle().notification().request_permission()?;
-
-            //#[cfg(mobile)]
-            //setup_notifications(&h3).expect("Failed to setup notifications");
 
             if is_first_run(app.handle()) {
                 let mut window_builder = WindowBuilder::new(
@@ -123,13 +119,13 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 
     let gather_installed = install_initial_apps_if_necessary(&app).await?;
     app.emit("gather-setup-complete", ())?;
-    // setup_notifications(
-    //     app.clone(),
-    //     FCM_PROJECT_ID.into(),
-    //     NOTIFICATIONS_PROVIDER_APP_ID.into(),
-    //     NOTIFICATIONS_RECIPIENT_APP_ID.into(),
-    // )
-    // .await?;
+    setup_notifications(
+        app.clone(),
+        FCM_PROJECT_ID.into(),
+        NOTIFICATIONS_PROVIDER_APP_ID.into(),
+        NOTIFICATIONS_RECIPIENT_APP_ID.into(),
+    )
+    .await?;
 
     if let None = gather_installed {
         // Gather is already installed, skipping splashscreen

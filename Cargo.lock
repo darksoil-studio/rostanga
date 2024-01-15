@@ -8724,6 +8724,7 @@ name = "tauri-plugin-holochain-notification"
 version = "0.0.0"
 dependencies = [
  "fcm_v1",
+ "futures",
  "hc_zome_notifications_provider_fcm_types",
  "hc_zome_trait_pending_notifications",
  "holochain_client",

@@ -173,77 +173,48 @@ impl<R: Runtime> HolochainPlugin<R> {
         Ok(app_ws)
     }
 
-    async fn workaround_join_failed_all_apps(&self) -> crate::Result<()> {
-        let mut admin_websocket = self.admin_websocket().await?;
+    // async fn workaround_join_failed_all_apps(&self) -> crate::Result<()> {
+    //     let mut admin_websocket = self.admin_websocket().await?;
 
-        let apps = admin_websocket
-            .list_apps(None)
-            .await
-            .map_err(|err| crate::Error::ConductorApiError(err))?;
+    //     let apps = admin_websocket
+    //         .list_apps(None)
+    //         .await
+    //         .map_err(|err| crate::Error::ConductorApiError(err))?;
 
-        let futures: Vec<_> = apps
-            .iter()
-            .map(|app| async {
-                let app = app.clone();
-                self.workaround_join_failed(app).await
-            })
-            .collect();
-        futures::future::join_all(futures).await;
+    //     let futures: Vec<_> = apps
+    //         .iter()
+    //         .map(|app| async {
+    //             let app = app.clone();
+    //             self.workaround_join_failed(app).await
+    //         })
+    //         .collect();
+    //     futures::future::join_all(futures).await;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     async fn workaround_join_failed(&self, app_info: AppInfo) -> crate::Result<()> {
-        let app_id = app_info.installed_app_id;
-        let mut app_agent_websocket = self.app_agent_websocket(app_id.clone()).await?;
-        let mut admin_websocket = self.admin_websocket().await?;
+        let app_id = app_info.installed_app_id.clone();
 
-        for (role, cells) in app_info.cell_info {
-            for cell in cells {
-                match cell {
-                    CellInfo::Provisioned(cell_info) => {
-                        let dna_def = admin_websocket
-                            .get_dna_definition(cell_info.cell_id.dna_hash().clone())
-                            .await
-                            .map_err(|err| crate::Error::ConductorApiError(err))?;
+        let app_id = &app_id;
 
-                        log::info!("Called dna def {dna_def:?}");
+        futures::future::join_all(app_info.clone().cell_info.into_iter().map(
+            |(role, cells)| async move {
+                for cell in cells {
+                    match cell {
+                        CellInfo::Provisioned(cell_info) => {
+                            let mut app_agent_websocket =
+                                self.app_agent_websocket(app_id.clone()).await?;
+                            let mut admin_websocket = self.admin_websocket().await?;
+                            let dna_def = admin_websocket
+                                .get_dna_definition(cell_info.cell_id.dna_hash().clone())
+                                .await
+                                .map_err(|err| crate::Error::ConductorApiError(err))?;
 
-                        if let Some((zome_name, _)) = dna_def.integrity_zomes.first() {
-                            let mut result = app_agent_websocket
-                                .call_zome(
-                                    role.clone(),
-                                    zome_name.clone(),
-                                    "entry_defs".into(),
-                                    ExternIO::encode(()).expect("Failed to encode payload 1"),
-                                )
-                                .await;
-                            log::info!("Called entry_defs {result:?}");
+                            log::info!("Called dna def {dna_def:?}");
 
-                            fn is_pending_join_error(
-                                result: &std::result::Result<ExternIO, ConductorApiError>,
-                            ) -> bool {
-                                if let Err(err) = result {
-                                    !format!("{err:?}").contains(
-                                        "Attempted to call a zome function that doesn't exist",
-                                    )
-                                } else {
-                                    false
-                                }
-                            }
-
-                            while is_pending_join_error(&result) {
-                                log::error!("Error calling entry_defs {result:?}");
-                                std::thread::sleep(std::time::Duration::from_millis(400));
-                                admin_websocket
-                                    .disable_app(app_id.clone())
-                                    .await
-                                    .map_err(|err| crate::Error::ConductorApiError(err))?;
-                                admin_websocket
-                                    .enable_app(app_id.clone())
-                                    .await
-                                    .map_err(|err| crate::Error::ConductorApiError(err))?;
-                                result = app_agent_websocket
+                            if let Some((zome_name, _)) = dna_def.integrity_zomes.first() {
+                                let mut result = app_agent_websocket
                                     .call_zome(
                                         role.clone(),
                                         zome_name.clone(),
@@ -251,13 +222,52 @@ impl<R: Runtime> HolochainPlugin<R> {
                                         ExternIO::encode(()).expect("Failed to encode payload 1"),
                                     )
                                     .await;
+                                log::info!("Called entry_defs {result:?}");
+
+                                fn is_pending_join_error(
+                                    result: &std::result::Result<ExternIO, ConductorApiError>,
+                                ) -> bool {
+                                    if let Err(err) = result {
+                                        !format!("{err:?}").contains(
+                                            "Attempted to call a zome function that doesn't exist",
+                                        )
+                                    } else {
+                                        false
+                                    }
+                                }
+
+                                while is_pending_join_error(&result) {
+                                    log::error!("Error calling entry_defs {result:?}");
+                                    std::thread::sleep(std::time::Duration::from_millis(400));
+                                    admin_websocket
+                                        .disable_app(app_id.clone())
+                                        .await
+                                        .map_err(|err| crate::Error::ConductorApiError(err))?;
+                                    admin_websocket
+                                        .enable_app(app_id.clone())
+                                        .await
+                                        .map_err(|err| crate::Error::ConductorApiError(err))?;
+                                    result = app_agent_websocket
+                                        .call_zome(
+                                            role.clone(),
+                                            zome_name.clone(),
+                                            "entry_defs".into(),
+                                            ExternIO::encode(())
+                                                .expect("Failed to encode payload 1"),
+                                        )
+                                        .await;
+                                }
                             }
                         }
+                        _ => {}
                     }
-                    _ => {}
                 }
-            }
-        }
+                Ok(())
+            },
+        ))
+        .await
+        .into_iter()
+        .collect::<crate::Result<Vec<_>>>()?;
 
         Ok(())
     }
