@@ -3131,7 +3131,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_notifications_provider_fcm_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#bb95910313aaae13b88f882cd9b6f83b489acdd3"
+source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#f5027633586d092a33a582520906cbe5faf0b6b3"
 dependencies = [
  "hdi 0.4.0-beta-dev.21",
  "serde",
@@ -3140,7 +3140,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#bb95910313aaae13b88f882cd9b6f83b489acdd3"
+source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#f5027633586d092a33a582520906cbe5faf0b6b3"
 dependencies = [
  "hdi 0.4.0-beta-dev.21",
  "serde",
@@ -3149,7 +3149,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_trait_pending_notifications"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#bb95910313aaae13b88f882cd9b6f83b489acdd3"
+source = "git+https://github.com/darksoil-studio/notifications?branch=for-hdk-0.3.0-beta-dev#f5027633586d092a33a582520906cbe5faf0b6b3"
 dependencies = [
  "hc_zome_traits",
  "hdk 0.3.0-beta-dev.25",
@@ -4216,7 +4216,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.51.1",
+ "windows-core 0.52.0",
 ]
 
 [[package]]
@@ -7298,7 +7298,6 @@ dependencies = [
  "tauri-plugin-holochain-notification",
  "tauri-plugin-log",
  "tauri-plugin-notification",
- "wry",
 ]
 
 [[package]]
@@ -8744,6 +8743,7 @@ dependencies = [
  "tauri-plugin-holochain",
  "tauri-plugin-notification",
  "thiserror",
+ "url 2.5.0",
  "yup-oauth2",
 ]
 
@@ -8771,7 +8771,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.0.0-alpha.7"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#9af813f1d2d492deb5853dbd9bec3fe0f5998d2a"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b68c1b7c9eb4bdc0e1f5f7cd5b02674b008ffe59"
 dependencies = [
  "log",
  "notify-rust",
@@ -8789,7 +8789,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#9af813f1d2d492deb5853dbd9bec3fe0f5998d2a"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b68c1b7c9eb4bdc0e1f5f7cd5b02674b008ffe59"
 dependencies = [
  "jni",
  "libc",
@@ -8803,7 +8803,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#9af813f1d2d492deb5853dbd9bec3fe0f5998d2a"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b68c1b7c9eb4bdc0e1f5f7cd5b02674b008ffe59"
 dependencies = [
  "rand 0.8.5",
  "serde",
@@ -10874,9 +10874,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.35.1"
+version = "0.35.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2ad1bc1d6925e0cde1bd01830b0073cd0448e21357e843b9ede33b6d81c7423"
+checksum = "d3016c47c9b6f7029a9da7cd48af8352327226bba0e955f3c92e2966651365a9"
 dependencies = [
  "base64 0.21.7",
  "block",

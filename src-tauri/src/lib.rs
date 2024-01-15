@@ -93,6 +93,8 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     log::info!("Successfully set up holochain");
 
     let installed_apps = install_initial_apps_if_necessary(&app, initial_apps()).await?;
+    log::info!("Installed apps: {installed_apps:?}");
+
     setup_notifications(
         app.clone(),
         FCM_PROJECT_ID.into(),
@@ -101,13 +103,13 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     )
     .await?;
 
-    if let None = installed_apps
-        .iter()
-        .find(|app| app.installed_app_id.eq(&String::from("gather")))
-    {
-        // Gather is already installed, skipping splashscreen
-        app.holochain()?.open_app(String::from("gather"))?;
-    }
+    // if let None = installed_apps
+    //     .iter()
+    //     .find(|app| app.installed_app_id.eq(&String::from("gather")))
+    // {
+    // Gather is already installed, skipping splashscreen
+    app.holochain()?.open_app(String::from("gather")).await?;
+    // }
 
     // TODO: remove all this
     let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app
@@ -218,32 +220,58 @@ pub async fn install_initial_apps_if_necessary<R: Runtime>(
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-    let installed_apps = futures::future::join_all(
-        apps.into_iter()
-            .filter(|(app_id, _)| {
-                installed_apps
-                    .iter()
-                    .find(|app| app.installed_app_id.eq(app_id))
-                    .is_none()
-            })
-            .map(|(app_id, initial_app)| async {
-                match initial_app {
-                    InitialApp::App(bundle) => Ok(app_handle
+    let mut new_apps: Vec<AppInfo> = Vec::new();
+
+    for (app_id, initial_app) in apps {
+        if installed_apps
+            .iter()
+            .find(|app| app.installed_app_id.eq(&app_id))
+            .is_none()
+        {
+            let app_info = match initial_app {
+                InitialApp::App(bundle) => {
+                    app_handle
                         .holochain()?
                         .install_app(app_id, bundle, HashMap::new(), None)
-                        .await?),
-                    InitialApp::WebApp(bundle) => Ok(app_handle
+                        .await
+                }
+                InitialApp::WebApp(bundle) => {
+                    app_handle
                         .holochain()?
                         .install_web_app(app_id, bundle, HashMap::new(), None)
-                        .await?),
+                        .await
                 }
-            }),
-    )
-    .await
-    .into_iter()
-    .collect::<tauri_plugin_holochain::Result<Vec<AppInfo>>>()?;
+            }?;
+            new_apps.push(app_info);
+        }
+    }
 
-    Ok(installed_apps)
+    // let installed_apps = futures::future::join_all(
+    //     apps.into_iter()
+    //         .filter(|(app_id, _)| {
+    //             installed_apps
+    //                 .iter()
+    //                 .find(|app| app.installed_app_id.eq(app_id))
+    //                 .is_none()
+    //         })
+    //         .map(|(app_id, initial_app)| async {
+    //             match initial_app {
+    //                 InitialApp::App(bundle) => Ok(app_handle
+    //                     .holochain()?
+    //                     .install_app(app_id, bundle, HashMap::new(), None)
+    //                     .await?),
+    //                 InitialApp::WebApp(bundle) => Ok(app_handle
+    //                     .holochain()?
+    //                     .install_web_app(app_id, bundle, HashMap::new(), None)
+    //                     .await?),
+    //             }
+    //         }),
+    // )
+    // .await
+    // .into_iter()
+    // .collect::<tauri_plugin_holochain::Result<Vec<AppInfo>>>()?;
+
+    Ok(new_apps)
 }
 // async fn install_initial_apps_if_necessary<R: Runtime>(
 //     app_handle: &AppHandle<R>,
@@ -277,13 +305,16 @@ pub async fn install_initial_apps_if_necessary<R: Runtime>(
 // }
 
 #[tauri::command]
-pub(crate) fn launch_gather(app: AppHandle, window: Window) -> tauri_plugin_holochain::Result<()> {
+pub(crate) async fn launch_gather(
+    app: AppHandle,
+    window: Window,
+) -> tauri_plugin_holochain::Result<()> {
     #[cfg(desktop)]
     window.close()?;
 
     log::info!("Launching gather");
 
-    app.holochain()?.open_app(String::from("gather"))?;
+    app.holochain()?.open_app(String::from("gather")).await?;
 
     Ok(())
 }

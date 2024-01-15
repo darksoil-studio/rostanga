@@ -7,6 +7,23 @@ import {
 } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { core } from "@tauri-apps/api";
+import {
+  attachConsole,
+  trace,
+  debug,
+  info,
+  warn,
+  error,
+} from "@tauri-apps/plugin-log";
+
+attachConsole().then(() => {
+  window.onerror = (e) => console.error(e);
+  console.trace = trace;
+  console.log = debug;
+  console.info = info;
+  console.warn = warn;
+  console.error = error;
+});
 
 // Here we are trying to cover all platforms in different ways
 // Windows doesn't support requests of type happ://APPID

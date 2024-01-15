@@ -9,7 +9,7 @@ exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
 links = "tauri-plugin-holochain-notification"
 
 [dependencies]
-tauri = { version = "2.0.0-alpha.18" }
+tauri = { version = "2.0.0-alpha.20" }
 
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
@@ -29,6 +29,7 @@ hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-
 yup-oauth2 = "8"
 fcm_v1 = "0.3.0"
 
+url = "2"
 futures = "0.3"
 jni = "0.21"
 log = "0.4"

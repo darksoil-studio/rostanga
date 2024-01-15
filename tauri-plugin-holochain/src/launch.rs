@@ -8,7 +8,7 @@ use app_dirs2::AppDataType;
 use tokio::io::AsyncWriteExt;
 
 use holochain::conductor::{state::AppInterfaceId, Conductor};
-use holochain_client::AdminWebsocket;
+use holochain_client::{AdminWebsocket, AppWebsocket};
 use holochain_keystore::{lair_keystore::spawn_lair_keystore, LairResult, MetaLairClient};
 use lair_keystore::{
     dependencies::{
@@ -125,6 +125,8 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
 
     wait_until_admin_ws_is_available(admin_port).await?;
 
+    // std::thread::sleep(std::time::Duration::from_secs(2));
+
     log::info!("Connected to the admin websocket");
 
     let mut lock = RUNNING_HOLOCHAIN
@@ -151,6 +153,32 @@ pub async fn wait_until_admin_ws_is_available(admin_port: u16) -> crate::Result<
             .map_err(|err| {
                 crate::Error::AdminWebsocketError(format!(
                     "Could not connect to the admin interface: {}",
+                    err
+                ))
+            })
+        {
+            break ws;
+        }
+        async_std::task::sleep(Duration::from_millis(200)).await;
+
+        retry_count += 1;
+        if retry_count == 200 {
+            return Err(crate::Error::AdminWebsocketError(
+                "Can't connect to holochain".to_string(),
+            ));
+        }
+    };
+    Ok(())
+}
+
+pub async fn wait_until_app_ws_is_available(app_port: u16) -> crate::Result<()> {
+    let mut retry_count = 0;
+    let _admin_ws = loop {
+        if let Ok(ws) = AppWebsocket::connect(format!("ws://localhost:{}", app_port))
+            .await
+            .map_err(|err| {
+                crate::Error::AdminWebsocketError(format!(
+                    "Could not connect to the app interface: {}",
                     err
                 ))
             })

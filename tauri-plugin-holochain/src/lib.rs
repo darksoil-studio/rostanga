@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use http_server::{pong_iframe, read_asset};
 use hyper::StatusCode;
-use launch::RunningHolochainInfo;
+pub use launch::RunningHolochainInfo;
 use serde::{Deserialize, Serialize};
 use tauri::{
     http::response,
@@ -39,6 +39,8 @@ use commands::install_web_app::{install_app, install_web_app};
 pub use error::{Error, Result};
 use filesystem::FileSystem;
 pub use launch::launch;
+
+use crate::launch::wait_until_app_ws_is_available;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HolochainRuntimeInfo {
@@ -92,8 +94,12 @@ impl<R: Runtime> HolochainPlugin<R> {
         Ok(window)
     }
 
-    pub fn open_app(&self, app_id: String) -> crate::Result<()> {
+    pub async fn open_app(&self, app_id: String) -> crate::Result<()> {
         log::info!("Opening app {}", app_id);
+
+        wait_until_app_ws_is_available(self.runtime_info.app_port).await?;
+        log::info!("AppWebsocket is available");
+        std::thread::sleep(std::time::Duration::from_secs(40));
 
         let _window = self.build_window(app_id.clone(), None)?;
 
