@@ -225,7 +225,7 @@ pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> crate::Result<()> 
 pub async fn create_and_apply_lair_symlink(keystore_data_dir: PathBuf) -> crate::Result<()> {
     let mut keystore_dir = keystore_data_dir.clone();
 
-    let uid = nanoid::nanoid!(13);
+    let uid = nanoid::nanoid!(5);
 
     let tempdir =
         app_dirs2::data_root(app_dirs2::AppDataType::UserData).expect("Can't get temp dir");

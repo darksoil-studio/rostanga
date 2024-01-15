@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         with:
-          projectPath: src-tauri # specifying to prevent action from looking for artifacts in crates/hc_launch/src-tauri
+          projectPath: src-tauri
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "rostanga v__VERSION__"
           releaseBody: "See assets below to download and install this version."

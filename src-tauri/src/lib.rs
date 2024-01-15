@@ -103,13 +103,13 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     )
     .await?;
 
-    // if let None = installed_apps
-    //     .iter()
-    //     .find(|app| app.installed_app_id.eq(&String::from("gather")))
-    // {
-    // Gather is already installed, skipping splashscreen
-    app.holochain()?.open_app(String::from("gather")).await?;
-    // }
+    if let None = installed_apps
+        .iter()
+        .find(|app| app.installed_app_id.eq(&String::from("gather")))
+    {
+        // Gather is already installed, skipping splashscreen
+        app.holochain()?.open_app(String::from("gather")).await?;
+    }
 
     // TODO: remove all this
     let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app
@@ -309,12 +309,12 @@ pub(crate) async fn launch_gather(
     app: AppHandle,
     window: Window,
 ) -> tauri_plugin_holochain::Result<()> {
-    #[cfg(desktop)]
-    window.close()?;
-
     log::info!("Launching gather");
 
     app.holochain()?.open_app(String::from("gather")).await?;
+
+    #[cfg(desktop)]
+    window.close()?;
 
     Ok(())
 }

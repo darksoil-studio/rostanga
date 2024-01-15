@@ -6,7 +6,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "rostanga",
+    "productName": "röstånga",
     "version": "0.0.0"
   },
   "tauri": {

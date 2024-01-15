@@ -50,6 +50,8 @@ use tauri_plugin_holochain::HolochainExt;
 use tauri_plugin_notification::{NotificationExt, PermissionState};
 use yup_oauth2::ServiceAccountKey;
 
+use crate::modify_push_notification::NotificationWithHash;
+
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain-notification APIs.
 // pub trait HolochainNotificationExt<R: Runtime> {
 //     fn holochain_notification(&self) -> &HolochainNotification<R>;
@@ -184,43 +186,38 @@ pub async fn setup_notifications<R: Runtime>(
 
                     let notification_data = notification_action_performed_payload.notification;
 
-                    let attachment = notification_data
-                        .attachments
-                        .first()
-                        .expect("Could not get attachment");
+                    let large_body = notification_data.body.expect("Could not get large body");
 
-                    let hrl = Hrl::try_from(attachment.url.to_string())
-                        .expect("Could not parse attachment url");
+                    let NotificationWithHash {
+                        notification_hash,
+                        hrl_to_navigate_to,
+                    } = serde_json::from_str(large_body.as_str())
+                        .expect("Could not deserialize large body");
 
                     h.holochain()
                         .expect("Holochain was not yet initialized")
-                        .open_hrl(hrl)
+                        .open_hrl(hrl_to_navigate_to)
                         .await
                         .expect("Could not open Hrl");
 
                     // TODO: remove this hardcoded stuff
-                    let mut app_agent_ws = h
-                        .holochain()
-                        .expect("Holochain was not yet initialized")
-                        .app_agent_websocket("gather".into())
-                        .await
-                        .expect("Failed to connect to holochain");
+                    // let mut app_agent_ws = h
+                    //     .holochain()
+                    //     .expect("Holochain was not yet initialized")
+                    //     .app_agent_websocket("gather".into())
+                    //     .await
+                    //     .expect("Failed to connect to holochain");
 
-                    let notification_hash = AnyDhtHash::from(
-                        AnyDhtHashB64::from_b64_str(attachment.id.as_str())
-                            .expect("Could not convert notification hash"),
-                    );
-
-                    let _response = app_agent_ws
-                        .call_zome(
-                            "gather".into(),
-                            ZomeName::from("gather"),
-                            FunctionName::from("mark_notification_as_read"),
-                            ExternIO::encode(notification_hash)
-                                .expect("Could not encode notification hash"),
-                        )
-                        .await
-                        .expect("Failed to call zome");
+                    // let _response = app_agent_ws
+                    //     .call_zome(
+                    //         "gather".into(),
+                    //         ZomeName::from("gather"),
+                    //         FunctionName::from("mark_notification_as_read"),
+                    //         ExternIO::encode(notification_hash)
+                    //             .expect("Could not encode notification hash"),
+                    //     )
+                    //     .await
+                    //     .expect("Failed to call zome");
 
                     // if let Some(serde_json::Value::String(hrl)) = extra.get("hrl") {
                     //     if let Ok(hrl) = Hrl::try_from(hrl.clone()) {

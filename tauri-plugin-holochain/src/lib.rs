@@ -58,14 +58,19 @@ pub struct HolochainPlugin<R: Runtime> {
 }
 
 impl<R: Runtime> HolochainPlugin<R> {
-    fn build_window(&self, app_id: String, query_args: Option<String>) -> Result<Window<R>> {
+    fn build_window(
+        &self,
+        app_id: String,
+        label: String,
+        query_args: Option<String>,
+    ) -> Result<Window<R>> {
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
         let query_args = query_args.unwrap_or_default();
 
         let mut window_builder = WindowBuilder::new(
             &self.app_handle,
-            app_id.clone(),
+            label.clone(),
             WindowUrl::External(
                 url::Url::parse(
                     format!(
@@ -99,9 +104,8 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         wait_until_app_ws_is_available(self.runtime_info.app_port).await?;
         log::info!("AppWebsocket is available");
-        std::thread::sleep(std::time::Duration::from_secs(40));
 
-        let _window = self.build_window(app_id.clone(), None)?;
+        let _window = self.build_window(app_id.clone(), app_id.clone(), None)?;
 
         log::info!("Opened app {}", app_id);
         Ok(())
@@ -139,8 +143,15 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         let query_args = format!("hrl={hrl:?}");
 
-        let _window =
-            self.build_window(app_info.installed_app_id.clone(), Some(query_args.clone()))?;
+        let uid = nanoid::nanoid!(5);
+        let label = format!("{}_{uid}", app_info.installed_app_id);
+
+        // let _window = self.build_window(
+        //     app_info.installed_app_id.clone(),
+        //     label,
+        //     // Some(query_args.clone()),
+        //     None,
+        // )?;
 
         log::info!(
             "Opened app {} with query_args {query_args}",

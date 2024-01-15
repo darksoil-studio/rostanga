@@ -13,11 +13,18 @@ use holochain_types::{
 };
 use hrl::Hrl;
 
+use serde::{Deserialize, Serialize};
 use tauri_plugin_holochain::{launch, RunningHolochainInfo};
 use tauri_plugin_notification::*;
 
 use jni::objects::JClass;
 use jni::JNIEnv;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NotificationWithHash {
+    pub notification_hash: AnyDhtHash,
+    pub hrl_to_navigate_to: Hrl,
+}
 
 #[tauri_plugin_notification::modify_push_notification]
 pub fn modify_push_notification(notification: NotificationData) -> NotificationData {
@@ -131,16 +138,18 @@ pub fn modify_push_notification(notification: NotificationData) -> NotificationD
         let mut notification = NotificationData::default();
 
         notification.title = Some(pending_notification.title);
-        notification.body = Some(pending_notification.body);
+        notification.summary = Some(pending_notification.body.clone());
+        notification.large_body = Some(pending_notification.body.clone());
+        // notification.body = Some(pending_notification.body);
 
-        let hrl: String = pending_notification.hrl_to_navigate_to_on_click.hrl.into();
+        let nwithhash = NotificationWithHash {
+            notification_hash,
+            hrl_to_navigate_to: pending_notification.hrl_to_navigate_to_on_click.hrl,
+        };
 
-        let attachment = Attachment::new(
-            AnyDhtHashB64::from(notification_hash).to_string(),
-            url::Url::parse(hrl.as_str()).expect("Could not parse hrl as url"),
-        );
-
-        notification.attachments.push(attachment);
+        let hrl: String =
+            serde_json::to_string(&nwithhash).expect("could not serialize notification with hash");
+        notification.body = Some(hrl);
 
         // TODO: why does putting things in the extra not work? Bug report:
         // 01-15 16:08:52.147  5779  6119 E AndroidRuntime: java.lang.Error: v1.a: Unrecognized field "hrl" (class app.tauri.plugin.JSObject), not marked as ignorable (0 known properties: ])
