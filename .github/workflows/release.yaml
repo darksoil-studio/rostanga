@@ -12,7 +12,7 @@ jobs:
         platform: [windows-2019, macos-11, ubuntu-22.04]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
-      SERVICE_ACCOUNT_KEY: ~
+      SERVICE_ACCOUNT_KEY : ~
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -63,10 +63,11 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         with:
           projectPath: src-tauri # specifying to prevent action from looking for artifacts in crates/hc_launch/src-tauri
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Rostanga Test v__VERSION__"
+          releaseName: "rostanga v__VERSION__"
           releaseBody: "See assets below to download and install this version."
           releaseDraft: true
           prerelease: true
