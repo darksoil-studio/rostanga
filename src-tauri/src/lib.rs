@@ -21,6 +21,12 @@ const FCM_PROJECT_ID: &'static str = "rostanga-ce319";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    tauri::async_runtime::spawn(async {
+        tauri_plugin_holochain::launch()
+            .await
+            .expect("Could not launch holochain");
+    });
+
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Trace)
@@ -40,6 +46,8 @@ pub fn run() {
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
+            log::info!("Start tauri setup");
+
             // #[cfg(desktop)]
             // {
             //     app.handle().plugin(tauri_plugin_cli::init())?;

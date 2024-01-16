@@ -1,8 +1,6 @@
-use std::{
-    path::PathBuf,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
+use std::{path::PathBuf, sync::Arc, time::Duration};
+
+use tokio::sync::RwLock;
 
 use app_dirs2::AppDataType;
 use tokio::io::AsyncWriteExt;
@@ -53,17 +51,13 @@ pub struct RunningHolochainInfo {
     pub filesystem: FileSystem,
 }
 
-pub static RUNNING_HOLOCHAIN: RwLock<Option<RunningHolochainInfo>> = RwLock::new(None);
+pub static RUNNING_HOLOCHAIN: RwLock<Option<RunningHolochainInfo>> = RwLock::const_new(None);
 
 pub async fn launch() -> crate::Result<RunningHolochainInfo> {
-    {
-        let read_lock = RUNNING_HOLOCHAIN
-            .read()
-            .expect("Could not read the running holochain lock");
+    let mut lock = RUNNING_HOLOCHAIN.write().await;
 
-        if let Some(info) = read_lock.to_owned() {
-            return Ok(info);
-        }
+    if let Some(info) = lock.to_owned() {
+        return Ok(info);
     }
 
     let app_data_dir = app_dirs2::app_root(
@@ -123,15 +117,11 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
             .expect("Can't add app interface");
     });
 
-    // wait_until_admin_ws_is_available(admin_port).await?;
+    wait_until_admin_ws_is_available(admin_port).await?;
 
     // std::thread::sleep(std::time::Duration::from_secs(2));
 
     log::info!("Connected to the admin websocket");
-
-    let mut lock = RUNNING_HOLOCHAIN
-        .write()
-        .expect("Could not acquire lock to write holochain info");
 
     let info = RunningHolochainInfo {
         admin_port,
