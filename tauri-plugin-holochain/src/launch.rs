@@ -123,7 +123,7 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
             .expect("Can't add app interface");
     });
 
-    wait_until_admin_ws_is_available(admin_port).await?;
+    // wait_until_admin_ws_is_available(admin_port).await?;
 
     // std::thread::sleep(std::time::Duration::from_secs(2));
 

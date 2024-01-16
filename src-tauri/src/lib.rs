@@ -23,7 +23,7 @@ const FCM_PROJECT_ID: &'static str = "rostanga-ce319";
 pub fn run() {
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
+            .level(log::LevelFilter::Trace)
             // .clear_targets()
             // .target(Target::new(TargetKind::LogDir { file_name: None }))
             .build(),
@@ -92,6 +92,10 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     setup_holochain(app.clone()).await?;
     log::info!("Successfully set up holochain");
 
+    if !is_first_run(&app) {
+        app.holochain()?.open_app(String::from("gather")).await?;
+    }
+
     let installed_apps = install_initial_apps_if_necessary(&app, initial_apps()).await?;
     log::info!("Installed apps: {installed_apps:?}");
 
@@ -108,7 +112,6 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         .find(|app| app.installed_app_id.eq(&String::from("gather")))
     {
         // Gather is already installed, skipping splashscreen
-        app.holochain()?.open_app(String::from("gather")).await?;
     }
 
     // TODO: remove all this
@@ -319,7 +322,7 @@ pub(crate) async fn launch_gather(
     Ok(())
 }
 
-fn is_first_run(app: &AppHandle) -> bool {
+fn is_first_run<R: Runtime>(app: &AppHandle<R>) -> bool {
     !setup_file_path(app).exists()
 }
 fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
