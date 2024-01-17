@@ -1,5 +1,6 @@
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
+use lair_keystore_api::{in_proc_keystore::InProcKeystore, LairClient};
 use tokio::sync::RwLock;
 
 use app_dirs2::AppDataType;
@@ -7,7 +8,9 @@ use tokio::io::AsyncWriteExt;
 
 use holochain::conductor::{state::AppInterfaceId, Conductor};
 use holochain_client::{AdminWebsocket, AppWebsocket};
-use holochain_keystore::{lair_keystore::spawn_lair_keystore, LairResult, MetaLairClient};
+use holochain_keystore::{
+    lair_keystore::spawn_lair_keystore, spawn_test_keystore, LairResult, MetaLairClient,
+};
 use lair_keystore::{
     dependencies::{
         lair_keystore_api::prelude::{LairServerConfig, LairServerConfigInner},
@@ -47,7 +50,7 @@ fn override_gossip_arc_clamping() -> Option<String> {
 pub struct RunningHolochainInfo {
     pub app_port: u16,
     pub admin_port: u16,
-    pub lair_client: MetaLairClient,
+    pub lair_client: LairClient,
     pub filesystem: FileSystem,
 }
 
@@ -86,13 +89,37 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
     let passphrase = vec_to_locked(vec![]).expect("Can't build passphrase");
     let fs = filesystem.clone();
 
+    let config = get_config(&fs.keystore_config_path(), passphrase.clone())
+        .await
+        .map_err(|err| crate::Error::LairError(err))?;
+
+    // TODO: this fails with "query returned no rows" error, fix it
+    // let store_factory = lair_keystore::create_sql_pool_factory(&fs.keystore_store_path());
+
+    // // create an in-process keystore with an in-memory store
+    // let keystore = InProcKeystore::new(config.clone(), store_factory, passphrase.clone())
+    //     .await
+    //     .map_err(|err| crate::Error::LairError(err))?;
+
+    // let client = keystore
+    //     .new_client()
+    //     .await
+    //     .map_err(|err| crate::Error::LairError(err))?;
+
+    // let lair_client = MetaLairClient::new_with_client(client.clone())
+    //     .await
+    //     .map_err(|err| crate::Error::LairError(err))?;
+
     let lair_client = spawn_lair_keystore_in_proc(fs.keystore_config_path(), passphrase.clone())
         .await
         .map_err(|err| crate::Error::LairError(err))?;
 
-    let config = read_config(&fs.keystore_config_path())?;
-
     let connection_url = config.connection_url.clone();
+    // let connection_url = url2::Url2::parse("http://localhost:8990");
+
+    let lc = lair_client.clone();
+
+    log::info!("Lair keystore spawned");
 
     tauri::async_runtime::spawn(async move {
         let config = crate::config::conductor_config(
@@ -105,6 +132,7 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
         let conductor = Conductor::builder()
             .config(config)
             .passphrase(Some(passphrase))
+            .with_keystore(lc)
             .build()
             .await
             .expect("Can't build the conductor");
@@ -119,15 +147,13 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
 
     wait_until_admin_ws_is_available(admin_port).await?;
 
-    // std::thread::sleep(std::time::Duration::from_secs(2));
-
     log::info!("Connected to the admin websocket");
 
     let info = RunningHolochainInfo {
         admin_port,
         app_port,
         filesystem,
-        lair_client,
+        lair_client: lair_client.lair_client(),
     };
 
     *lock = Some(info.clone());
@@ -208,6 +234,8 @@ pub async fn spawn_lair_keystore_in_proc(
     config_path: std::path::PathBuf,
     passphrase: BufRead,
 ) -> LairResult<MetaLairClient> {
+    // return Ok(spawn_test_keystore().await?);
+
     let config = get_config(&config_path, passphrase.clone()).await?;
     let connection_url = config.connection_url.clone();
 
@@ -215,13 +243,14 @@ pub async fn spawn_lair_keystore_in_proc(
     // use the actual standalone server so we get the pid-checks, etc
     let mut server = StandaloneServer::new(config).await?;
 
-    server.run(passphrase.clone()).await?;
+    server.run(passphrase.clone()).await?; // 3 seconds
 
     // just incase a Drop gets impld at some point...
     std::mem::forget(server);
 
     // now, just connect to it : )
-    spawn_lair_keystore(connection_url.into(), passphrase).await
+    let k = spawn_lair_keystore(connection_url.into(), passphrase).await?; // 2 seconds
+    Ok(k)
 }
 
 pub async fn get_config(

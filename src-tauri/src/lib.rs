@@ -22,6 +22,8 @@ const FCM_PROJECT_ID: &'static str = "rostanga-ce319";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::async_runtime::spawn(async {
+        println!("Launching holochain as early as possible");
+        log::info!("Launching holochain as early as possible");
         tauri_plugin_holochain::launch()
             .await
             .expect("Could not launch holochain");
@@ -29,7 +31,7 @@ pub fn run() {
 
     let mut builder = tauri::Builder::default().plugin(
         tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Trace)
+            .level(log::LevelFilter::Info)
             // .clear_targets()
             // .target(Target::new(TargetKind::LogDir { file_name: None }))
             .build(),
@@ -41,7 +43,7 @@ pub fn run() {
     }
 
     builder
-        .invoke_handler(tauri::generate_handler![launch_gather,])
+        .invoke_handler(tauri::generate_handler![launch_gather, is_android])
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
         // .plugin(tauri_plugin_holochain_notification::init())
@@ -67,9 +69,7 @@ pub fn run() {
 
             tauri::async_runtime::spawn(async move {
                 match setup(h).await {
-                    Ok(_) => h2
-                        .emit("gather-setup-complete", ())
-                        .expect("Failed to send gather-setup-complete"),
+                    Ok(_) => {}
                     Err(err) => h2
                         .emit("setup-error", format!("Failed to set up gather: {err:?}"))
                         .expect("Failed to send gather-setup-error"),
@@ -114,13 +114,6 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         NOTIFICATIONS_RECIPIENT_APP_ID.into(),
     )
     .await?;
-
-    if let None = installed_apps
-        .iter()
-        .find(|app| app.installed_app_id.eq(&String::from("gather")))
-    {
-        // Gather is already installed, skipping splashscreen
-    }
 
     // TODO: remove all this
     let mut app_agent_websocket: holochain_client::AppAgentWebsocket = app
@@ -316,11 +309,19 @@ pub async fn install_initial_apps_if_necessary<R: Runtime>(
 // }
 
 #[tauri::command]
+pub(crate) fn is_android() -> bool {
+    cfg!(target_os = "android")
+}
+
+#[tauri::command]
 pub(crate) async fn launch_gather(
     app: AppHandle,
     window: Window,
 ) -> tauri_plugin_holochain::Result<()> {
     log::info!("Launching gather");
+
+    #[cfg(target_os = "android")]
+    app.exit(0); // TODO: remove this
 
     app.holochain()?.open_app(String::from("gather")).await?;
 

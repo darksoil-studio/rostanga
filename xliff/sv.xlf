@@ -82,6 +82,14 @@
   <source>Sorry... There was an error launching the app.</source>
   <target>Tyvärr... Något gick fel vid start av appen.</target>
 </trans-unit>
+<trans-unit id="sbb9f2573eba222e9">
+  <source>To start using the app, close it and start it again.</source>
+  <target>För att börja använda appen, stäng den och starta den igen</target>
+</trans-unit>
+<trans-unit id="se33540c0232cc7c8">
+  <source>Close App</source>
+  <target>Stäng Appen</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

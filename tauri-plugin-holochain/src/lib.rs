@@ -2,6 +2,7 @@ use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use http_server::{pong_iframe, read_asset};
 use hyper::StatusCode;
+use lair_keystore_api::LairClient;
 pub use launch::RunningHolochainInfo;
 use serde::{Deserialize, Serialize};
 use tauri::{
@@ -54,7 +55,7 @@ pub struct HolochainPlugin<R: Runtime> {
     pub app_handle: AppHandle<R>,
     pub filesystem: FileSystem,
     pub runtime_info: HolochainRuntimeInfo,
-    pub lair_client: MetaLairClient,
+    pub lair_client: LairClient,
 }
 
 impl<R: Runtime> HolochainPlugin<R> {
@@ -177,12 +178,10 @@ impl<R: Runtime> HolochainPlugin<R> {
     }
 
     pub async fn app_agent_websocket(&self, app_id: String) -> crate::Result<AppAgentWebsocket> {
-        let lair_client = self.lair_client.lair_client();
-
         let app_ws = AppAgentWebsocket::connect(
             format!("ws://localhost:{}", self.runtime_info.app_port),
             app_id,
-            lair_client,
+            self.lair_client.clone(),
         )
         .await
         .map_err(|err| crate::Error::WebsocketConnectionError(format!("{err:?}")))?;

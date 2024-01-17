@@ -19,6 +19,8 @@ pub enum Error {
     TauriError(#[from] tauri::Error),
     #[error("ConductorApiError: `{0:?}`")]
     ConductorApiError(ConductorApiError),
+    #[error("Error modifying notification: `{0:?}`")]
+    ModifyNotificationError(String),
 }
 
 impl Serialize for Error {

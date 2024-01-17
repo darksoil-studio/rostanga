@@ -62,6 +62,10 @@ impl FileSystem {
         self.keystore_dir().join("lair-keystore-config.yaml")
     }
 
+    pub fn keystore_store_path(&self) -> PathBuf {
+        self.keystore_dir().join("store_file")
+    }
+
     pub fn conductor_dir(&self) -> PathBuf {
         self.app_data_dir.join("conductor")
     }
@@ -102,6 +106,8 @@ impl UiStore {
         let ui_bytes = web_app.web_ui_zip_bytes().await?;
 
         let ui_folder_path = self.ui_path(installed_app_id);
+
+        // fs::remove_dir_all(&ui_folder_path)?;
 
         fs::create_dir_all(&ui_folder_path)?;
 

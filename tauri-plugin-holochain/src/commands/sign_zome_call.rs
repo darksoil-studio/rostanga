@@ -17,7 +17,7 @@ pub(crate) async fn sign_zome_call<R: Runtime>(
 
     let signed_zome_call = sign_zome_call_with_client(
         zome_call_unsigned_converted,
-        &app_handle.holochain()?.lair_client.lair_client(),
+        &app_handle.holochain()?.lair_client.clone(),
     )
     .await
     .map_err(|err| crate::Error::SignZomeCallError(err))?;

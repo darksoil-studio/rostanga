@@ -101,6 +101,9 @@ export class SplashScreen extends LitElement {
   @state()
   currentPage: number = 0;
 
+  @state()
+  isAndroid = false;
+
   pages() {
     return [
       () => this.renderWelcome(),
@@ -113,8 +116,9 @@ export class SplashScreen extends LitElement {
     ];
   }
 
-  firstUpdated() {
+  async firstUpdated() {
     setLocale();
+    this.isAndroid = await invoke("is_android");
   }
 
   renderWelcome() {
@@ -219,6 +223,15 @@ export class SplashScreen extends LitElement {
         )}</span
       >
       <span>${msg("Thanks so much for being here and trying this out.")}</span>
+      ${this.isAndroid
+        ? html`
+            <span
+              >${msg(
+                "To start using the app, close it and start it again."
+              )}</span
+            >
+          `
+        : html``}
     </div>`;
   }
 
@@ -257,7 +270,11 @@ export class SplashScreen extends LitElement {
               @click=${() =>
                 lastPage ? openGather() : (this.currentPage += 1)}
             >
-              ${lastPage ? msg("Launch App") : msg("Next")}
+              ${lastPage
+                ? this.isAndroid
+                  ? msg("Close App")
+                  : msg("Launch App")
+                : msg("Next")}
             </sl-button>
           `
         )}

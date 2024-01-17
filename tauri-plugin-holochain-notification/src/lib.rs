@@ -288,7 +288,6 @@ pub async fn setup_notifications<R: Runtime>(
             .await
             .expect("Failed to publish new fcm token");
     }
-    app.emit("holochain-notifications-setup-complete", ())?;
 
     Ok(())
 }

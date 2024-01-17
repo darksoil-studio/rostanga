@@ -42,4 +42,4 @@ holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "fir
 kitsune_p2p_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
 holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
 mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-lair_keystore_api = { git = "https://github.com/guillemcordoba/lair", branch = "main" }
+# lair_keystore_api = { git = "https://github.com/guillemcordoba/lair", branch = "main" }
