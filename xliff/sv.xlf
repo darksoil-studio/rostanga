@@ -84,7 +84,7 @@
 </trans-unit>
 <trans-unit id="sbb9f2573eba222e9">
   <source>To start using the app, close it and start it again.</source>
-  <target>För att börja använda appen, stäng den och starta den igen</target>
+  <target>För att börja använda appen, vänta tills installationen är klar, stäng den sedan och starta den igen.</target>
 </trans-unit>
 <trans-unit id="se33540c0232cc7c8">
   <source>Close App</source>

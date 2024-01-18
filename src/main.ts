@@ -19,6 +19,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { renderAsyncStatus } from "@holochain-open-dev/elements";
 import { AppInfo } from "@holochain/client";
 
+//@ts-ignore
+import rostangaSplash from "../rostanga-splash.jpg";
+
 import { setLocale } from "./locales";
 
 const setupError: Writable<string | undefined> = writable(undefined);
@@ -227,7 +230,7 @@ export class SplashScreen extends LitElement {
         ? html`
             <span
               >${msg(
-                "To start using the app, close it and start it again."
+                "To start using the app, wait until the setup is completed, then close it and start it again."
               )}</span
             >
           `
@@ -285,7 +288,7 @@ export class SplashScreen extends LitElement {
   renderSplashScreen() {
     return html` <div class="column">
       <img
-        src="../rostanga-splash.jpg"
+        src="${rostangaSplash}"
         style="height: 300px; width: 100%; object-fit: cover"
       />
       <div class="column" style="flex: 1; gap: 16px; margin: 16px">
