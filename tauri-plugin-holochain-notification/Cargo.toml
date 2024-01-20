@@ -14,9 +14,7 @@ tauri = { version = "2.0.0-alpha.20" }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
 
-holochain_types = { version = "0.3.0-beta-dev", features = [
-  "sqlite-encrypted",
-] }
+holochain_types = { version = "0.3.0-beta-dev" }
 holochain_nonce = { version = "0.3.0-beta-dev" }
 holochain_conductor_api = { version = "0.3.0-beta-dev" }
 holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }

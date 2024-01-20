@@ -335,10 +335,20 @@ fn is_first_run<R: Runtime>(app: &AppHandle<R>) -> bool {
     !setup_file_path(app).exists()
 }
 fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
-    app.path()
-        .app_data_dir()
-        .expect("Failed to get data dir")
-        .join("setup")
+    app_dirs2::app_root(
+        app_dirs2::AppDataType::UserData,
+        &app_dirs2::AppInfo {
+            name: "studio.darksoil.rostanga",
+            author: "darksoil.studio",
+        },
+    )
+    .expect("Can't get app dir")
+    .join("setup")
+
+//    app.path()
+//        .app_data_dir()
+//        .expect("Failed to get data dir")
+//        .join("setup")
 }
 use std::io::Write;
 fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
