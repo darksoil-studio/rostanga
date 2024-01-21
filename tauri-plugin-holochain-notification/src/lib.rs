@@ -111,11 +111,11 @@ pub async fn setup_notifications<R: Runtime>(
                     match publish_service_account_key(&mut app_agent_ws, PathBuf::from(s)).await {
                         Ok(_) => {
                             log::info!("Successfully uploaded new service account key");
-                            std::process::exit(0);
+                            app.exit(0);
                         }
                         Err(err) => {
                             log::error!("Failed to upload new service account key: {err:?}");
-                            std::process::exit(1);
+                            app.exit(1);
                         }
                     }
                 });

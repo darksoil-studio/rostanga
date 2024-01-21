@@ -286,7 +286,7 @@ export class SplashScreen extends LitElement {
   }
 
   renderSplashScreen() {
-    return html` <div class="column">
+    return html` <div class="column" style="flex: 1">
       <img
         src="${rostangaSplash}"
         style="height: 300px; width: 100%; object-fit: cover"

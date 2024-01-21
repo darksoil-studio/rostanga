@@ -83,6 +83,7 @@ impl<R: Runtime> HolochainPlugin<R> {
                 .expect("Cannot parse localhost url"),
             ),
         )
+        .title(app_id.clone())
         .initialization_script(app_id_env_command.as_str());
 
         #[cfg(desktop)]
