@@ -4228,7 +4228,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.51.1",
+ "windows-core 0.52.0",
 ]
 
 [[package]]
@@ -7444,6 +7444,7 @@ dependencies = [
  "tauri-plugin-holochain-notification",
  "tauri-plugin-log",
  "tauri-plugin-notification",
+ "wry",
 ]
 
 [[package]]
@@ -8708,9 +8709,9 @@ dependencies = [
 
 [[package]]
 name = "tauri"
-version = "2.0.0-alpha.21"
+version = "2.0.0-alpha.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e9a02f880bf9fcf62b73ea1d7f399601fab7ccc740814f46c3508d38e289722"
+checksum = "05fb63873c39d3fd5ddad995d395e7b7394ece0b69aeacb31e91d24af48f3de1"
 dependencies = [
  "anyhow",
  "bytes",
@@ -8981,9 +8982,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "1.0.0-alpha.9"
+version = "1.0.0-alpha.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "379db5d8c05d0d47a2a86f6e758b2db9f62ba5c8703e6974356121974e170cae"
+checksum = "5a9f181a6f5f982204ae293c19f37ba90116b8ec0bfd0a08c7a7ba67200cd9e3"
 dependencies = [
  "cocoa 0.25.0",
  "gtk",
@@ -11071,9 +11072,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.35.2"
+version = "0.35.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3016c47c9b6f7029a9da7cd48af8352327226bba0e955f3c92e2966651365a9"
+checksum = "a2ad1bc1d6925e0cde1bd01830b0073cd0448e21357e843b9ede33b6d81c7423"
 dependencies = [
  "base64 0.21.7",
  "block",

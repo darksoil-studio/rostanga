@@ -22,6 +22,7 @@ tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notification" }
 tauri-plugin-log = "2.0.0-alpha"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
+wry = "=0.35.1"
 
 alerts = { git = "https://github.com/darksoil-studio/gather", branch = "without-template" }                                   # TODO: remove
 hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
@@ -46,4 +47,3 @@ tauri-plugin-cli = "2.0.0-alpha"
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
-

@@ -41,6 +41,7 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_cli::init());
     }
+    // TODO: take this out when this issue is resolved: https://discord.com/channels/616186924390023171/1198593519066038332
     #[cfg(mobile)]
     {
         builder = builder.plugin(tauri_plugin_notification::init());
