@@ -41,15 +41,11 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_cli::init());
     }
-    // TODO: take this out when this issue is resolved: https://discord.com/channels/616186924390023171/1198593519066038332
-    #[cfg(mobile)]
-    {
-        builder = builder.plugin(tauri_plugin_notification::init());
-    }
 
     builder
         .invoke_handler(tauri::generate_handler![launch_gather, is_android])
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
+        .plugin(tauri_plugin_notification::init())
         // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
             log::info!("Start tauri setup");
@@ -349,10 +345,10 @@ fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
     .expect("Can't get app dir")
     .join("setup")
 
-//    app.path()
-//        .app_data_dir()
-//        .expect("Failed to get data dir")
-//        .join("setup")
+    //    app.path()
+    //        .app_data_dir()
+    //        .expect("Failed to get data dir")
+    //        .join("setup")
 }
 use std::io::Write;
 fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
