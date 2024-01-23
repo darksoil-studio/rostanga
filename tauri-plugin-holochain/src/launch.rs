@@ -1,5 +1,6 @@
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
+use holochain_conductor_api::conductor::ConductorConfig;
 use lair_keystore_api::{in_proc_keystore::InProcKeystore, LairClient};
 use tokio::sync::RwLock;
 
@@ -18,6 +19,7 @@ use lair_keystore::{
     },
     server::StandaloneServer,
 };
+use url2::Url2;
 
 use crate::filesystem::FileSystem;
 
@@ -69,8 +71,7 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
             name: "studio.darksoil.rostanga",
             author: "darksoil.studio",
         },
-    )
-    .expect("Can't get app dir")
+    )?
     .join("holochain");
     let app_config_dir = app_dirs2::app_root(
         AppDataType::UserConfig,
@@ -78,8 +79,7 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
             name: "studio.darksoil.rostanga",
             author: "darksoil.studio",
         },
-    )
-    .expect("Can't get app dir")
+    )?
     .join("holochain");
 
     let filesystem = FileSystem::new(app_data_dir, app_config_dir).await?;
@@ -122,27 +122,18 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
     log::info!("Lair keystore spawned");
 
     tauri::async_runtime::spawn(async move {
-        let config = crate::config::conductor_config(
+        if let Err(err) = build_conductor(
             &fs,
             admin_port,
+            app_port,
             connection_url.into(),
-            override_gossip_arc_clamping(),
-        );
-
-        let conductor = Conductor::builder()
-            .config(config)
-            .passphrase(Some(passphrase))
-            .with_keystore(lc)
-            .build()
-            .await
-            .expect("Can't build the conductor");
-
-        let p: either::Either<u16, AppInterfaceId> = either::Either::Left(app_port);
-        conductor
-            .clone()
-            .add_app_interface(p)
-            .await
-            .expect("Can't add app interface");
+            passphrase,
+            lc,
+        )
+        .await
+        {
+            log::error!("Can't build conductor: {err:?}");
+        }
     });
 
     wait_until_admin_ws_is_available(admin_port).await?;
@@ -159,6 +150,34 @@ pub async fn launch() -> crate::Result<RunningHolochainInfo> {
     *lock = Some(info.clone());
 
     Ok(info)
+}
+
+async fn build_conductor(
+    fs: &FileSystem,
+    admin_port: u16,
+    app_port: u16,
+    connection_url: Url2,
+    passphrase: BufRead,
+    keystore: MetaLairClient,
+) -> crate::Result<()> {
+    let config = crate::config::conductor_config(
+        &fs,
+        admin_port,
+        connection_url.into(),
+        override_gossip_arc_clamping(),
+    );
+
+    let conductor = Conductor::builder()
+        .config(config)
+        .passphrase(Some(passphrase))
+        .with_keystore(keystore)
+        .build()
+        .await?;
+
+    let p: either::Either<u16, AppInterfaceId> = either::Either::Left(app_port);
+    conductor.clone().add_app_interface(p).await?;
+
+    Ok(())
 }
 
 pub async fn wait_until_admin_ws_is_available(admin_port: u16) -> crate::Result<()> {

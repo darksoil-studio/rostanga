@@ -24,9 +24,9 @@ pub fn run() {
     tauri::async_runtime::spawn(async {
         println!("Launching holochain as early as possible");
         log::info!("Launching holochain as early as possible");
-        tauri_plugin_holochain::launch()
-            .await
-            .expect("Could not launch holochain");
+        if let Err(err) = tauri_plugin_holochain::launch().await {
+            log::error!("Could not not launch holochain: {err:?}");
+        }
     });
 
     let mut builder = tauri::Builder::default().plugin(
@@ -41,11 +41,15 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_cli::init());
     }
+    #[cfg(mobile)]
+    {
+        builder = builder.plugin(tauri_plugin_notification::init());
+    }
 
     builder
         .invoke_handler(tauri::generate_handler![launch_gather, is_android])
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
-        .plugin(tauri_plugin_notification::init())
+        // .plugin(tauri_plugin_notification::init())
         // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
             log::info!("Start tauri setup");
@@ -70,9 +74,13 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 match setup(h).await {
                     Ok(_) => {}
-                    Err(err) => h2
-                        .emit("setup-error", format!("Failed to set up gather: {err:?}"))
-                        .expect("Failed to send gather-setup-error"),
+                    Err(err) => {
+                        if let Err(err) =
+                            h2.emit("setup-error", format!("Failed to set up gather: {err:?}"))
+                        {
+                            log::error!("Failed to send setup-error:  {err:?}");
+                        }
+                    }
                 }
             });
 
@@ -81,7 +89,8 @@ pub fn run() {
                     app.handle(),
                     "Welcome",
                     WindowUrl::App("index.html".into()),
-                );
+                )
+                .title("röstånga");
 
                 #[cfg(desktop)]
                 {
@@ -325,7 +334,7 @@ pub(crate) async fn launch_gather(
 
     app.holochain()?.open_app(String::from("gather")).await?;
 
-    #[cfg(desktop)]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     window.close()?;
 
     Ok(())

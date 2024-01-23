@@ -217,7 +217,8 @@ async fn get_pending_notification(
     cell_id: CellId,
     input: GetNotificationInput,
 ) -> crate::Result<Option<Notification>> {
-    let (nonce, expires_at) = fresh_nonce(Timestamp::now()).expect("Could not create nonce");
+    let (nonce, expires_at) = fresh_nonce(Timestamp::now())
+        .map_err(|err| crate::Error::NonceError(format!("{err:?}")))?;
 
     let zome_call_unsigned = ZomeCallUnsigned {
         provenance: cell_id.agent_pubkey().clone(),
@@ -225,23 +226,21 @@ async fn get_pending_notification(
         zome_name: ZomeName::from("gather"), // TODO: remove hardcoded zome name
         fn_name: FunctionName::from("get_notification"),
         cap_secret: None,
-        payload: ExternIO::encode(input).expect("Could not encode get notification input"),
+        payload: ExternIO::encode(input)?,
         nonce,
         expires_at,
     };
 
     let zome_call = sign_zome_call_with_client(zome_call_unsigned, &info.lair_client.clone())
         .await
-        .expect("Could not sign zome call");
+        .map_err(|err| crate::Error::SignZomeCallError(err))?;
 
     // Hardcoded zome name
     // TODO: add HRL resolver to get which zome to call fetch_notification on?
     let response = app_ws
         .call_zome(zome_call)
         .await
-        .expect("Failed to call zome");
-    let maybe_pending_notification: Option<Notification> = response
-        .decode()
-        .expect("Failed to decode zome call response");
+        .map_err(|err| crate::Error::ConductorApiError(err))?;
+    let maybe_pending_notification: Option<Notification> = response.decode()?;
     Ok(maybe_pending_notification)
 }

@@ -72,16 +72,13 @@ impl<R: Runtime> HolochainPlugin<R> {
         let mut window_builder = WindowBuilder::new(
             &self.app_handle,
             label.clone(),
-            WindowUrl::External(
-                url::Url::parse(
-                    format!(
-                        "http://localhost:{}?{query_args}",
-                        self.runtime_info.http_server_port
-                    )
-                    .as_str(),
+            WindowUrl::External(url::Url::parse(
+                format!(
+                    "http://localhost:{}?{query_args}",
+                    self.runtime_info.http_server_port
                 )
-                .expect("Cannot parse localhost url"),
-            ),
+                .as_str(),
+            )?),
         )
         .title(app_id.clone())
         .initialization_script(app_id_env_command.as_str());
@@ -477,7 +474,7 @@ pub async fn setup_holochain<R: Runtime>(app_handle: AppHandle<R>) -> crate::Res
         app_port,
         lair_client,
         filesystem,
-    } = launch().await.expect("Could not launch holochain");
+    } = launch().await?;
 
     log::info!("Starting http server at port {http_server_port:?}");
 
