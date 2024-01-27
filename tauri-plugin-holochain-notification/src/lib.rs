@@ -63,18 +63,16 @@ use crate::modify_push_notification::NotificationWithHash;
 //     }
 // }
 
-pub fn provider_fcm_app_bundle() -> AppBundle {
-    AppBundle::decode(include_bytes!(
-        "../../workdir/notifications_provider_fcm.happ"
-    ))
-    .unwrap()
+pub fn provider_fcm_app_bundle() -> (String, AppBundle) {
+    let bytes = include_bytes!("../../workdir/notifications_provider_fcm.happ");
+    let hash = sha256::digest(bytes);
+    (hash, AppBundle::decode(bytes).unwrap())
 }
 
-pub fn provider_fcm_recipient_app_bundle() -> AppBundle {
-    AppBundle::decode(include_bytes!(
-        "../../workdir/notifications_fcm_recipient.happ"
-    ))
-    .unwrap()
+pub fn provider_fcm_recipient_app_bundle() -> (String, AppBundle) {
+    let bytes = include_bytes!("../../workdir/notifications_fcm_recipient.happ");
+    let hash = sha256::digest(bytes);
+    (hash, AppBundle::decode(bytes).unwrap())
 }
 
 // /// Initializes the plugin.

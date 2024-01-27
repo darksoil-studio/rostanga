@@ -30,6 +30,7 @@ hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-
 
 firestore = "0.39"
 
+sha256 = "1"
 app_dirs2 = "2.5.5"
 futures = "0.3"
 anyhow = "1"

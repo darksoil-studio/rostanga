@@ -64,3 +64,48 @@ pub async fn install_app(
 
     Ok(response.app)
 }
+
+pub async fn update_web_app(
+    admin_ws: &mut AdminWebsocket,
+    fs: &FileSystem,
+    app_id: String,
+    bundle: WebAppBundle,
+) -> Result<()> {
+    // let app_info = update_app(
+    //     admin_ws,
+    //     app_id.clone(),
+    //     bundle.happ_bundle().await?,
+    // )
+    // .await?;
+
+    fs.ui_store().extract_and_store_ui(&app_id, &bundle).await?;
+    log::info!("Updated web-app's ui {app_id:?}");
+
+    // Ok(app_info)
+    Ok(())
+}
+
+// TODO
+// pub async fn update_app(
+//     admin_ws: &mut AdminWebsocket,
+//     app_id: String,
+//     bundle: AppBundle,
+// ) -> Result<AppInfo> {
+//     log::info!("Updating app {}", app_id);
+
+//     let app_info = admin_ws
+//         .install_app(InstallAppPayload {
+//             agent_key,
+//             membrane_proofs,
+//             network_seed,
+//             source: AppBundleSource::Bundle(bundle),
+//             installed_app_id: Some(app_id.clone()),
+//         })
+//         .await
+//         .map_err(|err| crate::Error::ConductorApiError(err))?;
+//     log::info!("Installed app {app_info:?}");
+
+//     log::info!("Enabled app {app_id:?}");
+
+//     Ok(response.app)
+// }

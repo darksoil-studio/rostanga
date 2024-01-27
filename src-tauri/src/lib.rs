@@ -84,7 +84,7 @@ pub fn run() {
                 }
             });
 
-            if is_first_run(app.handle()) {
+            if is_first_run()? {
                 let mut window_builder = WindowBuilder::new(
                     app.handle(),
                     "Welcome",
@@ -109,12 +109,37 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
     setup_holochain(app.clone()).await?;
     log::info!("Successfully set up holochain");
 
-    if !is_first_run(&app) {
-        app.holochain()?.open_app(String::from("gather")).await?;
-    }
+    let mut initial_apps = initial_apps();
 
-    let installed_apps = install_initial_apps_if_necessary(&app, initial_apps()).await?;
-    log::info!("Installed apps: {installed_apps:?}");
+    let mut apps_hashes: BTreeMap<String, String> = BTreeMap::new();
+
+    for (app_id, (hash, _)) in initial_apps.iter() {
+        apps_hashes.insert(app_id.clone(), hash.clone());
+    }
+    if !is_first_run()? {
+        let apps = get_installed_apps()?;
+
+        for (app_id, current_hash) in apps {
+            if let Some((new_hash, initial_app)) = initial_apps.remove(&app_id) {
+                log::error!("Current hash {current_hash} newhash {new_hash}");
+                if !current_hash.eq(&new_hash) {
+                    // Update
+                    match initial_app {
+                        InitialApp::WebApp(web_app) => {
+                            app.holochain()?.update_web_app(app_id, web_app).await?;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        app.holochain()?.open_app(String::from("gather")).await?;
+    } else {
+        let installed_apps = install_initial_apps_if_necessary(&app, initial_apps).await?;
+        log::info!("Installed apps: {installed_apps:?}");
+    }
+    save_installed_apps(apps_hashes)?;
 
     setup_notifications(
         app.clone(),
@@ -191,8 +216,6 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         })
         .await?;
 
-    create_setup_file(&app);
-
     Ok(())
 }
 
@@ -201,22 +224,26 @@ pub enum InitialApp {
     WebApp(WebAppBundle),
 }
 
-fn initial_apps() -> BTreeMap<String, InitialApp> {
-    let mut apps: BTreeMap<String, InitialApp> = BTreeMap::new();
+fn initial_apps() -> BTreeMap<String, (String, InitialApp)> {
+    let mut apps: BTreeMap<String, (String, InitialApp)> = BTreeMap::new();
+    let (h1, provider_app) = provider_fcm_app_bundle();
     apps.insert(
         NOTIFICATIONS_PROVIDER_APP_ID.into(),
-        InitialApp::App(provider_fcm_app_bundle()),
+        (h1, InitialApp::App(provider_app)),
     );
+    let (h2, recipient_app) = provider_fcm_recipient_app_bundle();
     apps.insert(
         NOTIFICATIONS_RECIPIENT_APP_ID.into(),
-        InitialApp::App(provider_fcm_recipient_app_bundle()),
+        (h2, InitialApp::App(recipient_app)),
     );
+    let bytes = include_bytes!("../../workdir/gather.webhapp");
+    let hash = sha256::digest(bytes);
     let gather_web_app_bundle =
-        WebAppBundle::decode(include_bytes!("../../workdir/gather.webhapp"))
-            .expect("Failed to decode gather webhapp");
+        WebAppBundle::decode(bytes).expect("Failed to decode gather webhapp");
+
     apps.insert(
         String::from("gather"),
-        InitialApp::WebApp(gather_web_app_bundle),
+        (hash, InitialApp::WebApp(gather_web_app_bundle)),
     );
 
     apps
@@ -224,7 +251,7 @@ fn initial_apps() -> BTreeMap<String, InitialApp> {
 
 pub async fn install_initial_apps_if_necessary<R: Runtime>(
     app_handle: &AppHandle<R>,
-    apps: BTreeMap<String, InitialApp>,
+    apps: BTreeMap<String, (String, InitialApp)>,
 ) -> anyhow::Result<Vec<AppInfo>> {
     let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
 
@@ -242,13 +269,13 @@ pub async fn install_initial_apps_if_necessary<R: Runtime>(
             .is_none()
         {
             let app_info = match initial_app {
-                InitialApp::App(bundle) => {
+                (_, InitialApp::App(bundle)) => {
                     app_handle
                         .holochain()?
                         .install_app(app_id, bundle, HashMap::new(), None)
                         .await
                 }
-                InitialApp::WebApp(bundle) => {
+                (_, InitialApp::WebApp(bundle)) => {
                     app_handle
                         .holochain()?
                         .install_web_app(app_id, bundle, HashMap::new(), None)
@@ -340,19 +367,19 @@ pub(crate) async fn launch_gather(
     Ok(())
 }
 
-fn is_first_run<R: Runtime>(app: &AppHandle<R>) -> bool {
-    !setup_file_path(app).exists()
+fn is_first_run() -> anyhow::Result<bool> {
+    Ok(!setup_file_path()?.exists())
 }
-fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
-    app_dirs2::app_root(
+fn setup_file_path() -> anyhow::Result<PathBuf> {
+    let root = app_dirs2::app_root(
         app_dirs2::AppDataType::UserData,
         &app_dirs2::AppInfo {
             name: "studio.darksoil.rostanga",
             author: "darksoil.studio",
         },
-    )
-    .expect("Can't get app dir")
-    .join("setup")
+    )?;
+
+    Ok(root.join("setup"))
 
     //    app.path()
     //        .app_data_dir()
@@ -360,9 +387,19 @@ fn setup_file_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
     //        .join("setup")
 }
 use std::io::Write;
-fn create_setup_file<R: Runtime>(app: &AppHandle<R>) {
-    let mut file =
-        std::fs::File::create(setup_file_path(app)).expect("Failed to create setup file");
-    file.write_all(b"Hello, world!")
-        .expect("Failed to create setup file");
+fn save_installed_apps(installed_apps: BTreeMap<String, String>) -> anyhow::Result<()> {
+    let mut file = std::fs::File::create(setup_file_path()?)?;
+
+    let data = serde_json::to_string(&installed_apps)?;
+
+    file.write(&data.as_bytes())?;
+
+    Ok(())
+}
+fn get_installed_apps() -> anyhow::Result<BTreeMap<String, String>> {
+    let s = std::fs::read_to_string(setup_file_path()?)?;
+
+    let apps: BTreeMap<String, String> = serde_json::from_str(s.as_str())?;
+
+    Ok(apps)
 }

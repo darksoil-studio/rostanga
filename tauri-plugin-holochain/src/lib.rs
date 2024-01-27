@@ -36,7 +36,7 @@ mod filesystem;
 mod http_server;
 mod launch;
 
-use commands::install_web_app::{install_app, install_web_app};
+use commands::install_web_app::{install_app, install_web_app, update_web_app};
 pub use error::{Error, Result};
 use filesystem::FileSystem;
 pub use launch::launch;
@@ -332,6 +332,39 @@ impl<R: Runtime> HolochainPlugin<R> {
         self.app_handle.emit("app-installed", app_id)?;
         Ok(app_info)
     }
+
+    pub async fn update_web_app(
+        &self,
+        app_id: String,
+        web_app_bundle: WebAppBundle,
+    ) -> crate::Result<()> {
+        let mut admin_ws = self.admin_websocket().await?;
+        let app_info = update_web_app(
+            &mut admin_ws,
+            &self.filesystem,
+            app_id.clone(),
+            web_app_bundle,
+        )
+        .await?;
+
+        self.app_handle.emit("app-updated", app_id)?;
+
+        Ok(())
+    }
+
+    // pub async fn update_app(
+    //     &self,
+    //     app_id: String,
+    //     app_bundle: AppBundle,
+    // ) -> crate::Result<AppInfo> {
+    //     let mut admin_ws = self.admin_websocket().await?;
+    //     let app_info = update_app(&mut admin_ws, app_id.clone(), app_bundle).await?;
+
+    //     self.workaround_join_failed(app_info.clone()).await?;
+
+    //     self.app_handle.emit("app-updated", app_id)?;
+    //     Ok(app_info)
+    // }
 }
 
 // Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.

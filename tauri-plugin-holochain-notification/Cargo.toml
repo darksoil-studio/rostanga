@@ -27,6 +27,7 @@ hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-
 yup-oauth2 = "8"
 fcm_v1 = "0.3.0"
 
+sha256 = "1"
 url = "2"
 futures = "0.3"
 jni = "0.21"
