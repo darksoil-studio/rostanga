@@ -88,12 +88,12 @@
                 openssl
                 # this is required for glib-networking
                 glib
-                # android-sdk
+                android-sdk
                 gradle
                 jdk17
               ])
               ++ (with androidPkgs; [
-                # android-studio
+                android-studio
               ])
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [

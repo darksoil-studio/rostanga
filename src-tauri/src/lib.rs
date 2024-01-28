@@ -117,7 +117,23 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
         apps_hashes.insert(app_id.clone(), hash.clone());
     }
     if !is_first_run()? {
-        let apps = get_installed_apps()?;
+        let mut mock_initial: BTreeMap<String, String> = BTreeMap::new();
+        mock_initial.insert(
+            "gather".into(),
+            "39c01032253455d18ae3f70b68edf6ee8332874d55b4b213ed2a022b105b54b1".into(),
+        );
+        mock_initial.insert(
+            NOTIFICATIONS_PROVIDER_APP_ID.into(),
+            "d85ff103b0f34918877ce5b71ea40da3950ad5d3d2c30210eb0c45fa12c37b15".into(),
+        );
+        mock_initial.insert(
+            NOTIFICATIONS_RECIPIENT_APP_ID.into(),
+            "6cd9abe0747bc9786786ef318a04586776526efe90a33fae924525709c69d99c".into(),
+        );
+
+        let apps = get_installed_apps().unwrap_or(mock_initial);
+
+        // TODO: what if there is no setup
 
         for (app_id, current_hash) in apps {
             if let Some((new_hash, initial_app)) = initial_apps.remove(&app_id) {
