@@ -89,12 +89,13 @@ pub fn run() {
                     app.handle(),
                     "Welcome",
                     WindowUrl::App("index.html".into()),
-                )
-                .title("röstånga");
+                );
 
                 #[cfg(desktop)]
                 {
-                    window_builder = window_builder.min_inner_size(1000.0, 800.0);
+                    window_builder = window_builder
+                        .min_inner_size(1000.0, 800.0)
+                        .title("röstånga");
                 }
                 let window = window_builder.build()?;
             }

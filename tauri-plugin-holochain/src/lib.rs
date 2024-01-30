@@ -80,12 +80,13 @@ impl<R: Runtime> HolochainPlugin<R> {
                 .as_str(),
             )?),
         )
-        .title(app_id.clone())
         .initialization_script(app_id_env_command.as_str());
 
         #[cfg(desktop)]
         {
-            window_builder = window_builder.min_inner_size(1000.0, 800.0);
+            window_builder = window_builder
+                .min_inner_size(1000.0, 800.0)
+                .title(app_id.clone());
         }
         let window = window_builder.build()?;
 
