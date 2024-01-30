@@ -3,7 +3,9 @@ use std::{fs, io::Write};
 
 use holochain::prelude::*;
 use holochain_types::web_app::WebAppBundle;
+use mr_bundle::error::MrBundleError;
 use tauri::{AppHandle, Manager, Runtime};
+use zip::result::ZipError;
 
 use crate::launch::{get_config, vec_to_locked};
 
@@ -89,6 +91,18 @@ impl FileSystem {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum FileSystemError {
+    #[error(transparent)]
+    MrBundleError(#[from] MrBundleError),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    ZipError(#[from] ZipError),
+}
+
 pub struct UiStore {
     path: PathBuf,
 }
@@ -102,7 +116,7 @@ impl UiStore {
         &self,
         installed_app_id: &InstalledAppId,
         web_app: &WebAppBundle,
-    ) -> crate::Result<()> {
+    ) -> Result<(), FileSystemError> {
         let ui_bytes = web_app.web_ui_zip_bytes().await?;
 
         let ui_folder_path = self.ui_path(installed_app_id);
@@ -202,7 +216,7 @@ impl IconStore {
     }
 }
 
-pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> crate::Result<()> {
+pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> Result<(), FileSystemError> {
     let mut archive = zip::ZipArchive::new(reader)?;
 
     for i in 0..archive.len() {

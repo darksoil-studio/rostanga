@@ -1,10 +1,15 @@
 use app_dirs2::AppDirsError;
-use holochain::{conductor::error::ConductorError, prelude::SerializedBytesError};
-use holochain_client::ConductorApiError;
+use holochain::{
+    conductor::error::ConductorError,
+    prelude::{AppBundleError, DnaError, RoleName, SerializedBytesError, ZomeError},
+};
+use holochain_client::{ConductorApiError, InstalledAppId};
 use mr_bundle::error::MrBundleError;
 use one_err::OneErr;
 use serde::{ser::Serializer, Serialize};
 use zip::result::ZipError;
+
+use crate::filesystem::FileSystemError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -36,10 +41,10 @@ pub enum Error {
     TauriError(#[from] tauri::Error),
 
     #[error(transparent)]
-    UrlParseError(#[from] url::ParseError),
+    FileSystemError(#[from] FileSystemError),
 
     #[error(transparent)]
-    ZipError(#[from] ZipError),
+    UrlParseError(#[from] url::ParseError),
 
     #[error("ConductorApiError: `{0:?}`")]
     ConductorApiError(ConductorApiError),

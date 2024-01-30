@@ -353,19 +353,19 @@ impl<R: Runtime> HolochainPlugin<R> {
         Ok(())
     }
 
-    // pub async fn update_app(
-    //     &self,
-    //     app_id: String,
-    //     app_bundle: AppBundle,
-    // ) -> crate::Result<AppInfo> {
-    //     let mut admin_ws = self.admin_websocket().await?;
-    //     let app_info = update_app(&mut admin_ws, app_id.clone(), app_bundle).await?;
+    pub async fn update_app(
+        &self,
+        app_id: String,
+        app_bundle: AppBundle,
+    ) -> crate::Result<AppInfo> {
+        let mut admin_ws = self.admin_websocket().await?;
+        let app_info = update_app(&mut admin_ws, app_id.clone(), app_bundle).await?;
 
-    //     self.workaround_join_failed(app_info.clone()).await?;
+        self.workaround_join_failed(app_info.clone()).await?;
 
-    //     self.app_handle.emit("app-updated", app_id)?;
-    //     Ok(app_info)
-    // }
+        self.app_handle.emit("app-updated", app_id)?;
+        Ok(app_info)
+    }
 }
 
 // Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the holochain APIs.

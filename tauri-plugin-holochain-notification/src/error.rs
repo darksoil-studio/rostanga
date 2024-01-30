@@ -9,6 +9,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[cfg(desktop)]
+    #[error(transparent)]
+    TauriPluginCliError(#[from] tauri_plugin_cli::Error),
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
@@ -16,8 +19,6 @@ pub enum Error {
     TauriPluginHolochainError(#[from] tauri_plugin_holochain::Error),
     #[error(transparent)]
     TauriPluginNotificationError(#[from] tauri_plugin_notification::Error),
-    #[error(transparent)]
-    TauriPluginCliError(#[from] tauri_plugin_cli::Error),
     #[error(transparent)]
     TauriError(#[from] tauri::Error),
     #[error(transparent)]
