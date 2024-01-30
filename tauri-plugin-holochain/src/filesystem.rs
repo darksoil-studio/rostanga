@@ -107,8 +107,8 @@ impl UiStore {
 
         let ui_folder_path = self.ui_path(installed_app_id);
 
-        if let Err(err) = fs::remove_dir_all(&ui_folder_path) {
-            log::warn!("Could not remove directory: {err:?}");
+        if ui_folder_path.exists() {
+            fs::remove_dir_all(&ui_folder_path)?;
         }
 
         fs::create_dir_all(&ui_folder_path)?;

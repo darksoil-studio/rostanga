@@ -13,7 +13,6 @@ use tauri_plugin_holochain::{setup_holochain, HolochainExt};
 use tauri_plugin_holochain_notification::{
     provider_fcm_app_bundle, provider_fcm_recipient_app_bundle, setup_notifications,
 };
-use tauri_plugin_notification::*;
 
 const NOTIFICATIONS_RECIPIENT_APP_ID: &'static str = "notifications_fcm_recipient";
 const NOTIFICATIONS_PROVIDER_APP_ID: &'static str = "notifications_provider_fcm";
@@ -25,6 +24,7 @@ pub fn run() {
         println!("Launching holochain as early as possible");
         log::info!("Launching holochain as early as possible");
         if let Err(err) = tauri_plugin_holochain::launch().await {
+            println!("Could not not launch holochain: {err:?}");
             log::error!("Could not not launch holochain: {err:?}");
         }
     });
@@ -138,7 +138,6 @@ async fn setup<R: Runtime>(app: AppHandle<R>) -> anyhow::Result<()> {
 
         for (app_id, current_hash) in apps {
             if let Some((new_hash, initial_app)) = initial_apps.remove(&app_id) {
-                log::error!("Current hash {current_hash} newhash {new_hash}");
                 if !current_hash.eq(&new_hash) {
                     // Update
                     match initial_app {
