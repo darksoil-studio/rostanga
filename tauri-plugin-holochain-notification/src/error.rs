@@ -15,9 +15,6 @@ pub enum Error {
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
-    #[cfg(desktop)]
-    #[error(transparent)]
-    TauriPluginCliError(#[from] tauri_plugin_cli::Error),
     #[error(transparent)]
     TauriPluginHolochainError(#[from] tauri_plugin_holochain::Error),
     #[error(transparent)]

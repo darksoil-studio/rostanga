@@ -41,15 +41,11 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_cli::init());
     }
-    #[cfg(mobile)]
-    {
-        builder = builder.plugin(tauri_plugin_notification::init());
-    }
 
     builder
         .invoke_handler(tauri::generate_handler![launch_gather, is_android])
         .plugin(tauri_plugin_holochain::init(PathBuf::from("holochain")))
-        // .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_notification::init())
         // .plugin(tauri_plugin_holochain_notification::init())
         .setup(|app| {
             log::info!("Start tauri setup");

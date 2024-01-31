@@ -36,7 +36,9 @@ mod filesystem;
 mod http_server;
 mod launch;
 
-use commands::install_web_app::{install_app, install_web_app, update_web_app};
+use commands::install_web_app::{
+    install_app, install_web_app, update_app, update_web_app, UpdateAppError,
+};
 pub use error::{Error, Result};
 use filesystem::FileSystem;
 pub use launch::launch;
@@ -338,8 +340,11 @@ impl<R: Runtime> HolochainPlugin<R> {
         &self,
         app_id: String,
         web_app_bundle: WebAppBundle,
-    ) -> crate::Result<()> {
-        let mut admin_ws = self.admin_websocket().await?;
+    ) -> std::result::Result<(), UpdateAppError> {
+        let mut admin_ws = self
+            .admin_websocket()
+            .await
+            .map_err(|err| UpdateAppError::WebsocketError)?;
         let app_info = update_web_app(
             &mut admin_ws,
             &self.filesystem,
@@ -357,11 +362,12 @@ impl<R: Runtime> HolochainPlugin<R> {
         &self,
         app_id: String,
         app_bundle: AppBundle,
-    ) -> crate::Result<AppInfo> {
-        let mut admin_ws = self.admin_websocket().await?;
+    ) -> std::result::Result<(), UpdateAppError> {
+        let mut admin_ws = self
+            .admin_websocket()
+            .await
+            .map_err(|err| UpdateAppError::WebsocketError)?;
         let app_info = update_app(&mut admin_ws, app_id.clone(), app_bundle).await?;
-
-        self.workaround_join_failed(app_info.clone()).await?;
 
         self.app_handle.emit("app-updated", app_id)?;
         Ok(app_info)

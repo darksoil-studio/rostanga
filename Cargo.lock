@@ -3511,7 +3511,7 @@ dependencies = [
 [[package]]
 name = "holochain_client"
 version = "0.4.6-rc.0"
-source = "git+https://github.com/guillemcordoba/holochain-client-rust?branch=for-hdk-0.3.0-beta-dev#0ac9ad2aa13711d5b29c7a2918baade9bdf194f9"
+source = "git+https://github.com/guillemcordoba/holochain-client-rust?branch=for-hdk-0.3.0-beta-dev#ff5224943ecb956217bcd2be22dc8ef768fe877a"
 dependencies = [
  "again",
  "anyhow",
@@ -4228,7 +4228,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.52.0",
+ "windows-core 0.51.1",
 ]
 
 [[package]]

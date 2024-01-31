@@ -1,15 +1,20 @@
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::PathBuf,
+};
 
 use holochain::prelude::{
-    AppBundle, AppBundleError, AppBundleSource, AppManifest, DnaBundle, DnaError, DnaFile, DnaHash,
-    MembraneProof, NetworkSeed, RoleName, ZomeError, ZomeName,
+    AppBundle, AppBundleError, AppBundleSource, AppManifest, CoordinatorBundle,
+    CoordinatorManifest, DnaBundle, DnaError, DnaFile, DnaHash, MembraneProof, NetworkSeed,
+    RoleName, UpdateCoordinatorsPayload, ZomeDependency, ZomeError, ZomeLocation, ZomeManifest,
+    ZomeName,
 };
 use holochain_client::{
     AdminWebsocket, AppInfo, ConductorApiError, InstallAppPayload, InstalledAppId,
 };
 use holochain_conductor_api::CellInfo;
 use holochain_types::web_app::WebAppBundle;
-use mr_bundle::{error::MrBundleError, Bundle};
+use mr_bundle::{error::MrBundleError, Bundle, ResourceBytes};
 
 use crate::filesystem::{FileSystem, FileSystemError};
 
@@ -78,12 +83,7 @@ pub async fn update_web_app(
     app_id: String,
     bundle: WebAppBundle,
 ) -> Result<(), UpdateAppError> {
-    // let app_info = update_app(
-    //     admin_ws,
-    //     app_id.clone(),
-    //     bundle.happ_bundle().await?,
-    // )
-    // .await?;
+    update_app(admin_ws, app_id.clone(), bundle.happ_bundle().await?).await?;
 
     fs.ui_store().extract_and_store_ui(&app_id, &bundle).await?;
     log::info!("Updated web-app's ui {app_id:?}");
@@ -101,6 +101,9 @@ pub enum UpdateAppError {
     ZomeError(#[from] ZomeError),
 
     #[error(transparent)]
+    TauriError(#[from] tauri::Error),
+
+    #[error(transparent)]
     MrBundleError(#[from] MrBundleError),
 
     #[error(transparent)]
@@ -112,6 +115,9 @@ pub enum UpdateAppError {
     #[error("ConductorApiError: `{0:?}`")]
     ConductorApiError(ConductorApiError),
 
+    #[error("Error connecting to the websocket")]
+    WebsocketError,
+
     #[error("The given app was not found: {0}")]
     AppNotFound(String),
 
@@ -119,13 +125,15 @@ pub enum UpdateAppError {
     RoleNotFound(RoleName, InstalledAppId),
 }
 
-// TODO
 pub async fn update_app(
     admin_ws: &mut AdminWebsocket,
     app_id: String,
     bundle: AppBundle,
-) -> Result<AppInfo, UpdateAppError> {
-    log::info!("Updating app {}", app_id);
+) -> Result<(), UpdateAppError> {
+    log::info!(
+        "Checking whether the coordinator zomes for app {} need to be updated",
+        app_id
+    );
 
     // Get the DNA def from the admin websocket
     let apps = admin_ws
@@ -133,52 +141,117 @@ pub async fn update_app(
         .await
         .map_err(|err| UpdateAppError::ConductorApiError(err))?;
 
-    let app = apps
+    let mut app = apps
         .into_iter()
         .find(|app| app.installed_app_id.eq(&app_id))
-        .ok_or(UpdateAppError::AppNotFound(app_id))?;
+        .ok_or(UpdateAppError::AppNotFound(app_id.clone()))?;
 
     let new_dna_files = resolve_dna_files(bundle).await?;
+
+    let mut updated = false;
 
     for (role_name, new_dna_file) in new_dna_files {
         let cells = app
             .cell_info
             .remove(&role_name)
             .ok_or(UpdateAppError::RoleNotFound(
-                role_name,
-                app.installed_app_id,
+                role_name.clone(),
+                app.installed_app_id.clone(),
             ))?;
+
+        let mut zomes: Vec<ZomeManifest> = Vec::new();
+        let mut resources: Vec<(PathBuf, ResourceBytes)> = Vec::new();
 
         if let Some(cell) = cells.first() {
             let dna_hash = match cell {
                 CellInfo::Provisioned(c) => c.cell_id.dna_hash().clone(),
                 CellInfo::Cloned(c) => c.cell_id.dna_hash().clone(),
-                CellInfo::Stem(c) => c.original_dna_hash,
+                CellInfo::Stem(c) => c.original_dna_hash.clone(),
             };
             let old_dna_def = admin_ws
-                .get_dna_definition(dna_hash)
+                .get_dna_definition(dna_hash.clone())
                 .await
                 .map_err(|err| UpdateAppError::ConductorApiError(err))?;
 
-            for (zome_name, coordinator_zome) in new_dna_file.dna_def().coordinator_zomes {
-                let new_wasm_hash = coordinator_zome.wasm_hash(&zome_name)?;
+            for (zome_name, coordinator_zome) in new_dna_file.dna_def().coordinator_zomes.iter() {
+                let deps = coordinator_zome
+                    .clone()
+                    .erase_type()
+                    .dependencies()
+                    .to_vec();
+                let dependencies = deps
+                    .into_iter()
+                    .map(|name| ZomeDependency { name })
+                    .collect();
 
                 if let Some(old_zome_def) = old_dna_def
                     .coordinator_zomes
                     .iter()
                     .find(|(zome, _)| zome.eq(&zome_name))
                 {
+                    if !old_zome_def
+                        .1
+                        .wasm_hash(&zome_name)?
+                        .eq(&coordinator_zome.wasm_hash(&zome_name)?)
+                    {
+                        log::info!("Updating coordinator zome {zome_name} for role {role_name}");
+                        let resource_path = PathBuf::from(zome_name.0.to_string());
+                        zomes.push(ZomeManifest {
+                            name: zome_name.clone(),
+                            hash: None,
+                            dylib: None,
+                            location: ZomeLocation::Bundled(resource_path.clone()),
+                            dependencies: Some(dependencies),
+                        });
+                        let wasm = new_dna_file.get_wasm_for_zome(&zome_name)?;
+                        resources.push((resource_path, wasm.code().to_vec().into()));
+                    }
                 } else {
+                    log::info!("Updating coordinator zome {zome_name} for role {role_name}");
+                    let resource_path = PathBuf::from(zome_name.0.to_string());
+                    zomes.push(ZomeManifest {
+                        name: zome_name.clone(),
+                        hash: None,
+                        dylib: None,
+                        location: ZomeLocation::Bundled(resource_path.clone()),
+                        dependencies: Some(dependencies),
+                    });
+                    let wasm = new_dna_file.get_wasm_for_zome(&zome_name)?;
+                    resources.push((resource_path, wasm.code().to_vec().into()));
                 }
+            }
 
-                // Bundle::new(, , )
+            if !zomes.is_empty() {
+                let source: CoordinatorBundle =
+                    Bundle::new(CoordinatorManifest { zomes }, resources, PathBuf::from("/"))?
+                        .into();
+                let req = UpdateCoordinatorsPayload {
+                    dna_hash,
+                    source: holochain_types::prelude::CoordinatorSource::Bundle(Box::new(source)),
+                };
+
+                admin_ws
+                    .update_coordinators(req)
+                    .await
+                    .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+                updated = true;
             }
         }
     }
 
-    log::info!("Updated app {app_id:?}");
+    if updated {
+        admin_ws
+            .disable_app(app_id.clone())
+            .await
+            .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+        admin_ws
+            .enable_app(app_id.clone())
+            .await
+            .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+        log::info!("Updated app {app_id:?}");
+    }
 
-    Ok(response.app)
+    Ok(())
 }
 
 async fn resolve_dna_files(

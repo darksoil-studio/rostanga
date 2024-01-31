@@ -14,7 +14,7 @@
     "tauri": "tauri",
     "prepare": "npm run prepare:gather && npm run prepare:notifications",
     "prepare:notifications": "curl -L --output workdir/notifications_provider_fcm.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_provider_fcm.happ && curl -L --output workdir/notifications_fcm_recipient.happ https://github.com/darksoil-studio/notifications/releases/download/v0.0.1/notifications_fcm_recipient.happ",
-    "prepare:gather": "curl -L --output workdir/gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.8/gather.webhapp",
+    "prepare:gather": "curl -L --output workdir/gather.webhapp https://github.com/darksoil-studio/gather/releases/download/v0.0.9/gather.webhapp",
     "localize:extract": "lit-localize extract",
     "localize:build": "lit-localize build"
   },
