@@ -14,15 +14,14 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.13", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-alpha.20", features = [] }
+tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notification" }
-tauri-plugin-log = "2.0.0-alpha"
+tauri-plugin-log = "2.0.0-beta"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
-wry = "=0.35.1"
 
 alerts = { git = "https://github.com/darksoil-studio/gather", branch = "without-template" }                                   # TODO: remove
 hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
@@ -42,7 +41,7 @@ holochain_types = { version = "0.3.0-beta-dev" }
 holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-cli = "2.0.0-alpha"
+tauri-plugin-cli = "2.0.0-beta"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

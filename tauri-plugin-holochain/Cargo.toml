@@ -9,7 +9,7 @@ exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
 links = "tauri-plugin-holochain"
 
 [dependencies]
-tauri = { version = "2.0.0-alpha", features = [
+tauri = { version = "2.0.0-beta", features = [
   "devtools",
   "native-tls-vendored",
 ] }
@@ -49,4 +49,4 @@ tokio = "1"
 one_err = "0"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha" }
+tauri-plugin = { version = "2.0.0-beta" }

@@ -9,7 +9,7 @@ exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
 links = "tauri-plugin-holochain-notification"
 
 [dependencies]
-tauri = { version = "2.0.0-alpha.20" }
+tauri = { version = "2.0.0-beta" }
 
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
@@ -38,7 +38,7 @@ serde_json = "1.0"
 thiserror = "1.0"
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-cli = "2.0.0-alpha"
+tauri-plugin-cli = "2.0.0-beta"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.12" }
+tauri-plugin = { version = "2.0.0-beta" }

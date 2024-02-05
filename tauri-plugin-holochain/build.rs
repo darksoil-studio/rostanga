@@ -1,8 +1,13 @@
 use std::process::exit;
 
+const COMMANDS: &[&str] = &["sign_zome_call", "get_locales"
+,            "open_app"
+,            "list_apps"
+,            "get_runtime_info"
+,            "is_holochain_ready"
+ 
+];
+
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new().run() {
-        println!("{error:#}");
-        exit(1);
-    }
+   tauri_plugin::Builder::new(COMMANDS).build();
 }

@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     http::response,
     plugin::{Builder, TauriPlugin},
-    scope::ipc::RemoteDomainAccessScope,
-    AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl,
+    utils::config::RemoteDomainAccessScope,
+    AppHandle, Manager, Runtime, WebviewWindowBuilder, Window,
 };
 
 use holochain::prelude::{
@@ -71,10 +71,10 @@ impl<R: Runtime> HolochainPlugin<R> {
 
         let query_args = query_args.unwrap_or_default();
 
-        let mut window_builder = WindowBuilder::new(
+        let mut window_builder = WebviewWindowBuilder::new(
             &self.app_handle,
             label.clone(),
-            WindowUrl::External(url::Url::parse(
+            tauri::WebviewUrl::External(url::Url::parse(
                 format!(
                     "http://localhost:{}?{query_args}",
                     self.runtime_info.http_server_port

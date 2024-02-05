@@ -1,8 +1,7 @@
 use std::process::exit;
 
+const COMMANDS: &[&str] = &[];
+
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new().run() {
-        println!("{error:#}");
-        exit(1);
-    }
+   tauri_plugin::Builder::new(COMMANDS).build();
 }
