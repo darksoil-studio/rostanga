@@ -12,7 +12,7 @@ use holochain::prelude::{
 use holochain_client::{
     AdminWebsocket, AppInfo, ConductorApiError, InstallAppPayload, InstalledAppId,
 };
-use holochain_conductor_api::CellInfo;
+use holochain_conductor_api::{AppInfoStatus, CellInfo};
 use holochain_types::web_app::WebAppBundle;
 use mr_bundle::{error::MrBundleError, Bundle, ResourceBytes};
 
@@ -159,10 +159,10 @@ pub async fn update_app(
                 app.installed_app_id.clone(),
             ))?;
 
-        let mut zomes: Vec<ZomeManifest> = Vec::new();
-        let mut resources: Vec<(PathBuf, ResourceBytes)> = Vec::new();
+        for cell in cells {
+            let mut zomes: Vec<ZomeManifest> = Vec::new();
+            let mut resources: Vec<(PathBuf, ResourceBytes)> = Vec::new();
 
-        if let Some(cell) = cells.first() {
             let dna_hash = match cell {
                 CellInfo::Provisioned(c) => c.cell_id.dna_hash().clone(),
                 CellInfo::Cloned(c) => c.cell_id.dna_hash().clone(),
@@ -207,7 +207,7 @@ pub async fn update_app(
                         resources.push((resource_path, wasm.code().to_vec().into()));
                     }
                 } else {
-                    log::info!("Updating coordinator zome {zome_name} for role {role_name}");
+                    log::info!("Adding new coordinator zome {zome_name} for role {role_name}");
                     let resource_path = PathBuf::from(zome_name.0.to_string());
                     zomes.push(ZomeManifest {
                         name: zome_name.clone(),
@@ -240,14 +240,16 @@ pub async fn update_app(
     }
 
     if updated {
-        admin_ws
-            .disable_app(app_id.clone())
-            .await
-            .map_err(|err| UpdateAppError::ConductorApiError(err))?;
-        admin_ws
-            .enable_app(app_id.clone())
-            .await
-            .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+        if let AppInfoStatus::Running = app.status {
+            admin_ws
+                .disable_app(app_id.clone())
+                .await
+                .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+            admin_ws
+                .enable_app(app_id.clone())
+                .await
+                .map_err(|err| UpdateAppError::ConductorApiError(err))?;
+        }
         log::info!("Updated app {app_id:?}");
     }
 
