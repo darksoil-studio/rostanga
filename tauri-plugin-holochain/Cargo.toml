@@ -41,7 +41,9 @@ zip = { version = "0.6" }
 bzip2 = { version = "0.4", features = ["static"] }
 portpicker = "0.1"
 mime_guess = "2.0.4"
-hyper = { version = "0.14.27", features = ["full"] }
+hyper = { version = "1", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http-body-util = "0.1"
 tls-listener = "0.8"
 futures = "0.3"
 either = "*"

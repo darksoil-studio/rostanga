@@ -1,15 +1,15 @@
-use hyper::{
-    service::{make_service_fn, service_fn},
-    Body, Response, Server, StatusCode,
-};
 use std::net::SocketAddr;
-use tauri::{AppHandle, Manager, Runtime};
 
-use crate::{
-    error::{Error, Result},
-    filesystem::FileSystem,
-    HolochainExt, HolochainRuntimeInfo,
-};
+use http_body_util::Full;
+use hyper::body::Bytes;
+use hyper::server::conn::http1;
+use hyper::service::service_fn;
+use hyper::{Response, StatusCode};
+use hyper_util::rt::TokioIo;
+use tauri::{AppHandle, Runtime};
+use tokio::net::TcpListener;
+
+use crate::{filesystem::FileSystem, HolochainExt};
 
 pub fn pong_iframe() -> String {
     format!("<html><head></head><body><script>window.onload = () => window.parent.postMessage('pong', '*') </script></body></html>")
@@ -19,53 +19,68 @@ pub fn window_html() -> String {
     include_str!("../ui/dist/index.html").into()
 }
 
-pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u16) -> () {
+pub async fn start_http_server<R: Runtime>(
+    app_handle: AppHandle<R>,
+    ui_server_port: u16,
+) -> crate::Result<()> {
+    let addr: SocketAddr = ([127, 0, 0, 1], ui_server_port).into();
+    let listener = TcpListener::bind(addr).await?;
     tauri::async_runtime::spawn(async move {
-        let addr: SocketAddr = ([127, 0, 0, 1], ui_server_port).into();
         let app_handle = app_handle.clone();
         // The closure inside `make_service_fn` is run for each connection,
         // creating a 'service' to handle requests for that specific connection.
-        let make_service = make_service_fn(move |_| {
+        // let make_service = make_service_fn(move |_| async {
+        //     // While the state was moved into the make_service closure,
+        //     // we need to clone it here because this closure is called
+        //     // once for every connection.
+        //     //
+        //     // Each connection could send multiple requests, so
+        //     // the `Service` needs a clone to handle later requests.
+        //     // This is the `Service` that will handle the connection.
+        //     // `service_fn` is a helper to convert a function that
+        //     // returns a Response into a `Service`.
+        //     // let app_handle = app_handle.clone();
+        //     Ok::<_, hyper::Error>(service_fn(move |request| {
+        //         let app_handle = app_handle.clone();
+        //         async move {}
+        //     }))
+        // });
+
+        loop {
             let app_handle = app_handle.clone();
-            // While the state was moved into the make_service closure,
-            // we need to clone it here because this closure is called
-            // once for every connection.
-            //
-            // Each connection could send multiple requests, so
-            // the `Service` needs a clone to handle later requests.
-            async move {
+            if let Ok((stream, _)) = listener.accept().await {
+                let io = TokioIo::new(stream);
+
                 // This is the `Service` that will handle the connection.
                 // `service_fn` is a helper to convert a function that
                 // returns a Response into a `Service`.
-                let app_handle = app_handle.clone();
-                Ok::<_, hyper::Error>(service_fn(move |request| {
+                let service = service_fn(move |request| {
                     let app_handle = app_handle.clone();
                     async move {
-                        let app_handle = app_handle.clone();
                         let host = request
                             .headers()
                             .get("host")
-                            .ok_or(Error::HttpServerError(String::from("URI has no host")))?
+                            .expect("URI has no host")
+                            // .ok_or(crate::Error::HttpServerError(String::from(
+                            //     "URI has no host",
+                            // )))?
                             .clone()
                             .to_str()
-                            .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?
+                            .expect("Could not convert str to string")
+                            // .map_err(|err| crate::Error::HttpServerError(format!("{:?}", err)))?
                             .to_string();
 
                         if host.starts_with("ping.localhost") {
-                            let r: Result<Response<Body>> = Ok(Response::builder()
+                            return Response::builder()
                                 .status(202)
                                 .header("content-type", "text/html")
-                                .body(pong_iframe().into())
-                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?);
-                            return r;
+                                .body(pong_iframe().into());
                         }
                         if host.starts_with("localhost") {
-                            let r: Result<Response<Body>> = Ok(Response::builder()
+                            return Response::builder()
                                 .status(202)
                                 .header("content-type", "text/html")
-                                .body(window_html().into())
-                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?);
-                            return r;
+                                .body(window_html().into());
                         }
 
                         let split_host: Vec<String> =
@@ -75,64 +90,65 @@ pub fn start_http_server<R: Runtime>(app_handle: AppHandle<R>, ui_server_port: u
                         let file_name = request.uri().path();
 
                         let Ok(holochain) = app_handle.holochain() else {
-                            return Ok(Response::builder()
+                            return Response::builder()
                                 .status(StatusCode::INTERNAL_SERVER_ERROR)
                                 .body(
                                     format!("Called http UI before initializing holochain")
                                         .as_bytes()
                                         .to_vec()
                                         .into(),
-                                )
-                                .expect("Failed to return error"));
+                                );
                         };
 
-                        let r: Result<Response<Body>> = match read_asset(
-                            &holochain.filesystem,
-                            &lowercase_app_id,
-                            file_name.to_string(),
-                        )
-                        .await
-                        {
-                            Ok(Some((asset, mime_type))) => {
-                                let mut response_builder = Response::builder().status(202);
-                                if let Some(mime_type) = mime_type {
-                                    response_builder =
-                                        response_builder.header("content-type", mime_type);
-                                }
-
-                                Ok(response_builder
-                                    .body(asset.into())
-                                    .expect("Failed to build body of resposne"))
+                        let r: hyper::http::Result<Response<Full<Bytes>>> = match read_asset(
+                        &holochain.filesystem,
+                        &lowercase_app_id,
+                        file_name.to_string(),
+                    )
+                    .await
+                    {
+                        Some((asset, mime_type)) => {
+                            let mut response_builder = Response::builder().status(202);
+                            if let Some(mime_type) = mime_type {
+                                response_builder =
+                                    response_builder.header("content-type", mime_type);
                             }
-                            Ok(None) => Ok(Response::builder()
-                                .status(404)
-                                .body(vec![].into())
-                                .map_err(|err| Error::HttpServerError(format!("{:?}", err)))?),
-                            Err(e) => Ok(Response::builder()
-                                .status(500)
-                                .body(format!("{:?}", e).into())
-                                .expect("Failed to build body of error response")),
-                        };
+
+                            response_builder
+                                .body(asset.into())
+                        }
+                        None => Response::builder()
+                            .status(404)
+                            .body(vec![].into())
+                        // Err(e) => Ok(Response::builder()
+                        //     .status(500)
+                        //     .body(format!("{:?}", e).into())
+                        //     .expect("Failed to build body of error response")),
+                    };
                         // admin_ws.close();
                         r
                     }
-                }))
+                    // Get the current count, and also increment by 1, in a single
+                    // // atomic operation.
+                    // let count = counter.fetch_add(1, Ordering::AcqRel);
+                    // async move {
+                    //     Ok::<_, Error>(Response::new(Full::new(Bytes::from(format!(
+                    //         "Request #{}",
+                    //         count
+                    //     )))))
+                    // }
+                });
+
+                if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
+                    println!("Error serving connection: {:?}", err);
+                }
+            } else {
+                log::error!("Could not accept incoming tcp stream");
             }
-        });
-
-        // let app_handle = &app_handle;
-        // let make_svc = make_service_fn(|_conn| async {
-        //     // service_fn converts our function into a `Service`
-        //     Ok::<_, Infallible>(service_fn(|request: Request<Body>| async move {
-        //         }
-        // })
-        // });
-
-        let server = Server::bind(&addr).serve(make_service);
-        if let Err(err) = server.await {
-            println!("Error serving connection: {:?}", err);
         }
     });
+
+    Ok(())
 }
 
 pub fn app_id_from_applet_id(applet_id: &String) -> String {
@@ -174,7 +190,7 @@ pub async fn read_asset(
     fs: &FileSystem,
     app_id: &String,
     mut asset_name: String,
-) -> Result<Option<(Vec<u8>, Option<String>)>> {
+) -> Option<(Vec<u8>, Option<String>)> {
     // println!("Reading asset from filesystem. Asset name: {}", asset_name);
     if asset_name.starts_with("/") {
         asset_name = asset_name
@@ -201,7 +217,7 @@ pub async fn read_asset(
     };
 
     match std::fs::read(asset_file.clone()) {
-        Ok(asset) => Ok(Some((asset, mime_type))),
-        Err(_e) => Ok(None), // {
+        Ok(asset) => Some((asset, mime_type)),
+        Err(_e) => None,
     }
 }

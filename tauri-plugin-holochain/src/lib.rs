@@ -9,7 +9,7 @@ use tauri::{
     http::response,
     plugin::{Builder, TauriPlugin},
     utils::config::RemoteDomainAccessScope,
-    AppHandle, Manager, Runtime, WebviewWindowBuilder, Window,
+    AppHandle, Manager, Runtime, WebviewWindow, WebviewWindowBuilder, Window,
 };
 
 use holochain::prelude::{
@@ -66,7 +66,7 @@ impl<R: Runtime> HolochainPlugin<R> {
         app_id: String,
         label: String,
         query_args: Option<String>,
-    ) -> Result<Window<R>> {
+    ) -> Result<WebviewWindow<R>> {
         let app_id_env_command = format!(r#"window.__APP_ID__ = "{}";"#, app_id);
 
         let query_args = query_args.unwrap_or_default();
@@ -92,11 +92,11 @@ impl<R: Runtime> HolochainPlugin<R> {
         }
         let window = window_builder.build()?;
 
-        self.app_handle.ipc_scope().configure_remote_access(
-            RemoteDomainAccessScope::new("localhost")
-                .add_window(window.label())
-                .add_plugin("holochain"),
-        );
+        // self.app_handle.ipc_scope().configure_remote_access(
+        //     RemoteDomainAccessScope::new("localhost")
+        //         .add_window(window.label())
+        //         .add_plugin("holochain"),
+        // );
 
         Ok(window)
     }
@@ -404,7 +404,7 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
             log::info!("Received request {}", request.uri().to_string());
             if request.uri().to_string().starts_with("happ://ping") {
                 return response::Builder::new()
-                    .status(StatusCode::ACCEPTED)
+                    .status(tauri::http::StatusCode::ACCEPTED)
                     .header("Content-Type", "text/html;charset=utf-8")
                     .body(pong_iframe().as_bytes().to_vec())
                     .expect("Failed to build body of accepted response");
@@ -444,7 +444,7 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
 
                 let Ok(holochain) = app_handle.holochain() else {
                     return response::Builder::new()
-                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .status(tauri::http::StatusCode::INTERNAL_SERVER_ERROR)
                         .body(
                             format!("Called http UI before initializing holochain")
                                 .as_bytes()
@@ -464,9 +464,10 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                 )
                 .await
                 {
-                    Ok(Some((asset, mime_type))) => {
+                    Some((asset, mime_type)) => {
                         log::info!("Got asset for app with id: {}", lowercase_app_id);
-                        let mut response = response::Builder::new().status(StatusCode::ACCEPTED);
+                        let mut response =
+                            response::Builder::new().status(tauri::http::StatusCode::ACCEPTED);
                         if let Some(mime_type) = mime_type {
                             response = response
                                 .header("Content-Type", format!("{};charset=utf-8", mime_type))
@@ -478,14 +479,10 @@ pub fn init<R: Runtime>(subfolder: PathBuf) -> TauriPlugin<R> {
                             .body(asset)
                             .expect("Failed to build response with asset");
                     }
-                    Ok(None) => response::Builder::new()
-                        .status(StatusCode::NOT_FOUND)
+                    None => response::Builder::new()
+                        .status(tauri::http::StatusCode::NOT_FOUND)
                         .body(vec![])
                         .expect("Failed to build asset with not found"),
-                    Err(e) => response::Builder::new()
-                        .status(StatusCode::INTERNAL_SERVER_ERROR)
-                        .body(format!("{:?}", e).as_bytes().to_vec())
-                        .expect("Failed to build asset with not internal server error"),
                 };
 
                 // admin_ws.close();

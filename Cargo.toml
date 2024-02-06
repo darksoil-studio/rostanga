@@ -1,11 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-  "dirs-rs",
-  "tauri-plugin-holochain",
-  "tauri-plugin-holochain-notification",
-  "src-tauri",
-]
+members = ["dirs-rs", "tauri-plugin-holochain", "src-tauri"]
 
 # default to small, optimized release binaries
 [profile.release]

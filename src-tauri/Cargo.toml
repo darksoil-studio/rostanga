@@ -19,15 +19,18 @@ tauri-build = { version = "2.0.0-beta", features = [] }
 [dependencies]
 tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-holochain = { path = "../tauri-plugin-holochain" }
-tauri-plugin-holochain-notification = { path = "../tauri-plugin-holochain-notification" }
 tauri-plugin-log = "2.0.0-beta"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "v2" }
 
-alerts = { git = "https://github.com/darksoil-studio/gather", branch = "without-template" }                                   # TODO: remove
-hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
+alerts = { git = "https://github.com/darksoil-studio/gather", branch = "without-template" }                                                # TODO: remove
+hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }              # TODO: remove
+hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
+hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }      # TODO: remove
 hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
 
 firestore = "0.39"
+yup-oauth2 = "8"
+fcm_v1 = "0.3"
 
 sha256 = "1"
 app_dirs2 = "2.5.5"

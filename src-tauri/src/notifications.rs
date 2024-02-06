@@ -28,16 +28,6 @@ use tauri::{
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 
-pub use models::*;
-
-// #[cfg(desktop)]
-// mod desktop;
-// #[cfg(mobile)]
-// mod mobile;
-
-mod commands;
-mod error;
-mod models;
 mod modify_push_notification;
 
 pub use error::{Error, Result};
@@ -85,7 +75,7 @@ pub async fn setup_notifications<R: Runtime>(
     fcm_project_id: String,
     notifications_provider_app_id: String,
     notifications_provider_recipient_app_id: String,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     let provider_app_id = notifications_provider_app_id.clone();
     let recipient_app_id = notifications_provider_recipient_app_id.clone();
 
@@ -145,8 +135,7 @@ pub async fn setup_notifications<R: Runtime>(
                     }
                 });
             })
-            .await
-            .map_err(|err| crate::Error::SignalSetupError(format!("err")))?;
+            .await?;
     }
 
     #[cfg(mobile)]
@@ -206,7 +195,7 @@ pub async fn setup_notifications<R: Runtime>(
 async fn handle_notification_clicked<R: Runtime>(
     app_handle: &AppHandle<R>,
     notification_data: NotificationData,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     let Some(large_body) = notification_data.body else {
         return Ok(())
     };
@@ -317,7 +306,7 @@ async fn publish_new_fcm_token<R: Runtime>(
     app_handle: AppHandle<R>,
     recipient_app_id: String,
     token: String,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     let mut app_agent_ws = app_handle
         .holochain()?
         .app_agent_websocket(recipient_app_id)
@@ -332,8 +321,7 @@ async fn publish_new_fcm_token<R: Runtime>(
             FunctionName::from("register_new_fcm_token"),
             payload,
         )
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
+        .await?;
 
     Ok(())
 }
@@ -342,7 +330,7 @@ async fn shortcut_publish_new_fcm_token<R: Runtime>(
     app_handle: AppHandle<R>,
     provider_app_id: String,
     token: String,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     let mut app_agent_ws = app_handle
         .holochain()?
         .app_agent_websocket(provider_app_id)
@@ -351,8 +339,7 @@ async fn shortcut_publish_new_fcm_token<R: Runtime>(
     let mut admin_ws = app_handle.holochain()?.admin_websocket().await?;
     let apps = admin_ws
         .list_apps(None)
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
+        .await?;
 
     let gather = apps
         .into_iter()
@@ -371,8 +358,7 @@ async fn shortcut_publish_new_fcm_token<R: Runtime>(
             FunctionName::from("register_fcm_token_for_agent"),
             payload,
         )
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
+        .await?;
 
     log::info!("Successfully published new fcm token");
 
@@ -399,7 +385,7 @@ async fn send_hrl_push_notification(
     service_account_key: ServiceAccountKey,
     token: String,
     hrl: SerializedBytes,
-) -> Result<()> {
+) -> anyhow::Result<()> {
     let body = Hrl::try_from(hrl)?;
 
     let str_body = serde_json::to_string(&body)?;
@@ -425,7 +411,7 @@ async fn send_push_notification(
     token: String,
     title: String,
     body: String,
-) -> Result<()> {
+) -> anyhow::Result<()> {
     let auth = Authenticator::service_account::<String>(service_account_key).await?;
 
     let client = Client::new(auth, fcm_project_id, false, Duration::from_secs(2));
@@ -466,7 +452,7 @@ async fn publish_service_account_key<R: Runtime>(
     app_handle: &AppHandle<R>,
     provider_app_id: String,
     service_account_key_path: PathBuf,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     let mut app_agent_ws = app_handle
         .holochain()?
         .app_agent_websocket(provider_app_id)
@@ -487,8 +473,7 @@ async fn publish_service_account_key<R: Runtime>(
             FunctionName::from("publish_new_service_account_key"),
             payload,
         )
-        .await
-        .map_err(|err| crate::Error::ConductorApiError(err))?;
+        .await?;
 
     Ok(())
 }

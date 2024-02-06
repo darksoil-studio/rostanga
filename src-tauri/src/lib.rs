@@ -6,11 +6,13 @@ use holochain_types::prelude::{
     AppBundle, ExternIO, SerializedBytes, Signal, UnsafeBytes, ZomeName,
 };
 use holochain_types::web_app::WebAppBundle;
-use tauri::{AppHandle, Manager, Runtime, Window, WindowBuilder, WindowUrl};
+use tauri::{AppHandle, Manager, Runtime, WebviewUrl, WebviewWindowBuilder, Window};
 #[cfg(desktop)]
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_holochain::{setup_holochain, HolochainExt};
-use tauri_plugin_holochain_notification::{
+
+mod notifications;
+use notifications::{
     provider_fcm_app_bundle, provider_fcm_recipient_app_bundle, setup_notifications,
 };
 
@@ -81,10 +83,10 @@ pub fn run() {
             });
 
             if is_first_run()? {
-                let mut window_builder = WindowBuilder::new(
+                let mut window_builder = WebviewWindowBuilder::new(
                     app.handle(),
                     "Welcome",
-                    WindowUrl::App("index.html".into()),
+                    WebviewUrl::App("index.html".into()),
                 );
 
                 #[cfg(desktop)]
