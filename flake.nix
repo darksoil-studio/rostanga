@@ -40,7 +40,7 @@
             rustPkgs = import pkgs.path {
               inherit system overlays;
             };
-            rust = rustPkgs.rust-bin.stable."1.71.1".default.override {
+            rust = rustPkgs.rust-bin.stable."1.75.0".default.override {
               extensions = [ "rust-src" ];
               targets = [ 
                 "armv7-linux-androideabi"
@@ -149,7 +149,6 @@
                 # echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis_playstore;x86_64" --force
 
                 export RUSTFLAGS+=" -C link-arg=$(gcc -print-libgcc-file-name)"
-                export SERVICE_ACCOUNT_KEY=$(cat /home/guillem/projects/darksoil/rostanga-ce319-434c89109185.json)
               '';
             };
           };

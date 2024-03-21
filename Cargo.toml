@@ -13,9 +13,8 @@ lto = true
 [patch.crates-io]
 swift-rs = { git = "https://github.com/guillemcordoba/swift-rs", branch = "main" }
 tao = { git = "https://github.com/guillemcordoba/tao", branch = "dev" }
-dirs = { path = "./dirs-rs" }
+# dirs = { path = "./dirs-rs" }
 
-holochain_wasmer_host = { git = "https://github.com/guillemcordoba/holochain-wasmer", branch = "refactor/reinstate-module-cache" }
 # tx5 = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5" }
 # tx5-core = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-core" }
 # tx5-online = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-online" }
@@ -27,14 +26,14 @@ holochain_wasmer_host = { git = "https://github.com/guillemcordoba/holochain-was
 # tx5-demo = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-demo" }
 # tx5-go-pion-turn = { path = "/home/guillem/projects/holochain/core/tx5/crates/tx5-go-pion-turn" }
 
-holochain = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_nonce = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_zome_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_integrity_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_keystore = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-kitsune_p2p_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
-mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_nonce = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_zome_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_integrity_types = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_keystore = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# kitsune_p2p_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
+# mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "firestore" }
 # lair_keystore_api = { git = "https://github.com/guillemcordoba/lair", branch = "main" }

@@ -26,9 +26,8 @@ alerts = { git = "https://github.com/darksoil-studio/gather", branch = "without-
 hc_zome_notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }              # TODO: remove
 hc_zome_notifications_provider_fcm_types = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" } # TODO: remove
 hc_zome_trait_pending_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "for-hdk-0.3.0-beta-dev" }      # TODO: remove
-hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
+hrl = { git = "https://github.com/holochain-open-dev/infrastructure", branch = "main" }
 
-firestore = "0.39"
 yup-oauth2 = "8"
 fcm_v1 = "0.3"
 
@@ -41,7 +40,7 @@ serde = { version = "1.0.193", features = ["derive"] }
 serde_json = "1.0"
 
 holochain_types = { version = "0.3.0-beta-dev" }
-holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
+holochain_client = { version = "0.5.0-dev.30" }
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-cli = "2.0.0-beta"

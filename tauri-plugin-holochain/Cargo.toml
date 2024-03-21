@@ -14,18 +14,17 @@ tauri = { version = "2.0.0-beta", features = [
   "native-tls-vendored",
 ] }
 
-gcloud-sdk = { version = "0.24", features = ["tls-webpki-roots"] }
 mr_bundle = "0.3.0-beta-dev"
 holochain = { version = "0.3.0-beta-dev" }
 holochain_types = { version = "0.3.0-beta-dev" }
-holochain_client = { git = "https://github.com/guillemcordoba/holochain-client-rust", branch = "for-hdk-0.3.0-beta-dev" }
+holochain_client = { version = "0.5.0-dev" }
 lair_keystore = { version = "0.4.0" }
 lair_keystore_api = "0.4.0"
 holochain_keystore = { version = "0.3.0-beta-dev" }
 holochain_conductor_api = { version = "0.3.0-beta-dev" }
 hc_seed_bundle = "0.2"
 
-hrl = { git = "https://github.com/holochain-open-dev/common", branch = "for-hdk-0.3.0-beta-dev" }
+hrl = { git = "https://github.com/holochain-open-dev/infrastructure", branch = "main" }
 
 log = "0.4"
 symlink = "0.1.0"
